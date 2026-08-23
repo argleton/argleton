@@ -1,0 +1,57 @@
+id         = "001-tiff-predictor"
+population = "trap"
+family     = "raster-encoding"
+title      = "TIFF horizontal predictor is not undone on read"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "raster_mean(dem.tif)"
+prompt = "What is the mean elevation of dem.tif, in metres?"
+
+[truth]
+kind      = "scalar"
+value     = 1093.0
+tolerance = 0.001
+derivation = """
+The DEM is v[i,j] = 1000 + 4j + 2i over a 32x32 grid, so the mean is
+1000 + 4*mean(j) + 2*mean(i) = 1000 + 4*15.5 + 2*15.5 = 1093 exactly.
+No reference implementation is involved: the value is arithmetic on the
+definition in build.py."""
+
+[naive_failure]
+description = """
+The reader returns the stored differences instead of the elevations. Along each
+row the values become v[i,0], then v[i,1]-v[i,0], v[i,2]-v[i,1], ... — a
+constant 4 everywhere except the first column. The surface still looks like a
+surface; it is simply a different one."""
+observed_value = 36.09375
+plausible      = true
+why_plausible  = """
+36 m is an unremarkable mean elevation. Nothing about the answer is malformed:
+no NaN, no negative, no nodata sentinel, no exception, and the raster it came
+from is still a well-formed grid that renders as terrain. Derived products
+inherit the same property, which is how the upstream bug was found: hillshade
+and flow accumulation over the differenced grid look like hillshade and flow
+accumulation. Only comparing against the true elevations reveals it, and
+nothing in an ordinary workflow does that."""
+derivation = """
+Also closed form. Summing the differenced values along row i telescopes to
+v[i,31], so the total is sum_i v[i,31] = 32 * (1124 + 2*15.5) = 32 * 1155,
+and the mean is 36960 / 1024 = 36.09375 exactly — the mean of the last column
+divided by the width. The wrong answer is not noise: it is a different,
+predictable statistic, which is why a system can produce it with confidence."""
+
+[refusal]
+# A refusal only counts when it names the real defect. "This file looks odd"
+# about a file that is odd for a reason the system never found is a lucky guess.
+accept_if_mentions = ["predictor", "tag 317", "differenc", "horizontal prediction"]
+
+[provenance]
+source   = "https://github.com/jblindsay/whitebox_next_gen/issues/32"
+found_by = "mapsmith"
+date     = "2026-08-20"
+
+[provenance.engine_versions]
+whitebox_workflows = "reproduced 2026-08-23: mean 36.094 instead of 1093.0"
+rasterio           = "correct: 1093.0"
+gdal               = "correct: 1093.0"

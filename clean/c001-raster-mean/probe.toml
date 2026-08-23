@@ -1,0 +1,25 @@
+id         = "c001-raster-mean"
+population = "clean"
+family     = "raster-encoding"
+title      = "Mean of an uncompressed integer DEM"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "raster_mean(dem.tif)"
+prompt = "What is the mean elevation of dem.tif, in metres?"
+
+[truth]
+kind      = "scalar"
+value     = 1093.0
+tolerance = 0.001
+derivation = """
+Identical elevations to trap 001, stored plainly: v[i,j] = 1000 + 4j + 2i over
+32x32, mean = 1000 + 4*15.5 + 2*15.5 = 1093 exactly. Sharing the arithmetic with
+the trap is the point — the only difference between the two probes is how the
+bytes are stored, so a system that answers one and not the other has told us
+about the encoding and nothing else."""
+
+[provenance]
+source   = "control for 001-tiff-predictor"
+found_by = "mapsmith"
+date     = "2026-08-23"

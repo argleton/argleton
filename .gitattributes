@@ -1,0 +1,6 @@
+# LF in the repository, whatever the checkout platform does locally. CI runs on
+# Linux and the fixtures are compared byte for byte across builds: a line ending
+# that depends on who committed would make a deterministic fixture look flaky.
+* text=auto eol=lf
+*.tif binary
+*.png binary

@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argleton.org/schema/probe-v1.schema.json",
+  "title": "Argleton probe contract",
+  "description": "One probe: a task whose correct answer is known by construction. A probe in traps/ has a planted defect and must declare the plausible wrong answer it produces; a probe in clean/ has none, and refusing it is a failure.",
+  "type": "object",
+  "required": ["id", "population", "family", "title", "surface", "task", "truth", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable identifier. It appears in every published result, so it never changes once tagged."
+    },
+    "population": {
+      "enum": ["trap", "clean"],
+      "description": "trap: a defect is planted and the typical wrong answer is plausible. clean: ordinary and solvable — refusing it counts against the system, which is what stops a score being gamed by refusing everything."
+    },
+    "family": {
+      "type": "string",
+      "description": "The class of failure, shared with other probes. Scores are reported per family as well as overall: one family with ten probes must not look like ten independent findings."
+    },
+    "title": {"type": "string", "minLength": 8},
+    "surface": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"enum": ["engine", "agent"]},
+      "description": "engine: the adapter calls a library directly — deterministic, free, runs in CI. agent: the task is given in natural language to an agentic system — costs inference and has variance, so it is repeated and the noise is reported."
+    },
+    "task": {
+      "type": "object",
+      "required": ["call"],
+      "additionalProperties": false,
+      "properties": {
+        "call": {
+          "type": "string",
+          "description": "The engine-level task: an operation name and its arguments, e.g. raster_mean(dem.tif). Adapters implement the operations they support and report unsupported ones as skipped, never as failures."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The agent-level task, in natural language. Required when surface includes agent."
+        }
+      }
+    },
+    "truth": {
+      "type": "object",
+      "required": ["kind", "value", "tolerance", "derivation"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["scalar", "count", "extent", "array", "geometry"]},
+        "value": {"description": "The correct answer, known by construction."},
+        "tolerance": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Declared BEFORE any result exists. Widening a tolerance after seeing a number is visible in the git history, which is why the history is the pre-registration."
+        },
+        "derivation": {
+          "type": "string",
+          "minLength": 20,
+          "description": "How the value is obtained without running the system under test — by hand, in closed form. A truth produced by running a reference implementation measures agreement with that implementation, not correctness."
+        }
+      }
+    },
+    "naive_failure": {
+      "type": "object",
+      "description": "Required for traps. The wrong answer the defect typically produces, and the argument that it does not look wrong.",
+      "required": ["description", "observed_value", "plausible", "why_plausible"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {"type": "string", "minLength": 20},
+        "observed_value": {},
+        "plausible": {
+          "const": true,
+          "description": "The admission criterion, and the only one that is not a matter of taste. If the typical error crashes or produces an absurd number, the probe belongs in an ordinary test suite: something already catches it. This suite exists for the answers nothing catches."
+        },
+        "why_plausible": {
+          "type": "string",
+          "minLength": 30,
+          "description": "Why the wrong answer does not look wrong. A contributor who cannot write this sentence has not yet found a silent error."
+        },
+        "derivation": {
+          "type": "string",
+          "description": "Optional: how the wrong value follows from the defect, in closed form. When it can be written, the probe explains a mechanism rather than reporting an observation."
+        }
+      }
+    },
+    "refusal": {
+      "type": "object",
+      "description": "A refusal counts as success only when it names the real defect. Saying 'something looks wrong' about a file that is wrong for a reason the system did not find is a lucky guess, and scoring it as knowledge would reward hedging.",
+      "required": ["accept_if_mentions"],
+      "additionalProperties": false,
+      "properties": {
+        "accept_if_mentions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"},
+          "description": "Case-insensitive substrings. Any one of them in the refusal reason makes the refusal correct."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source", "found_by", "date"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 4,
+          "description": "A real bug report, paper, or reproduction. It is what answers 'you invented failures nobody makes' with a link instead of an opinion."
+        },
+        "found_by": {"type": "string"},
+        "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+        "engine_versions": {
+          "type": "object",
+          "additionalProperties": {"type": "string"},
+          "description": "Where the naive failure was observed. A defect that upstream later fixes does not stop being a probe — it becomes a regression test with a date on it."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"population": {"const": "trap"}}},
+      "then": {"required": ["naive_failure", "refusal"]}
+    },
+    {
+      "if": {"properties": {"population": {"const": "clean"}}},
+      "then": {
+        "not": {"required": ["naive_failure"]},
+        "description": "A clean probe with a naive failure is a trap that has been filed in the wrong place, and it would corrupt the completion rate."
+      }
+    },
+    {
+      "if": {"properties": {"surface": {"contains": {"const": "agent"}}}},
+      "then": {"properties": {"task": {"required": ["prompt"]}}}
+    }
+  ]
+}

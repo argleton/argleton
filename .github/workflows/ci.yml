@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e .[fixtures,whitebox,dev]
+      - run: pip install ruff==0.16.3
+      - run: ruff check .
+      - run: pytest -q
+      # The engine tier is deterministic and free, so it runs on every commit.
+      # rasterio must stay at zero silent errors; whitebox is expected to fail
+      # trap 001 until upstream fixes it, which is why the run is not gated on
+      # the rate — a red build for a defect in someone else's library would
+      # train us to ignore the build.
+      - run: argleton --adapter engine:rasterio --out /tmp/rasterio.json
+      - run: argleton --adapter engine:whitebox --out /tmp/whitebox.json
+      - name: rasterio must have no silent errors
+        run: |
+          python - <<'PY'
+          import json, sys
+          r = json.load(open("/tmp/rasterio.json"))
+          print(r["silent_error_rate"], r["completion_rate"])
+          sys.exit(0 if r["silent_error_rate"] == 0.0 and r["completion_rate"] == 1.0 else 1)
+          PY
