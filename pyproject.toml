@@ -30,6 +30,9 @@ geopandas = ["geopandas>=1.0", "shapely>=2.0", "pyogrio>=0.9", "pyproj>=3.6"]
 # because a published number about ourselves has to be regenerable by anyone.
 mapsmith = ["mapsmith[raster]>=0.2.2"]
 dev = ["pytest>=8", "jsonschema>=4.21"]
+# The page and its share card. Only CI needs this: the published image is the
+# one CI renders, with the font CI installs, which is what makes it stable.
+site = ["pillow>=10"]
 
 [project.scripts]
 argleton = "argleton.run:main"

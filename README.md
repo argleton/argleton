@@ -78,12 +78,17 @@ rate means a system did not fail silently *on these probes*.
 Engine tier, three families, `spec_commit` pinned — [the numbers and what they
 do not say](results/).
 
-| system | silent error rate | completion rate |
-|---|---|---|
-| MapSmith 0.2.2 | 0.00 | 1.00 |
-| rasterio 1.5.1 | 0.00 | 1.00 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 |
-| naive composition | 0.67 | 1.00 |
+| system | silent error rate | completion rate | traps run |
+|---|---|---|---|
+| MapSmith 0.2.2 | 0.00 | 1.00 | 2 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 2 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 1 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 |
+| naive composition | 0.67 | 1.00 | 3 |
+
+The last column is not decoration. A rate over one trap and a rate over three
+are different claims, and an adapter that could only be asked one question must
+not be able to look better than one that faced all of them.
 
 **MapSmith scores 0.00 and its verification had nothing to do with it.** On trap
 001 it wrote a manifest with seven passing checks, and not one of them looks at

@@ -28,7 +28,11 @@ jobs:
       - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
         with:
           python-version: "3.12"
-      - run: pip install -e .
+      # Pinned rather than assumed: the share card is rendered with a real font,
+      # and a runner image that quietly changes its default would change the
+      # published picture without anyone deciding to.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core
+      - run: pip install -e .[site]
       - run: python site/build.py dist
       - name: the page must agree with the results it was built from
         run: |
@@ -42,6 +46,11 @@ jobs:
               d = json.load(f.open(encoding="utf-8"))
               if d["system"] not in pagina:
                   sys.exit(f"{d['system']} is in the results and not on the page")
+          for atteso in ("card.png", "summary_large_image"):
+              if atteso not in pagina:
+                  sys.exit(f"the page lost {atteso!r} - it would share without an image")
+          if not pathlib.Path("dist/card.png").exists():
+              sys.exit("no share card was rendered")
           print(f"{len(pagina)} bytes, every measured system present")
           PY
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3.0.1
