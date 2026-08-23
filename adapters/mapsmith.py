@@ -1,0 +1,93 @@
+"""Adapter: MapSmith, the system these probes were written next to.
+
+Here on purpose and first, because a suite whose authors do not measure
+themselves is not a suite. What it finds about MapSmith goes in `results/`
+whatever it says.
+
+Two things worth stating before the numbers.
+
+**MapSmith exposes no `raster_mean` and no area operation.** It exposes
+`zonal_statistics`, so that is what this adapter calls, with a zone covering the
+raster's own extent — which is how you ask MapSmith the question. Composing a
+system's real tools to answer the probe is the adapter's whole job; inventing an
+operation it does not have would measure a system that does not exist. For
+`planar_area_m2` there is nothing to compose, and the honest answer is
+`unsupported`.
+
+**There is no switch to turn MapSmith's verification off**, and adding one to a
+product whose argument is that it verifies would be a footgun someone eventually
+ships with. So this measures MapSmith as it is released. On the families
+implemented so far that turns out not to matter, and the reason is worth reading
+in `results/`.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from argleton.model import Outcome, Probe
+
+
+class Adapter:
+    name = "mapsmith"
+
+    def run(self, probe: Probe, workdir: Path) -> Outcome:
+        operazione = getattr(self, f"op_{probe.operation}", None)
+        if operazione is None:
+            return Outcome(unsupported=True)
+        return operazione(probe, workdir)
+
+    def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        import rasterio
+        from shapely.geometry import box
+
+        from mapsmith.engines import raster
+
+        sorgente = workdir / probe.arguments[0]
+        with rasterio.open(sorgente) as ds:
+            confini, crs = ds.bounds, ds.crs
+        if crs is None:
+            return Outcome(refusal="the raster declares no CRS, so a zone cannot be placed on it")
+
+        # A zone that is exactly the raster's extent. exactextract weights
+        # partial pixels rather than counting or dropping them, so a zone on the
+        # grid boundary is the whole grid and nothing is double-counted.
+        zone = workdir / "_argleton_extent.gpkg"
+        gpd.GeoDataFrame(
+            {"zone": [1]}, geometry=[box(*confini)], crs=crs
+        ).to_file(zone, layer="zone", driver="GPKG")
+
+        uscita = workdir / "_argleton_zonal.parquet"
+        try:
+            raster.zonal_statistics(str(sorgente), str(zone), str(uscita), stats=["mean"])
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            testo = str(exc)
+            # MapSmith refuses rather than guesses in several places, and a
+            # refusal that names its reason is a different result from a crash.
+            if "has no CRS" in testo or "Refusing" in testo:
+                return Outcome(refusal=testo)
+            return Outcome(error=f"{type(exc).__name__}: {testo}")
+
+        risultato = gpd.read_parquet(uscita)
+        avvisi = self._warnings(uscita)
+        return Outcome(answer=float(risultato["mean"].iloc[0]), warnings=avvisi)
+
+    @staticmethod
+    def _warnings(output: Path) -> list[str]:
+        """Anything the manifest recorded that a reader should have seen.
+
+        A check that failed non-critically, or a repair, is MapSmith telling the
+        caller something. If it is there, the probe should be scored as
+        `correct_with_warning` rather than plain `correct` — the suite is about
+        what a system communicates, not only about the number.
+        """
+        import json
+
+        manifesto = Path(str(output) + ".provenance.json")
+        if not manifesto.exists():
+            return ["no provenance manifest was written"]
+        dati = json.loads(manifesto.read_text(encoding="utf-8"))
+        note = [c["detail"] for c in dati.get("verification", []) if not c.get("passed")]
+        note += [r.get("detail", str(r)) for r in dati.get("repairs", [])]
+        return note

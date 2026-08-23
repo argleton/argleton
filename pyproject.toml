@@ -26,6 +26,9 @@ dependencies = []                   # the runner itself is stdlib only
 fixtures = ["numpy>=1.26", "rasterio>=1.3", "geopandas>=1.0", "shapely>=2.0", "pyogrio>=0.9"]
 whitebox = ["whitebox-workflows>=1.3"]
 geopandas = ["geopandas>=1.0", "shapely>=2.0", "pyogrio>=0.9", "pyproj>=3.6"]
+# The system these probes were written next to. Measured first, and in CI,
+# because a published number about ourselves has to be regenerable by anyone.
+mapsmith = ["mapsmith[raster]>=0.2.2"]
 dev = ["pytest>=8", "jsonschema>=4.21"]
 
 [project.scripts]
