@@ -1,0 +1,59 @@
+name: Site
+
+# The page is built from results/, which is built by running the suite. A
+# benchmark whose front page is maintained separately from its numbers will
+# eventually disagree with them, and the first reader to notice is right to stop
+# reading. Nothing on the page is typed in by hand.
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", "results/**", "traps/**", "clean/**", "argleton/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - run: python site/build.py dist
+      - name: the page must agree with the results it was built from
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          pagina = pathlib.Path("dist/index.html").read_text(encoding="utf-8")
+          if "{{" in pagina:
+              sys.exit(f"unreplaced placeholder: {pagina[pagina.index('{{'):][:60]}")
+          corsa = sorted(p for p in pathlib.Path("results").iterdir() if p.is_dir())[-1]
+          for f in corsa.glob("*.json"):
+              d = json.load(f.open(encoding="utf-8"))
+              if d["system"] not in pagina:
+                  sys.exit(f"{d['system']} is in the results and not on the page")
+          print(f"{len(pagina)} bytes, every measured system present")
+          PY
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3.0.1
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v4.0.5

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argleton — a correctness suite for geospatial systems</title>
+<meta name="description" content="Probes whose right answer is known by construction, and whose wrong answer looks fine. Measures the one failure nothing else catches: a result that is wrong and reported as successful.">
+<link rel="canonical" href="https://{{CANONICAL}}/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Argleton — a correctness suite for geospatial systems">
+<meta property="og:description" content="1093.0 is the answer. 36.09375 is what one widely used library returns from the same file. Both are ordinary elevations.">
+<meta property="og:url" content="https://{{CANONICAL}}/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d1117'/><circle cx='16' cy='16' r='7' fill='none' stroke='%23d9534f' stroke-width='2' stroke-dasharray='3 3'/><circle cx='16' cy='16' r='1.6' fill='%23d9534f'/></svg>">
+<style>
+:root {
+  --ink: #0d1117;
+  --ink-2: #46505e;
+  --ink-3: #7d8795;
+  --paper: #fcfcfd;
+  --panel: #f4f6f8;
+  --rule: #dde2e8;
+  --rule-hard: #b9c1cb;
+  --wrong: #b32d24;
+  --right: #14705a;
+  --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #e6eaf0; --ink-2: #a3adbb; --ink-3: #6e7885;
+    --paper: #0c0e12; --panel: #14171d; --rule: #242a33; --rule-hard: #39414d;
+    --wrong: #f0655a; --right: #35c69b;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #e6eaf0; --ink-2: #a3adbb; --ink-3: #6e7885;
+  --paper: #0c0e12; --panel: #14171d; --rule: #242a33; --rule-hard: #39414d;
+  --wrong: #f0655a; --right: #35c69b;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 16.5px; line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+.wrap { max-width: 62rem; margin: 0 auto; padding: 0 1.5rem; }
+a { color: inherit; text-underline-offset: 2px; text-decoration-color: var(--rule-hard); }
+a:hover { text-decoration-color: var(--wrong); }
+.mono { font-family: var(--mono); }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--panel); padding: 0.1em 0.35em; }
+
+header {
+  border-bottom: 1px solid var(--rule-hard); padding: 0.95rem 0;
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase;
+}
+header .wrap { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; }
+header b { letter-spacing: 0.12em; }
+header nav { margin-left: auto; display: flex; gap: 1.2rem; }
+header nav a { color: var(--ink-2); text-decoration: none; }
+header nav a:hover { color: var(--wrong); }
+
+/* ---------- the two numbers ---------- */
+.lead { padding: 4rem 0 3rem; }
+h1 { font-size: 1rem; font-family: var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+     color: var(--ink-3); margin: 0 0 1.6rem; font-weight: 500; }
+.claim { font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.35; letter-spacing: -0.015em;
+         max-width: 36ch; margin: 0 0 3rem; font-weight: 600; }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--rule-hard); }
+@media (max-width: 40rem) { .pair { grid-template-columns: 1fr; } }
+.pair > div { padding: 1.6rem 1.5rem; }
+.pair > div + div { border-left: 1px solid var(--rule-hard); }
+@media (max-width: 40rem) { .pair > div + div { border-left: 0; border-top: 1px solid var(--rule-hard); } }
+.pair .n { font-family: var(--mono); font-size: clamp(2.1rem, 6vw, 3.2rem); line-height: 1;
+           letter-spacing: -0.03em; display: block; }
+.pair .right .n { color: var(--right); }
+.pair .wrong .n { color: var(--wrong); }
+.pair p { margin: 0.85rem 0 0; font-size: 0.9rem; color: var(--ink-2); max-width: 30ch; }
+.pair .label { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+               text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 0.7rem; }
+.after { margin: 1.4rem 0 0; font-size: 1rem; max-width: 62ch; color: var(--ink-2); }
+.after strong { color: var(--ink); }
+
+section { padding: 3.25rem 0; border-top: 1px solid var(--rule); }
+h2 { font-size: 1.22rem; letter-spacing: -0.01em; margin: 0 0 0.9rem; font-weight: 650; }
+.kicker { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+          color: var(--ink-3); margin: 0 0 0.7rem; }
+p { max-width: 66ch; }
+
+table { border-collapse: collapse; width: 100%; margin-top: 1.4rem; font-size: 0.92rem; }
+th { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+     color: var(--ink-3); text-align: left; font-weight: 500;
+     padding: 0 0.8rem 0.55rem 0; border-bottom: 1px solid var(--rule-hard); }
+td { padding: 0.62rem 0.8rem 0.62rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th.num, td.num { text-align: right; padding-right: 0; font-family: var(--mono); }
+th.num { text-align: right; }
+td.num { font-size: 0.95rem; }
+td.num.good { color: var(--right); } td.num.bad { color: var(--wrong); }
+td.num.dim { color: var(--ink-3); font-size: 0.85rem; }
+td.sys { font-weight: 550; }
+td.mono { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-2); white-space: nowrap; }
+tr.ours td { background: var(--panel); }
+.tag { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+       color: var(--paper); background: var(--ink-2); padding: 0.12em 0.4em; vertical-align: 0.15em; }
+.caption { font-size: 0.82rem; color: var(--ink-3); margin-top: 0.9rem; }
+
+.finding { border-left: 3px solid var(--wrong); padding: 0.1rem 0 0.1rem 1.15rem; margin: 1.6rem 0; }
+.finding p { margin: 0 0 0.7rem; }
+.finding p:last-child { margin-bottom: 0; }
+pre { background: var(--panel); border: 1px solid var(--rule); padding: 1rem 1.15rem; overflow-x: auto;
+      font-family: var(--mono); font-size: 0.76rem; line-height: 1.7; margin: 1.2rem 0 0; }
+
+.cols { display: grid; gap: 1.4rem 2.5rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin-top: 1.6rem; }
+.cols h3 { font-size: 0.95rem; margin: 0 0 0.3rem; }
+.cols p { font-size: 0.9rem; color: var(--ink-2); margin: 0; max-width: none; }
+
+.name { background: var(--panel); border-top: 1px solid var(--rule-hard); border-bottom: 1px solid var(--rule-hard); }
+.name .wrap { padding-top: 3.25rem; padding-bottom: 3.25rem; }
+.name p { font-size: 1.05rem; max-width: 58ch; }
+
+footer { padding: 2.25rem 0 3.5rem; font-family: var(--mono); font-size: 0.72rem; color: var(--ink-3); }
+footer .wrap { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <b>Argleton</b>
+  <nav>
+    <a href="#results">Results</a>
+    <a href="#families">Families</a>
+    <a href="#method">Method</a>
+    <a href="https://github.com/argleton/argleton">Source</a>
+  </nav>
+</div></header>
+
+<div class="lead"><div class="wrap">
+  <h1>A correctness suite for geospatial systems</h1>
+  <p class="claim">Every probe has a right answer known by construction, and every trap has a wrong answer that looks fine.</p>
+
+  <div class="pair">
+    <div class="right">
+      <span class="label">The answer</span>
+      <span class="n">{{TRUTH}}</span>
+      <p>Mean elevation of a valid GeoTIFF, derived on paper from the fixture's own definition.</p>
+    </div>
+    <div class="wrong">
+      <span class="label">What one widely used library returns</span>
+      <span class="n">{{NAIVE}}</span>
+      <p>From the same file. No crash, no warning, no exception, nothing in the log.</p>
+    </div>
+  </div>
+
+  <p class="after">
+    <strong>Both are ordinary elevations.</strong> The file stores its bytes with TIFF's horizontal
+    predictor and the reader does not undo it, so the grid it hands back is a different surface —
+    one that still renders as terrain, whose hillshade still looks like hillshade and whose water
+    still flows downhill. Nothing anywhere says anything is wrong.
+  </p>
+  <p class="after">
+    Existing benchmarks for geospatial agents score trajectories: the right tools, in the right
+    order, producing a file. A run like this scores full marks on all three.
+  </p>
+</div></div>
+
+<section class="name"><div class="wrap">
+  <p class="kicker">The name</p>
+  <h2>Argleton was a village that was not there</h2>
+  <p>
+    For two years Google Maps showed it near Aughton, in Lancashire. It was an empty field. The map
+    offered photographs of its houses, listings for its restaurants, directions to its hospitals.
+  </p>
+  <p>
+    Well-formed data, valid against its schema, rendered with confidence, entirely false — and it
+    crashed nothing. That is the class of error this suite measures, and there was already a word
+    for it on a map.
+  </p>
+</div></section>
+
+<section id="results"><div class="wrap">
+  <p class="kicker">Run {{RUN}} · spec_commit {{SPEC_COMMIT}} · engine tier</p>
+  <h2>{{SYSTEMS}} systems, {{TRAPS}} traps, {{FAMILIES}} families</h2>
+  <table>
+    <thead><tr>
+      <th>System</th>
+      <th class="num">Silent error rate</th>
+      <th class="num">Completion rate</th>
+      <th class="num">Traps run</th>
+      <th class="num">N/A</th>
+    </tr></thead>
+    <tbody>
+{{RESULTS_ROWS}}
+    </tbody>
+  </table>
+  <p class="caption">
+    Read the second column with the first. Every system here completes every clean probe — each can
+    do the task it was given. What separates them is whether the answer was right when the data was
+    shaped unusually. <a href="https://github.com/argleton/argleton/tree/main/results">Full results →</a>
+  </p>
+
+  <div class="finding">
+    <p><strong>The finding that matters is about us.</strong> MapSmith scores 0, and its verification
+    had nothing to do with it. On the first trap it wrote a provenance manifest with seven checks,
+    and all seven passed:</p>
+    <pre>input_crs_present    'zones_path': EPSG:32632
+input_not_empty      'zones_path': 1 features
+crs_present          EPSG:32632
+crs_matches          expected EPSG:32632, got EPSG:32632
+geometry_valid       all valid
+geometry_not_empty   none empty
+feature_count_exact  expected 1, got 1</pre>
+    <p style="margin-top:1.1rem">
+      Not one of them looks at whether the number is right. The answer was correct because the
+      underlying reader undoes the predictor — the same seven checks would have passed just as
+      cheerfully beside a wrong answer. <strong>A provenance manifest records what was done; it does
+      not certify that it was right.</strong> Those are different claims, and measuring the second
+      is what this repository is for.
+    </p>
+  </div>
+</div></section>
+
+<section id="families"><div class="wrap">
+  <p class="kicker">Coverage</p>
+  <h2>{{FAMILIES}} families of twelve</h2>
+  <p>
+    Stated rather than implied, because a rate of 0 means a system did not fail silently
+    <em>on these probes</em> — not that it is correct, and not that it is safe.
+  </p>
+  <table>
+    <thead><tr>
+      <th>Family</th><th>The trap</th>
+      <th class="num">Answer</th><th class="num">Typical wrong answer</th>
+    </tr></thead>
+    <tbody>
+{{FAMILY_ROWS}}
+    </tbody>
+  </table>
+  <p class="caption">
+    Nine more are named, with their gaps kept under their original numbers, in
+    <a href="https://github.com/argleton/argleton/blob/main/docs/FAMILIES.md">FAMILIES.md</a>.
+    The fastest way to improve this suite is to bring a thirteenth.
+  </p>
+</div></section>
+
+<section id="method"><div class="wrap">
+  <p class="kicker">Method</p>
+  <h2>How a probe earns its place</h2>
+  <div class="cols">
+    <div>
+      <h3>The wrong answer must be plausible</h3>
+      <p>If the defect crashes or returns an absurd number, something already catches it and the probe
+      belongs in an ordinary test suite. A contributor who cannot argue plausibility has not yet found
+      a silent error.</p>
+    </div>
+    <div>
+      <h3>The truth is derived, not measured</h3>
+      <p>On paper, from the fixture's own definition. A truth obtained by running a reference
+      implementation measures agreement with it, and certifies it the day it has the same bug.</p>
+    </div>
+    <div>
+      <h3>The task has one correct answer</h3>
+      <p>This one caught us. A probe that admitted two defensible definitions of area scored a
+      <em>careful</em> system as a silent error. Any ambiguity in a task is a bug in the probe.</p>
+    </div>
+    <div>
+      <h3>Two numbers, never one</h3>
+      <p>Refusing a clean probe counts as failure. Without that, a system that refuses everything
+      scores perfectly. The result format requires both rates.</p>
+    </div>
+    <div>
+      <h3>Pre-registration you can diff</h3>
+      <p>Tolerances are set before any result exists, and every result names the commit it ran
+      against. Whether a rule moved after a number was seen is answered by git, not by us.</p>
+    </div>
+    <div>
+      <h3>Fixtures are built, not shipped</h3>
+      <p>Each probe regenerates its own, deterministically. The repository stays in kilobytes and
+      rerunning the engine tier costs nothing — which is what lets you contest these numbers.</p>
+    </div>
+  </div>
+  <p class="caption" style="margin-top:1.8rem">
+    <a href="https://github.com/argleton/argleton/blob/main/docs/METHOD.md">METHOD.md</a> ·
+    <a href="https://github.com/argleton/argleton/blob/main/docs/ADDING-A-TRAP.md">Adding a trap</a> ·
+    Apache-2.0, no CLA
+  </p>
+</div></section>
+
+<section id="who"><div class="wrap">
+  <p class="kicker">Who wrote this</p>
+  <h2>The authors of one of the systems it measures</h2>
+  <p>
+    Argleton was started by the authors of <a href="https://mapsmith.dev">MapSmith</a>. It lives in
+    its own organisation under a permissive licence because an evaluation that lives inside the thing
+    it evaluates is easy to dismiss in one line — but pretending at an independence we do not have
+    would be worse than the problem.
+  </p>
+  <p>
+    The defence is not the org chart. Every fixture is regenerable, every tolerance is in git
+    history, and the first published result is the one above, which says our own verification does
+    not catch any of this. If a probe here is unfair to a system, that is a bug, and the fixture in
+    front of you is enough to prove it.
+  </p>
+</div></section>
+
+<footer><div class="wrap">
+  <span>Apache-2.0</span>
+  <span>{{PROBES}} probes · built from {{COMMIT}}</span>
+  <nav>
+    <a href="https://github.com/argleton/argleton">GitHub</a>
+    <a href="https://github.com/argleton/argleton/issues">Issues</a>
+  </nav>
+</div></footer>
+
+</body>
+</html>

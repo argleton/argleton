@@ -6,3 +6,6 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+
+# The site is generated: `python site/build.py dist` rebuilds it from results/.
+site/generated/
