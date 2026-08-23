@@ -31,7 +31,7 @@ jobs:
       - run: argleton --adapter engine:rasterio  --out /tmp/rasterio.json
       - run: argleton --adapter engine:geopandas --out /tmp/geopandas.json
       - run: argleton --adapter engine:whitebox  --out /tmp/whitebox.json
-      - run: argleton --adapter engine:shapely_naive --out /tmp/shapely_naive.json
+      - run: argleton --adapter engine:naive      --out /tmp/naive.json
       # The careful adapters must stay at zero. The other two are expected to
       # fail their traps — one because of a defect in someone else's library,
       # one because it is the careless composition on purpose — so the build is
@@ -55,7 +55,12 @@ jobs:
         run: |
           python - <<'PY'
           import json, sys
-          r = json.load(open("/tmp/shapely_naive.json"))
-          print(r["silent_error_rate"])
-          sys.exit(0 if r["silent_error_rate"] == 1.0 else 1)
+          r = json.load(open("/tmp/naive.json"))
+          print(r["silent_error_rate"], r["completion_rate"])
+          # Not 1.0: the careless composition is correct on trap 001, because
+          # rasterio undoes the predictor for it. Pinning the exact rate is the
+          # point — a trap that stops catching its own naive adapter, or one
+          # that starts catching a case it should not, has changed what it
+          # measures, and that must be a decision rather than a surprise.
+          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.6667, 1.0) else 1)
           PY

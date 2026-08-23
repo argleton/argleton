@@ -1,0 +1,26 @@
+id         = "c003-raster-mean-nodata"
+population = "clean"
+family     = "nodata"
+title      = "Mean of a raster that declares nodata and contains none"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "raster_mean(dem.tif)"
+prompt = "What is the mean elevation of dem.tif, in metres?"
+
+[truth]
+kind      = "scalar"
+value     = 1000.0
+tolerance = 0.001
+derivation = """
+Every cell of the 100x100 grid holds 1000, so the mean is 1000. The header
+still declares nodata = -9999, exactly as the trap's does - the only difference
+between the two probes is whether any cell holds that value. A system that
+answers this one and not the trap has told us it does not honour the
+declaration; one that misses both has told us it cannot read the file, which
+is a different finding and should not be counted as the first."""
+
+[provenance]
+source   = "control for 003-nodata-in-statistics"
+found_by = "mapsmith"
+date     = "2026-08-23"

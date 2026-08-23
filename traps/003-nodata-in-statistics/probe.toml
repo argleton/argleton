@@ -1,0 +1,62 @@
+id         = "003-nodata-in-statistics"
+population = "trap"
+family     = "nodata"
+title      = "Declared nodata cells are counted as elevations"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "raster_mean(dem.tif)"
+prompt = "What is the mean elevation of dem.tif, in metres?"
+
+[truth]
+kind      = "scalar"
+value     = 1000.0
+tolerance = 0.001
+derivation = """
+The raster is 100x100. Every valid cell holds 1000, and 50 cells hold the
+declared nodata value, so the mean over the 9950 valid cells is 1000 exactly.
+The elevations are constant by construction: a fixture whose valid cells all
+hold one number makes both the right answer and the wrong one checkable on
+paper, which matters more here than looking like terrain."""
+
+[naive_failure]
+description = """
+The nodata value is read as data. The file declares `nodata = -9999` in its
+header, where every raster library looks, but nothing forces a reader to honour
+it: `ds.read(1)` returns the raw array and `ds.read(1, masked=True)` returns the
+masked one, and the difference is one keyword nobody notices missing."""
+observed_value = 945.005
+plausible      = true
+why_plausible  = """
+This is the dangerous size of error. 945 m is not merely a possible mean
+elevation, it is an unremarkable one, and it is 5.5% from the truth - far too
+small for anyone to question and far too large to ignore in a volume, a
+gradient or a flood level. A wrong answer of -0.99, which is what the same
+defect produces on a raster with more voids, would be caught by the first
+person to look at it. This one will not be.
+
+Nothing else signals the problem. The raster is valid, the CRS is declared, the
+nodata value is declared and correct, the geometry of the grid is intact, and
+the statistic returns without a warning. The only evidence is a number that
+looks fine."""
+derivation = """
+Closed form: (9950 * 1000 + 50 * -9999) / 10000 = 9450050 / 10000 = 945.005
+exactly. The bias scales with the void fraction, which is why it is usually
+small enough to survive review: at 0.5% voids it is a 5.5% error, and a DEM
+with 0.5% voids is an ordinary DEM."""
+
+[refusal]
+accept_if_mentions = ["nodata", "no-data", "no data", "-9999", "void", "fill value", "masked"]
+
+[provenance]
+source = """
+The most common silent error in raster analysis, and old enough to be folklore:
+SRTM and ASTER GDEM ship voids as -32768 and -9999 respectively, and every
+GIS mailing list has a thread about a statistic that came out wrong by a few
+per cent. It is in this suite because being well known has not made it
+detectable - nothing in a normal pipeline notices."""
+found_by = "mapsmith"
+date     = "2026-08-23"
+
+[provenance.engine_versions]
+rasterio = "read(1, masked=True) honours it; read(1) does not, and both are one line"
