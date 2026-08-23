@@ -1,0 +1,70 @@
+id         = "002-feet-as-metres"
+population = "trap"
+family     = "linear-units"
+title      = "Coordinates in US survey feet are used as if they were metres"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "planar_area_m2(parcel.gpkg)"
+prompt = """
+What is the area of the parcel in parcel.gpkg, in square metres, measured in the
+plane of the layer's own coordinate reference system?"""
+
+[truth]
+kind      = "scalar"
+value     = 92903.41
+tolerance = 0.5
+derivation = """
+The parcel is a square of side 1000 in the coordinates of EPSG:2229, whose
+linear unit is the US survey foot: 1200/3937 m exactly. The planar area is
+therefore 1e6 * (1200/3937)^2 = 92903.4116... square metres.
+
+WHY THE TASK PINS THE PLANE. "The area in square metres" has more than one
+defensible answer - planar in the source CRS, geodesic on the ellipsoid, or
+planar after reprojecting to some other CRS - and they differ by more than this
+tolerance. Reprojecting this parcel to its UTM zone and taking the area there
+gives 92853.33: fifty square metres away, because UTM is conformal and not
+equal-area. That is not a silent error, it is a different and correct answer to
+a different question. A probe that admitted both questions would fail a careful
+system for being careful, so the task names the one it is asking. This trap is
+about reading a linear unit, and nothing else.
+
+The tolerance is 0.5 m2, declared in advance, to cover exactly one legitimate
+disagreement: the US survey foot was deprecated on 2022-12-31 in favour of the
+international foot (0.3048 m exactly), and a system using that definition gets
+92903.04 - 0.37 m2 away. The naive answer is off by a factor of 10.76, so the
+tolerance is nowhere near it."""
+
+[naive_failure]
+description = """
+The coordinates are read as metres. Shapely, PostGIS, DuckDB spatial and most
+geometry libraries compute a planar area in whatever units the coordinates are
+in, and none of them can know the unit unless something reads the CRS. The
+answer comes back as 1000000."""
+observed_value = 1000000.0
+plausible      = true
+why_plausible  = """
+1000000 m2 is 100 hectares, an entirely ordinary parcel. The true answer, 9.29
+hectares, is also entirely ordinary. Neither number looks out of place in a
+report, on a map, or in a total; the two differ by the square of 3.28, which is
+a factor nothing in the pipeline has a reason to question. The geometry is
+valid, the CRS is declared and correct, the file is well formed - the only thing
+wrong is that a unit was assumed rather than read."""
+derivation = """
+Closed form: the planar area in the file's own units is 1000 * 1000 = 1e6, and
+calling those units metres yields exactly 1000000."""
+
+[refusal]
+accept_if_mentions = ["foot", "feet", "us survey", "linear unit", "unit of measure", "epsg:2229"]
+
+[provenance]
+source = """
+Systematic in US parcel and public-works data: state plane zones are published
+in feet, most geometry engines return planar area in the coordinates' own units,
+and the conversion is left to the caller. EPSG deprecated the US survey foot on
+2022-12-31, which added a second, smaller version of the same confusion."""
+found_by = "mapsmith"
+date     = "2026-08-23"
+
+[provenance.engine_versions]
+shapely = "planar area only, unit-unaware by design - correctness depends entirely on the caller"

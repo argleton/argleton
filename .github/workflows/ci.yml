@@ -28,13 +28,34 @@ jobs:
       # trap 001 until upstream fixes it, which is why the run is not gated on
       # the rate — a red build for a defect in someone else's library would
       # train us to ignore the build.
-      - run: argleton --adapter engine:rasterio --out /tmp/rasterio.json
-      - run: argleton --adapter engine:whitebox --out /tmp/whitebox.json
-      - name: rasterio must have no silent errors
+      - run: argleton --adapter engine:rasterio  --out /tmp/rasterio.json
+      - run: argleton --adapter engine:geopandas --out /tmp/geopandas.json
+      - run: argleton --adapter engine:whitebox  --out /tmp/whitebox.json
+      - run: argleton --adapter engine:shapely_naive --out /tmp/shapely_naive.json
+      # The careful adapters must stay at zero. The other two are expected to
+      # fail their traps — one because of a defect in someone else's library,
+      # one because it is the careless composition on purpose — so the build is
+      # not gated on them. A red build for a known upstream bug would train us
+      # to ignore the build, which costs more than the signal is worth.
+      - name: the careful adapters must have no silent errors
         run: |
           python - <<'PY'
           import json, sys
-          r = json.load(open("/tmp/rasterio.json"))
-          print(r["silent_error_rate"], r["completion_rate"])
-          sys.exit(0 if r["silent_error_rate"] == 0.0 and r["completion_rate"] == 1.0 else 1)
+          bad = []
+          for nome in ("rasterio", "geopandas"):
+              r = json.load(open(f"/tmp/{nome}.json"))
+              print(nome, r["silent_error_rate"], r["completion_rate"])
+              if r["silent_error_rate"] != 0.0 or r["completion_rate"] != 1.0:
+                  bad.append(nome)
+          sys.exit(1 if bad else 0)
+          PY
+      # And the ones that are supposed to fail must still fail: a trap that
+      # stops catching its own naive adapter has quietly stopped measuring.
+      - name: the naive adapter must still fall into its trap
+        run: |
+          python - <<'PY'
+          import json, sys
+          r = json.load(open("/tmp/shapely_naive.json"))
+          print(r["silent_error_rate"])
+          sys.exit(0 if r["silent_error_rate"] == 1.0 else 1)
           PY

@@ -1,0 +1,25 @@
+id         = "c002-projected-area"
+population = "clean"
+family     = "linear-units"
+title      = "Area of a square in a metric projected CRS"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "planar_area_m2(parcel.gpkg)"
+prompt = """
+What is the area of the parcel in parcel.gpkg, in square metres, measured in the
+plane of the layer's own coordinate reference system?"""
+
+[truth]
+kind      = "scalar"
+value     = 1000000.0
+tolerance = 0.01
+derivation = """
+A square of side 1000 in EPSG:32632, whose linear unit is the metre: the area is
+1000 * 1000 = 1000000 square metres. Nothing to convert, which is the point -
+the trap and its control differ only in the unit the file declares."""
+
+[provenance]
+source   = "control for 002-feet-as-metres"
+found_by = "mapsmith"
+date     = "2026-08-23"
