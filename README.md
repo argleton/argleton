@@ -73,6 +73,26 @@ rate means a system did not fail silently *on these probes*.
 | `linear-units` | 100 ha instead of 9.29 ha | both are ordinary parcels; they differ by 3.28² |
 | `nodata` | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore |
 
+## First results
+
+Engine tier, three families, `spec_commit` pinned — [the numbers and what they
+do not say](results/).
+
+| system | silent error rate | completion rate |
+|---|---|---|
+| MapSmith 0.2.2 | 0.00 | 1.00 |
+| rasterio 1.5.1 | 0.00 | 1.00 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 |
+| naive composition | 0.67 | 1.00 |
+
+**MapSmith scores 0.00 and its verification had nothing to do with it.** On trap
+001 it wrote a manifest with seven passing checks, and not one of them looks at
+whether the number is right; the answer was correct because rasterio undoes the
+predictor. A provenance manifest records what was done and does not certify that
+it was right — different claims, and MapSmith only makes the first. That is the
+gap this suite exists to measure, and the reason it is not in MapSmith's
+repository.
+
 ## The admission criterion
 
 A trap is admitted only if it declares `plausible = true` and argues for it in
