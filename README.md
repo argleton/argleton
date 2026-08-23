@@ -23,18 +23,27 @@ anything is wrong.
 
 ```
 $ argleton --adapter engine:rasterio
-ok   clean c001-raster-mean    correct        1093.0
-ok   trap  001-tiff-predictor  correct        1093.0
-silent_error_rate 0.0 over 1 traps  |  completion_rate 1.0 over 1 clean
+ok   clean c001-raster-mean          correct   1093.0
+ok   clean c003-raster-mean-nodata   correct   1000.0
+ok   trap  001-tiff-predictor        correct   1093.0
+ok   trap  003-nodata-in-statistics  correct   1000.0
+silent_error_rate 0.0 over 2 traps  |  completion_rate 1.0 over 2 clean
 
 $ argleton --adapter engine:whitebox
-ok   clean c001-raster-mean    correct        1093.0
-FAIL trap  001-tiff-predictor  silent_error   expected 1093.0 ± 0.001, got 36.09375
+ok   clean c001-raster-mean          correct        1093.0
+FAIL trap  001-tiff-predictor        silent_error   expected 1093.0 ± 0.001, got 36.09375
 silent_error_rate 1.0 over 1 traps  |  completion_rate 1.0 over 1 clean
 ```
 
 The two lines say different things and both matter: this engine can do the task
 (completion 1.0) *and* gets this file silently wrong (silent error 1.0).
+
+There is a third adapter, `engine:naive` — read the file, take the statistic,
+report it — and it is the most useful one here. It scores **0.667 / 1.0**: it
+answers every clean probe correctly, falls into two traps, and **passes the
+third**, because rasterio undoes the predictor on its behalf. Careless code is
+not uniformly wrong. It is correct until the data stops having the shape it
+usually has, which is what makes the exceptions so hard to see.
 
 ## Two numbers, never one
 
@@ -51,6 +60,18 @@ Publishing one without the other is not allowed by the result format itself:
 scores a perfect silent-error rate and is useless; a system that answers
 everything confidently scores a perfect completion rate and may be dangerous.
 Side by side, one glance tells you which you are looking at.
+
+## What is covered
+
+Three families of twelve, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+number from here can never be read as broader than it is. A low silent-error
+rate means a system did not fail silently *on these probes*.
+
+| family | the wrong answer | why it survives |
+|---|---|---|
+| `raster-encoding` | mean 36.09 instead of 1093.0 | the differenced grid still renders as terrain |
+| `linear-units` | 100 ha instead of 9.29 ha | both are ordinary parcels; they differ by 3.28² |
+| `nodata` | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore |
 
 ## The admission criterion
 
@@ -101,6 +122,11 @@ class Adapter:
 
 `unsupported` is not a failure. Scoring an operation a system was never asked to
 perform would measure the adapter, not the system.
+
+Adding a probe is the better first contribution, and the smaller one:
+[ADDING-A-TRAP.md](docs/ADDING-A-TRAP.md). Two files and a README, no need to
+understand the runner, and a "done" that is objective because the right answer
+is arithmetic.
 
 ## Who wrote this, and why that is stated here
 

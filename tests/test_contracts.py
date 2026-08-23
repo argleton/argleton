@@ -123,3 +123,29 @@ def test_refusing_everything_does_not_win():
 def test_an_outcome_cannot_be_two_things_at_once():
     with pytest.raises(ValueError, match="exactly one of"):
         Outcome(answer=1.0, refusal="but also this")
+
+
+def test_a_published_result_validates_against_its_own_schema(tmp_path):
+    """The result format carries a claim, so it has to be enforced.
+
+    `result.schema.json` requires both rates. A system that refuses everything
+    scores a perfect silent-error rate and is useless, so a report quoting one
+    number without the other is not a valid result — and a schema is the only
+    place that rule can live where someone else's tooling will see it.
+    """
+    jsonschema = pytest.importorskip("jsonschema")
+
+    from argleton.run import main
+
+    fuori = tmp_path / "result.json"
+    assert main(["--adapter", "engine:naive", "--root", str(ROOT), "--out", str(fuori)]) == 0
+    risultato = json.loads(fuori.read_text(encoding="utf-8"))
+    schema = json.loads((ROOT / "schema" / "result.schema.json").read_text(encoding="utf-8"))
+    jsonschema.validate(risultato, schema)
+
+    # The naive composition is not uniformly careless: it passes trap 001,
+    # because rasterio undoes the predictor for it. Pinning that is the point —
+    # a trap that stops catching it has changed what it measures.
+    assert risultato["completion_rate"] == 1.0
+    assert risultato["silent_error_rate"] > 0, "the naive adapter fell into no trap at all"
+    assert set(risultato["by_family"]) == {p.family for p in PROBES}
