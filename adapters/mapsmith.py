@@ -40,9 +40,8 @@ class Adapter:
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
         import rasterio
-        from shapely.geometry import box
-
         from mapsmith.engines import raster
+        from shapely.geometry import box
 
         sorgente = workdir / probe.arguments[0]
         with rasterio.open(sorgente) as ds:
