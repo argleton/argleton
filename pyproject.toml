@@ -23,8 +23,9 @@ dependencies = []                   # the runner itself is stdlib only
 # Fixtures are built, so building them needs a writer. Adapters need whatever
 # the system under test needs, and nothing else: someone measuring one engine
 # must not be made to install another.
-fixtures = ["numpy>=1.26", "rasterio>=1.3"]
+fixtures = ["numpy>=1.26", "rasterio>=1.3", "geopandas>=1.0", "shapely>=2.0", "pyogrio>=0.9"]
 whitebox = ["whitebox-workflows>=1.3"]
+geopandas = ["geopandas>=1.0", "shapely>=2.0", "pyogrio>=0.9", "pyproj>=3.6"]
 dev = ["pytest>=8", "jsonschema>=4.21"]
 
 [project.scripts]
