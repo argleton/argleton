@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use Argleton in your work, please cite it as below."
+title: "Argleton: a silent-error suite for geospatial systems"
+type: software
+authors:
+  - name: "The Argleton project"
+repository-code: "https://github.com/argleton/argleton"
+url: "https://argleton.org"
+license: Apache-2.0
+abstract: >-
+  Probes whose right answer is known by construction — derived on paper, never
+  measured from a reference implementation — and whose typical wrong answer
+  looks fine. Argleton measures the silent-error rate of geospatial systems
+  alongside their completion rate on defect-free twins, so that a score cannot
+  be gamed by refusing to answer.
