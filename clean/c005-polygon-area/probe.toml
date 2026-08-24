@@ -1,0 +1,26 @@
+id         = "c005-polygon-area"
+population = "clean"
+family     = "invalid-geometry"
+title      = "Area of a valid L-shaped parcel in a metric CRS"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "planar_area_m2(parcel.gpkg)"
+prompt = """
+What is the area of the parcel in parcel.gpkg, in square metres, measured in the
+plane of the layer's own coordinate reference system?"""
+
+[truth]
+kind      = "scalar"
+value     = 7600.0
+tolerance = 0.01
+derivation = """
+An L-shaped polygon in EPSG:32632 (metres), decomposable on paper into a
+100 x 40 rectangle plus a 60 x 60 square: 4000 + 3600 = 7600 square metres.
+The ring is valid - the trap and this control differ only in whether the ring
+crosses itself."""
+
+[provenance]
+source   = "control for 005-bowtie-area"
+found_by = "mapsmith"
+date     = "2026-08-24"

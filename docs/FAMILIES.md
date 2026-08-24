@@ -1,6 +1,6 @@
 # Families, and what is actually covered
 
-Twelve families are planned. **Four are implemented.** This page exists so that
+Twelve families are planned. **Five are implemented.** This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -16,6 +16,7 @@ cannot read as ten independent findings.
 | 3 | `linear-units` | [002](../traps/002-feet-as-metres/) + [c002](../clean/c002-projected-area/) | 100 ha instead of 9.29 ha | Both are ordinary parcels; they differ by 3.28², a factor nothing downstream questions |
 | 4 | `mismatched-crs` | [004](../traps/004-mismatched-crs-join/) + [c004](../clean/c004-points-in-polygon/) | 0 points in the zone instead of 12 | An empty spatial result is a finding, not an error — "no wells inside the zone" reads as good news, and nothing downstream questions an empty join |
 | 6 | `nodata` | [003](../traps/003-nodata-in-statistics/) + [c003](../clean/c003-raster-mean-nodata/) | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore in a volume or a flood level |
+| 7 | `invalid-geometry` | [005](../traps/005-bowtie-area/) + [c005](../clean/c005-polygon-area/) | 2400 m² instead of 5100 m² | The signed-shoelace artifact of a self-crossing ring: no exception, no warning, and both numbers are ordinary parcels |
 
 ## Planned
 
@@ -26,7 +27,6 @@ renumbered away.
 |---|---|---|
 | 2 | `geographic-crs` | A metric operation on a geographic CRS with no reprojection — degrees treated as a length |
 | 5 | `empty-result` | An intersection that is empty because of a defect, told apart from one that is legitimately empty |
-| 7 | `invalid-geometry` | Self-intersecting polygons whose area is computed anyway |
 | 8 | `mixed-geometry` | A layer holding more than one geometry type |
 | 9 | `antimeridian` | Extents that invert across the 180th meridian or at the poles |
 | 10 | `raster-affine` | Flipped axes or a non-standard affine transform |

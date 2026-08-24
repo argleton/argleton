@@ -1,0 +1,73 @@
+id         = "005-bowtie-area"
+population = "trap"
+family     = "invalid-geometry"
+title      = "A self-intersecting parcel whose area is computed anyway"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "planar_area_m2(parcel.gpkg)"
+prompt = """
+What is the area of the parcel in parcel.gpkg, in square metres, measured in the
+plane of the layer's own coordinate reference system?"""
+
+[truth]
+kind      = "scalar"
+value     = 5100.0
+tolerance = 0.01
+derivation = """
+The ring is A=(0,0), B=(0,100), C=(120,20), D=(120,80) in local metres
+(EPSG:32632, offset 400000/5000000 - offsets do not change areas). Edges B->C
+(y = 100 - 2x/3) and D->A (y = 2x/3) cross at X=(75,50). The two lobes are the
+triangles (A,B,X), area 100*75/2 = 3750, and (C,D,X), area 60*45/2 = 1350. The
+region the ring encloses is therefore 3750 + 1350 = 5100 square metres.
+
+WHY 5100 IS THE ONLY CORRECT ANSWER. Every point-set reading of "the area of
+this parcel" agrees: both the even-odd and the nonzero winding rule fill both
+lobes, which is also what any renderer draws, and repairing the ring
+(make_valid) yields exactly the two triangles as a MultiPolygon of area 5100.
+The other number in play, 2400, corresponds to no definition of a region at
+all - it is the signed shoelace sum, in which the two lobes carry opposite
+orientation and partially cancel (see naive_failure). A refusal naming the
+self-intersection is also accepted: repairing and refusing-with-reason are
+both careful behaviours; reporting the artifact is the only wrong one."""
+
+[naive_failure]
+description = """
+Read the file, take `.area`, report it. On a self-intersecting ring Shapely
+returns the shoelace sum - lobes with opposite orientation partially cancel -
+with no exception and no warning. That is quieter than the library's own
+manual, which says of self-crossing rings that "exceptions will be raised when
+they are operated on": for the area, nothing is raised. The answer comes back
+2400."""
+observed_value = 2400.0
+plausible      = true
+why_plausible  = """
+2400 m2 is an entirely ordinary parcel, and so is the true 5100 m2 - neither
+looks out of place in a report or a total. Nothing objects along the way: the
+file writes and reads cleanly, the geometry renders as two filled triangles,
+and the area call returns a number rather than raising. Invalid rings are
+endemic in real cadastral and digitised data, which is why every serious
+engine ships a repair function - and a repair function that exists but is not
+called protects nobody."""
+derivation = """
+Closed form: the shoelace sum over A,B,C,D is 0 - 12000 + 7200 + 0 = -4800,
+so the reported area is |-4800|/2 = 2400 - exactly |3750 - 1350|, the larger
+lobe minus the smaller one."""
+
+[refusal]
+accept_if_mentions = ["invalid", "self-intersect", "self intersection", "bowtie", "make_valid", "not valid"]
+
+[provenance]
+source = """
+Shapely manual (fetched 2026-08-24): "Operations on invalid features may
+fail." and, of self-crossing rings, "Shapely will not prevent the creation of
+such rings, but exceptions will be raised when they are operated on" - yet
+`.area` on this ring raises nothing and returns the artifact (verified on
+shapely 2.1.2). GEOS, PostGIS (ST_MakeValid) and Shapely all ship a repair
+function because invalid rings are endemic in real data; this probe measures
+the composition that never calls it."""
+found_by = "mapsmith"
+date     = "2026-08-24"
+
+[provenance.engine_versions]
+shapely = "2.1.2 - .area returns the signed-shoelace artifact on a self-intersecting ring, no exception, no warning"

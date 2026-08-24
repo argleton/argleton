@@ -39,7 +39,20 @@ class Adapter:
         # conformal, not equal-area, and this parcel comes out 50 m2 lighter
         # there. The conversion factor is exact and answers the question asked.
         factor = frame.crs.axis_info[0].unit_conversion_factor
-        return Outcome(answer=float(frame.area.sum() * factor**2))
+        geoms = frame.geometry
+        warns = []
+        if not geoms.is_valid.all():
+            # On a self-intersecting ring, .area returns the signed-shoelace
+            # artifact with no exception and no warning — a number that matches
+            # no definition of the region. Repair first, and say so: measuring
+            # after a silent repair would be trading one silence for another.
+            from shapely.validation import make_valid
+
+            geoms = geoms.apply(make_valid)
+            warns.append(
+                "invalid geometry (self-intersection): repaired with make_valid before measuring"
+            )
+        return Outcome(answer=float(geoms.area.sum() * factor**2), warnings=warns)
 
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
