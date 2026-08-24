@@ -123,7 +123,41 @@ earlier experiment in which the interesting-looking effect was inside the noise.
   `docs/FAMILIES.md` with their current coverage. A family with one probe is one
   probe, and the per-family breakdown in every result says so.
 
-## 10. Fairness
+## 10. Related work
+
+August 2026 produced three independent works that make closely related moves.
+The similarity is worth stating here before a reader states it for us.
+
+- **Canary Tools** (Anand & Chattaraj,
+  [arXiv:2608.04719](https://arxiv.org/abs/2608.04719)) plants diagnostic
+  probe tools inside an agent's MCP tool set, each engineered to expose one
+  tool-selection weakness, with a six-type taxonomy of traps. The same move —
+  plant something false but plausible, watch who notices — applied one layer
+  up: it measures which tool gets chosen, not whether the number that comes
+  back is right.
+- **Outcome Monitors** (Panthi & Abdelfattah,
+  [arXiv:2608.19303](https://arxiv.org/abs/2608.19303)) validates tool results
+  against outcome contracts, aimed at exactly the failure class of §1: a
+  result that arrives in the expected format and is consumed as fact. It is a
+  runtime defence; this suite is an offline measurement against derived truth.
+  The two are complements — a monitor is what you deploy, a suite is how you
+  find out whether you needed one.
+- **GISAgentBench** (Pothuri, Jiang, Xu & Yang,
+  [arXiv:2608.01645](https://arxiv.org/abs/2608.01645)) scores agents on 349
+  practitioner-sourced GIS tasks against exact ground-truth output files, with
+  "strict, deterministic, tolerance-aware output matching beyond LLM judging".
+  The closest neighbour in the domain: it measures how often real tasks are
+  completed correctly. It does not plant defects, so a wrong-but-plausible
+  answer lowers a completion rate without ever being identified as the silent
+  kind.
+
+None of the three combines planted geospatial defects with truth derived on
+paper (§6) and silent-versus-loud as the primary distinction (§1). That
+combination is what this suite adds. Three groups converging on adjacent
+designs in one month is evidence that the failure class is real, and we cite
+them as support, not competition.
+
+## 11. Fairness
 
 If a probe is unfair to a system — the task is ambiguous, the tolerance is
 wrong, the "defect" is defensible behaviour — that is a bug in the probe, and
