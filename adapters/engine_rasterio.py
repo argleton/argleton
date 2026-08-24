@@ -18,17 +18,17 @@ class Adapter:
     name = "rasterio"
 
     def run(self, probe: Probe, workdir: Path) -> Outcome:
-        operazione = getattr(self, f"op_{probe.operation}", None)
-        if operazione is None:
+        operation = getattr(self, f"op_{probe.operation}", None)
+        if operation is None:
             # Not a failure: the system was never asked. Scoring an unimplemented
             # operation as wrong would measure the adapter, not the engine.
             return Outcome(unsupported=True)
-        return operazione(probe, workdir)
+        return operation(probe, workdir)
 
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio
 
         with rasterio.open(workdir / probe.arguments[0]) as ds:
-            banda = ds.read(1, masked=True)
-        return Outcome(answer=float(np.ma.mean(banda)))
+            band = ds.read(1, masked=True)
+        return Outcome(answer=float(np.ma.mean(band)))

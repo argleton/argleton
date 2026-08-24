@@ -41,15 +41,15 @@ ORDER = ["MapSmith", "rasterio", "GeoPandas", "whitebox", "naive"]
 
 def latest_run() -> tuple[str, list[dict]]:
     """The most recent results directory, and everything in it."""
-    corse = sorted(p for p in RESULTS.iterdir() if p.is_dir())
-    if not corse:
+    runs = sorted(p for p in RESULTS.iterdir() if p.is_dir())
+    if not runs:
         raise RuntimeError("no results yet — run the suite before building the page")
-    ultima = corse[-1]
-    dati = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(ultima.glob("*.json"))]
-    dati.sort(key=lambda d: next(
+    latest = runs[-1]
+    data = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(latest.glob("*.json"))]
+    data.sort(key=lambda d: next(
         (i for i, k in enumerate(ORDER) if d["system"].startswith(k)), len(ORDER)
     ))
-    return ultima.name, dati
+    return latest.name, data
 
 
 def probes() -> list[dict]:
@@ -68,44 +68,44 @@ def probes() -> list[dict]:
     ]
 
 
-def _numero(valore) -> str:
-    if valore is None:
+def _number(value) -> str:
+    if value is None:
         return "—"
-    testo = f"{valore:.4f}".rstrip("0").rstrip(".")
-    return testo if testo else "0"
+    text = f"{value:.4f}".rstrip("0").rstrip(".")
+    return text if text else "0"
 
 
-def tabella_risultati(dati: list[dict]) -> str:
-    righe = []
-    for d in dati:
-        nostro = d["system"].startswith("MapSmith")
+def results_table(data: list[dict]) -> str:
+    rows = []
+    for d in data:
+        ours = d["system"].startswith("MapSmith")
         silent = d["silent_error_rate"]
-        classe = "bad" if silent and silent > 0 else "good"
-        righe.append(
-            f'<tr{" class=ours" if nostro else ""}>'
+        cls = "bad" if silent and silent > 0 else "good"
+        rows.append(
+            f'<tr{" class=ours" if ours else ""}>'
             f'<td class="sys">{html.escape(d["system"])}'
-            f'{" <span class=tag>ours</span>" if nostro else ""}</td>'
-            f'<td class="num {classe}">{_numero(silent)}</td>'
-            f'<td class="num">{_numero(d["completion_rate"])}</td>'
+            f'{" <span class=tag>ours</span>" if ours else ""}</td>'
+            f'<td class="num {cls}">{_number(silent)}</td>'
+            f'<td class="num">{_number(d["completion_rate"])}</td>'
             f'<td class="num dim">{d["traps_run"]}</td>'
             f'<td class="num dim">{d["unsupported"]}</td></tr>'
         )
-    return "\n".join(righe)
+    return "\n".join(rows)
 
 
-def tabella_famiglie(elenco: list[dict]) -> str:
-    righe = []
-    for p in sorted(elenco, key=lambda p: p["id"]):
+def families_table(probe_list: list[dict]) -> str:
+    rows = []
+    for p in sorted(probe_list, key=lambda p: p["id"]):
         if p["population"] != "trap":
             continue
-        righe.append(
+        rows.append(
             "<tr>"
             f'<td class="mono">{html.escape(p["family"])}</td>'
             f'<td>{html.escape(p["title"])}</td>'
             f'<td class="num good">{p["truth"]}</td>'
             f'<td class="num bad">{p["naive"]}</td></tr>'
         )
-    return "\n".join(righe)
+    return "\n".join(rows)
 
 
 def share_card(destination: Path, truth, naive) -> None:
@@ -118,82 +118,82 @@ def share_card(destination: Path, truth, naive) -> None:
     """
     from PIL import Image, ImageDraw, ImageFont
 
-    percorso = next((f for f in FONTS if Path(f).exists()), None)
-    if percorso is None:
+    path = next((f for f in FONTS if Path(f).exists()), None)
+    if path is None:
         raise RuntimeError(f"no usable font found; looked for {FONTS}")
 
-    def font(dimensione: int):
-        return ImageFont.truetype(percorso, dimensione)
+    def font(size: int):
+        return ImageFont.truetype(path, size)
 
-    inchiostro, sfondo = (0xE6, 0xEA, 0xF0), (0x0C, 0x0E, 0x12)
-    tenue, giusto, sbagliato = (0x7D, 0x88, 0x95), (0x35, 0xC6, 0x9B), (0xF0, 0x65, 0x5A)
+    ink, background = (0xE6, 0xEA, 0xF0), (0x0C, 0x0E, 0x12)
+    muted, good, bad = (0x7D, 0x88, 0x95), (0x35, 0xC6, 0x9B), (0xF0, 0x65, 0x5A)
 
-    tela = Image.new("RGB", CARD, sfondo)
-    disegno = ImageDraw.Draw(tela)
-    disegno.text((64, 54), "ARGLETON", font=font(28), fill=tenue)
-    disegno.text((64, 96), "A correctness suite for geospatial systems",
-                 font=font(34), fill=inchiostro)
-    disegno.line([(64, 168), (CARD[0] - 64, 168)], fill=(0x24, 0x2A, 0x33), width=1)
+    canvas = Image.new("RGB", CARD, background)
+    draw = ImageDraw.Draw(canvas)
+    draw.text((64, 54), "ARGLETON", font=font(28), fill=muted)
+    draw.text((64, 96), "A correctness suite for geospatial systems",
+                 font=font(34), fill=ink)
+    draw.line([(64, 168), (CARD[0] - 64, 168)], fill=(0x24, 0x2A, 0x33), width=1)
 
-    for x, valore, colore, etichetta in (
-        (64, truth, giusto, "THE ANSWER"),
-        (620, naive, sbagliato, "WHAT ONE LIBRARY RETURNS"),
+    for x, value, color, label in (
+        (64, truth, good, "THE ANSWER"),
+        (620, naive, bad, "WHAT ONE LIBRARY RETURNS"),
     ):
-        disegno.text((x, 214), etichetta, font=font(22), fill=tenue)
-        disegno.text((x, 252), str(valore), font=font(104), fill=colore)
+        draw.text((x, 214), label, font=font(22), fill=muted)
+        draw.text((x, 252), str(value), font=font(104), fill=color)
 
-    disegno.text((64, 408), "From the same file. No crash, no warning,",
-                 font=font(32), fill=inchiostro)
-    disegno.text((64, 452), "nothing in the log.", font=font(32), fill=inchiostro)
-    disegno.text((64, 528), "Both are ordinary elevations.", font=font(30), fill=tenue)
-    disegno.text((64, 566), CANONICAL, font=font(26), fill=sbagliato)
-    tela.save(destination, format="PNG", optimize=True)
+    draw.text((64, 408), "From the same file. No crash, no warning,",
+                 font=font(32), fill=ink)
+    draw.text((64, 452), "nothing in the log.", font=font(32), fill=ink)
+    draw.text((64, 528), "Both are ordinary elevations.", font=font(30), fill=muted)
+    draw.text((64, 566), CANONICAL, font=font(26), fill=bad)
+    canvas.save(destination, format="PNG", optimize=True)
 
 
-def _git(*argomenti: str) -> str:
+def _git(*args: str) -> str:
     return subprocess.run(
-        ["git", "-C", str(ROOT), *argomenti],
+        ["git", "-C", str(ROOT), *args],
         capture_output=True, text=True, check=False,
     ).stdout.strip()
 
 
 def main(destination: Path) -> int:
     destination.mkdir(parents=True, exist_ok=True)
-    corsa, dati = latest_run()
-    elenco = probes()
-    trappole = [p for p in elenco if p["population"] == "trap"]
-    zero = next(p for p in trappole if p["id"].startswith("001"))
+    run_id, data = latest_run()
+    probe_list = probes()
+    traps = [p for p in probe_list if p["population"] == "trap"]
+    zero = next(p for p in traps if p["id"].startswith("001"))
 
-    sostituzioni = {
-        "{{RESULTS_ROWS}}": tabella_risultati(dati),
-        "{{FAMILY_ROWS}}": tabella_famiglie(elenco),
-        "{{RUN}}": corsa,
-        "{{SPEC_COMMIT}}": dati[0]["spec_commit"],
+    replacements = {
+        "{{RESULTS_ROWS}}": results_table(data),
+        "{{FAMILY_ROWS}}": families_table(probe_list),
+        "{{RUN}}": run_id,
+        "{{SPEC_COMMIT}}": data[0]["spec_commit"],
         "{{TRUTH}}": str(zero["truth"]),
         "{{NAIVE}}": str(zero["naive"]),
-        "{{TRAPS}}": str(len(trappole)),
-        "{{FAMILIES}}": str(len({p["family"] for p in trappole})),
-        "{{PROBES}}": str(len(elenco)),
-        "{{SYSTEMS}}": str(len(dati)),
+        "{{TRAPS}}": str(len(traps)),
+        "{{FAMILIES}}": str(len({p["family"] for p in traps})),
+        "{{PROBES}}": str(len(probe_list)),
+        "{{SYSTEMS}}": str(len(data)),
         "{{COMMIT}}": _git("rev-parse", "--short", "HEAD") or "unknown",
         "{{CANONICAL}}": CANONICAL,
     }
     share_card(destination / "card.png", zero["truth"], zero["naive"])
 
-    pagina = (Path(__file__).parent / "index.template.html").read_text(encoding="utf-8")
-    for segnaposto, valore in sostituzioni.items():
-        pagina = pagina.replace(segnaposto, valore)
-    if "{{" in pagina:
-        raise RuntimeError(f"unreplaced placeholder: {pagina[pagina.index('{{'):][:50]}")
+    page = (Path(__file__).parent / "index.template.html").read_text(encoding="utf-8")
+    for placeholder, value in replacements.items():
+        page = page.replace(placeholder, value)
+    if "{{" in page:
+        raise RuntimeError(f"unreplaced placeholder: {page[page.index('{{'):][:50]}")
 
-    (destination / "index.html").write_text(pagina, encoding="utf-8")
+    (destination / "index.html").write_text(page, encoding="utf-8")
     (destination / ".nojekyll").write_text("", encoding="utf-8")
     (destination / "CNAME").write_text(CANONICAL + "\n", encoding="utf-8")
     print(
         f"index.html {(destination / 'index.html').stat().st_size // 1024} KB | "
         f"card.png {(destination / 'card.png').stat().st_size // 1024} KB | "
-        f"{len(dati)} systems, {len(trappole)} traps, "
-        f"{len({p['family'] for p in trappole})} families | run {corsa}"
+        f"{len(data)} systems, {len(traps)} traps, "
+        f"{len({p['family'] for p in traps})} families | run {run_id}"
     )
     return 0
 

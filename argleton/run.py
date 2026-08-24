@@ -35,28 +35,28 @@ def build_fixtures(probe: Probe, workdir: Path) -> None:
     builder = probe.directory / "build.py"
     if not builder.exists():
         return
-    esito = subprocess.run(
+    proc = subprocess.run(
         [sys.executable, str(builder), str(workdir)],
         capture_output=True, text=True, encoding="utf-8", errors="replace",
         timeout=300, check=False,
     )
-    if esito.returncode != 0:
-        raise RuntimeError(f"{probe.id}: build.py failed\n{esito.stdout}\n{esito.stderr}")
+    if proc.returncode != 0:
+        raise RuntimeError(f"{probe.id}: build.py failed\n{proc.stdout}\n{proc.stderr}")
 
 
-def load_adapter(nome: str):
+def load_adapter(name: str):
     """`engine:rasterio` → adapters.engine_rasterio; `x.y:Z` → an importable object."""
-    if nome.startswith("engine:"):
-        modulo = importlib.import_module(f"adapters.engine_{nome.split(':', 1)[1]}")
-        return modulo.Adapter()
-    modulo, _, attributo = nome.partition(":")
-    caricato = importlib.import_module(modulo)
-    return getattr(caricato, attributo or "Adapter")()
+    if name.startswith("engine:"):
+        module = importlib.import_module(f"adapters.engine_{name.split(':', 1)[1]}")
+        return module.Adapter()
+    module, _, attr = name.partition(":")
+    loaded = importlib.import_module(module)
+    return getattr(loaded, attr or "Adapter")()
 
 
 def run_probe(adapter, probe: Probe, keep: Path | None = None) -> tuple[Outcome, Verdict]:
-    with tempfile.TemporaryDirectory(prefix=f"argleton-{probe.id}-") as temporanea:
-        workdir = Path(keep / probe.id) if keep else Path(temporanea)
+    with tempfile.TemporaryDirectory(prefix=f"argleton-{probe.id}-") as tmp:
+        workdir = Path(keep / probe.id) if keep else Path(tmp)
         workdir.mkdir(parents=True, exist_ok=True)
         try:
             build_fixtures(probe, workdir)
@@ -76,52 +76,52 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, help="write the result JSON here")
     parser.add_argument("--keep", type=Path, help="keep the built fixtures in this directory")
     parser.add_argument("--root", type=Path, default=ROOT)
-    argomenti = parser.parse_args(argv)
-    for flusso in (sys.stdout, sys.stderr):
-        if hasattr(flusso, "reconfigure"):
+    args = parser.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
             # Probe text is UTF-8 and consoles are not, on the platform where
             # this was written. A mangled tolerance sign in a published run is
             # a small thing that makes a careful reader distrust the rest.
-            flusso.reconfigure(encoding="utf-8", errors="replace")
+            stream.reconfigure(encoding="utf-8", errors="replace")
 
-    sys.path.insert(0, str(argomenti.root))
-    probes = discover(argomenti.root)
-    if argomenti.population:
-        probes = [p for p in probes if p.population == argomenti.population]
-    if argomenti.only:
-        probes = [p for p in probes if p.id in set(argomenti.only)]
+    sys.path.insert(0, str(args.root))
+    probes = discover(args.root)
+    if args.population:
+        probes = [p for p in probes if p.population == args.population]
+    if args.only:
+        probes = [p for p in probes if p.id in set(args.only)]
     if not probes:
         print("no probes matched", file=sys.stderr)
         return 2
 
-    adapter = load_adapter(argomenti.adapter)
-    verdetti, dettagli = [], []
+    adapter = load_adapter(args.adapter)
+    verdicts, details = [], []
     for probe in probes:
-        _outcome, verdetto = run_probe(adapter, probe, argomenti.keep)
-        verdetti.append(verdetto)
-        dettagli.append(asdict(verdetto))
-        segno = {True: "ok  ", False: "FAIL", None: "skip"}[verdetto.success]
-        print(f"{segno} {probe.population:5} {probe.id:28} "
-              f"{verdetto.verdict:22} {verdetto.detail[:70]}")
+        _outcome, verdict = run_probe(adapter, probe, args.keep)
+        verdicts.append(verdict)
+        details.append(asdict(verdict))
+        mark = {True: "ok  ", False: "FAIL", None: "skip"}[verdict.success]
+        print(f"{mark} {probe.population:5} {probe.id:28} "
+              f"{verdict.verdict:22} {verdict.detail[:70]}")
 
-    riassunto = summarise(verdetti)
-    risultato = {
-        "system": argomenti.system or getattr(adapter, "name", argomenti.adapter),
-        "adapter": argomenti.adapter,
-        "spec_commit": spec_commit(argomenti.root),
+    summary = summarise(verdicts)
+    result = {
+        "system": args.system or getattr(adapter, "name", args.adapter),
+        "adapter": args.adapter,
+        "spec_commit": spec_commit(args.root),
         "date": datetime.now(UTC).strftime("%Y-%m-%d"),
-        **riassunto,
-        "per_probe": dettagli,
+        **summary,
+        "per_probe": details,
     }
     print(
-        f"\nsilent_error_rate {riassunto['silent_error_rate']} "
-        f"over {riassunto['traps_run']} traps  |  "
-        f"completion_rate {riassunto['completion_rate']} over {riassunto['clean_run']} clean"
+        f"\nsilent_error_rate {summary['silent_error_rate']} "
+        f"over {summary['traps_run']} traps  |  "
+        f"completion_rate {summary['completion_rate']} over {summary['clean_run']} clean"
     )
-    if argomenti.out:
-        argomenti.out.parent.mkdir(parents=True, exist_ok=True)
-        argomenti.out.write_text(json.dumps(risultato, indent=2) + "\n", encoding="utf-8")
-        print(f"written {argomenti.out}")
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        print(f"written {args.out}")
 
     # Exit 0 even with silent errors: finding them is the job, not the alarm.
     # A non-zero exit is for the runner failing to do its own job.
@@ -135,16 +135,16 @@ def spec_commit(root: Path) -> str:
     the commit it ran against, so anyone wondering whether we widened a
     tolerance after seeing a number reads a diff rather than our word for it.
     """
-    esito = subprocess.run(
+    proc = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "--short", "HEAD"],
         capture_output=True, text=True, check=False,
     )
-    sporco = subprocess.run(
+    dirty = subprocess.run(
         ["git", "-C", str(root), "status", "--porcelain"],
         capture_output=True, text=True, check=False,
     ).stdout.strip()
-    commit = esito.stdout.strip() or "unknown"
-    return f"{commit}-dirty" if sporco else commit
+    commit = proc.stdout.strip() or "unknown"
+    return f"{commit}-dirty" if dirty else commit
 
 
 if __name__ == "__main__":

@@ -38,20 +38,20 @@ jobs:
         run: |
           python - <<'PY'
           import json, pathlib, sys
-          pagina = pathlib.Path("dist/index.html").read_text(encoding="utf-8")
-          if "{{" in pagina:
-              sys.exit(f"unreplaced placeholder: {pagina[pagina.index('{{'):][:60]}")
-          corsa = sorted(p for p in pathlib.Path("results").iterdir() if p.is_dir())[-1]
-          for f in corsa.glob("*.json"):
+          page = pathlib.Path("dist/index.html").read_text(encoding="utf-8")
+          if "{{" in page:
+              sys.exit(f"unreplaced placeholder: {page[page.index('{{'):][:60]}")
+          run_id = sorted(p for p in pathlib.Path("results").iterdir() if p.is_dir())[-1]
+          for f in run_id.glob("*.json"):
               d = json.load(f.open(encoding="utf-8"))
-              if d["system"] not in pagina:
+              if d["system"] not in page:
                   sys.exit(f"{d['system']} is in the results and not on the page")
-          for atteso in ("card.png", "summary_large_image"):
-              if atteso not in pagina:
-                  sys.exit(f"the page lost {atteso!r} - it would share without an image")
+          for expected in ("card.png", "summary_large_image"):
+              if expected not in page:
+                  sys.exit(f"the page lost {expected!r} - it would share without an image")
           if not pathlib.Path("dist/card.png").exists():
               sys.exit("no share card was rendered")
-          print(f"{len(pagina)} bytes, every measured system present")
+          print(f"{len(page)} bytes, every measured system present")
           PY
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3.0.1
         with:

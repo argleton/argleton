@@ -17,17 +17,17 @@ class Adapter:
     name = "whitebox-workflows"
 
     def run(self, probe: Probe, workdir: Path) -> Outcome:
-        operazione = getattr(self, f"op_{probe.operation}", None)
-        if operazione is None:
+        operation = getattr(self, f"op_{probe.operation}", None)
+        if operation is None:
             return Outcome(unsupported=True)
-        return operazione(probe, workdir)
+        return operation(probe, workdir)
 
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import whitebox_workflows as wbw
 
-        ambiente = wbw.WbEnvironment()
-        ambiente.verbose = False
-        raster = ambiente.read_raster(str(workdir / probe.arguments[0]))
+        env = wbw.WbEnvironment()
+        env.verbose = False
+        raster = env.read_raster(str(workdir / probe.arguments[0]))
         # The library's own mean, not one this adapter computes cell by cell.
         # An adapter that reimplements the operation measures the adapter; the
         # question is what the engine answers when someone asks it normally.

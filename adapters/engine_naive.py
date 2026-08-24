@@ -23,10 +23,10 @@ class Adapter:
     name = "naive-composition"
 
     def run(self, probe: Probe, workdir: Path) -> Outcome:
-        operazione = getattr(self, f"op_{probe.operation}", None)
-        if operazione is None:
+        operation = getattr(self, f"op_{probe.operation}", None)
+        if operation is None:
             return Outcome(unsupported=True)
-        return operazione(probe, workdir)
+        return operation(probe, workdir)
 
     def op_planar_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd

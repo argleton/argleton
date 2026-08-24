@@ -33,8 +33,8 @@ def test_probe_matches_the_published_schema(probe: Probe):
     import tomllib
 
     schema = json.loads((ROOT / "schema" / "probe.schema.json").read_text(encoding="utf-8"))
-    dati = tomllib.loads((probe.directory / "probe.toml").read_text(encoding="utf-8"))
-    jsonschema.validate(dati, schema)
+    data = tomllib.loads((probe.directory / "probe.toml").read_text(encoding="utf-8"))
+    jsonschema.validate(data, schema)
 
 
 @pytest.mark.parametrize("probe", PROBES, ids=lambda p: p.id)
@@ -46,16 +46,18 @@ def test_the_fixtures_are_deterministic(probe: Probe, tmp_path):
     builder = probe.directory / "build.py"
     if not builder.exists():
         pytest.skip("no fixtures")
-    impronte = []
-    for giro in ("a", "b"):
-        fuori = tmp_path / giro
-        subprocess.run([sys.executable, str(builder), str(fuori)], check=True, timeout=300)
-        impronte.append({
-            f.name: f.read_bytes() for f in sorted(fuori.iterdir()) if f.is_file()
+    fingerprints = []
+    for attempt in ("a", "b"):
+        out_path = tmp_path / attempt
+        subprocess.run([sys.executable, str(builder), str(out_path)], check=True, timeout=300)
+        fingerprints.append({
+            f.name: f.read_bytes() for f in sorted(out_path.iterdir()) if f.is_file()
         })
-    assert impronte[0].keys() == impronte[1].keys()
-    for nome in impronte[0]:
-        assert impronte[0][nome] == impronte[1][nome], f"{probe.id}: {nome} differs between builds"
+    assert fingerprints[0].keys() == fingerprints[1].keys()
+    for name in fingerprints[0]:
+        assert fingerprints[0][name] == fingerprints[1][name], (
+            f"{probe.id}: {name} differs between builds"
+        )
 
 
 @pytest.mark.parametrize("probe", [p for p in PROBES if p.population == "trap"], ids=lambda p: p.id)
@@ -74,9 +76,9 @@ def test_a_trap_is_not_trivially_passed(probe: Probe):
 def test_every_family_has_a_clean_twin(probe: Probe):
     """A silent-error rate on a family whose task the system cannot perform at
     all measures reach, not silence."""
-    famiglie_pulite = {p.family for p in PROBES if p.population == "clean"}
+    clean_families = {p.family for p in PROBES if p.population == "clean"}
     if probe.population == "trap":
-        assert probe.family in famiglie_pulite, (
+        assert probe.family in clean_families, (
             f"family '{probe.family}' has traps but no clean control"
         )
 
@@ -114,10 +116,10 @@ def test_refusing_everything_does_not_win():
 
     A system that refuses every probe gets a perfect silent-error rate. The
     completion rate is what stops that from looking like a good result."""
-    verdetti = [judge(p, Outcome(refusal="I am not sure about this file")) for p in PROBES]
-    riassunto = summarise(verdetti)
-    assert riassunto["silent_error_rate"] == 0.0
-    assert riassunto["completion_rate"] == 0.0
+    verdicts = [judge(p, Outcome(refusal="I am not sure about this file")) for p in PROBES]
+    summary = summarise(verdicts)
+    assert summary["silent_error_rate"] == 0.0
+    assert summary["completion_rate"] == 0.0
 
 
 def test_an_outcome_cannot_be_two_things_at_once():
@@ -137,15 +139,15 @@ def test_a_published_result_validates_against_its_own_schema(tmp_path):
 
     from argleton.run import main
 
-    fuori = tmp_path / "result.json"
-    assert main(["--adapter", "engine:naive", "--root", str(ROOT), "--out", str(fuori)]) == 0
-    risultato = json.loads(fuori.read_text(encoding="utf-8"))
+    out_path = tmp_path / "result.json"
+    assert main(["--adapter", "engine:naive", "--root", str(ROOT), "--out", str(out_path)]) == 0
+    result = json.loads(out_path.read_text(encoding="utf-8"))
     schema = json.loads((ROOT / "schema" / "result.schema.json").read_text(encoding="utf-8"))
-    jsonschema.validate(risultato, schema)
+    jsonschema.validate(result, schema)
 
     # The naive composition is not uniformly careless: it passes trap 001,
     # because rasterio undoes the predictor for it. Pinning that is the point —
     # a trap that stops catching it has changed what it measures.
-    assert risultato["completion_rate"] == 1.0
-    assert risultato["silent_error_rate"] > 0, "the naive adapter fell into no trap at all"
-    assert set(risultato["by_family"]) == {p.family for p in PROBES}
+    assert result["completion_rate"] == 1.0
+    assert result["silent_error_rate"] > 0, "the naive adapter fell into no trap at all"
+    assert set(result["by_family"]) == {p.family for p in PROBES}

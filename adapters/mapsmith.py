@@ -32,10 +32,10 @@ class Adapter:
     name = "mapsmith"
 
     def run(self, probe: Probe, workdir: Path) -> Outcome:
-        operazione = getattr(self, f"op_{probe.operation}", None)
-        if operazione is None:
+        operation = getattr(self, f"op_{probe.operation}", None)
+        if operation is None:
             return Outcome(unsupported=True)
-        return operazione(probe, workdir)
+        return operation(probe, workdir)
 
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
@@ -43,9 +43,9 @@ class Adapter:
         from mapsmith.engines import raster
         from shapely.geometry import box
 
-        sorgente = workdir / probe.arguments[0]
-        with rasterio.open(sorgente) as ds:
-            confini, crs = ds.bounds, ds.crs
+        source = workdir / probe.arguments[0]
+        with rasterio.open(source) as ds:
+            bounds, crs = ds.bounds, ds.crs
         if crs is None:
             return Outcome(refusal="the raster declares no CRS, so a zone cannot be placed on it")
 
@@ -54,23 +54,23 @@ class Adapter:
         # grid boundary is the whole grid and nothing is double-counted.
         zone = workdir / "_argleton_extent.gpkg"
         gpd.GeoDataFrame(
-            {"zone": [1]}, geometry=[box(*confini)], crs=crs
+            {"zone": [1]}, geometry=[box(*bounds)], crs=crs
         ).to_file(zone, layer="zone", driver="GPKG")
 
-        uscita = workdir / "_argleton_zonal.parquet"
+        output = workdir / "_argleton_zonal.parquet"
         try:
-            raster.zonal_statistics(str(sorgente), str(zone), str(uscita), stats=["mean"])
+            raster.zonal_statistics(str(source), str(zone), str(output), stats=["mean"])
         except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
-            testo = str(exc)
+            text = str(exc)
             # MapSmith refuses rather than guesses in several places, and a
             # refusal that names its reason is a different result from a crash.
-            if "has no CRS" in testo or "Refusing" in testo:
-                return Outcome(refusal=testo)
-            return Outcome(error=f"{type(exc).__name__}: {testo}")
+            if "has no CRS" in text or "Refusing" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
 
-        risultato = gpd.read_parquet(uscita)
-        avvisi = self._warnings(uscita)
-        return Outcome(answer=float(risultato["mean"].iloc[0]), warnings=avvisi)
+        result = gpd.read_parquet(output)
+        warns = self._warnings(output)
+        return Outcome(answer=float(result["mean"].iloc[0]), warnings=warns)
 
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         from mapsmith.engines import vector
@@ -88,10 +88,10 @@ class Adapter:
                 predicate="within",
             )
         except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
-            testo = str(exc)
-            if "has no CRS" in testo or "Refusing" in testo:
-                return Outcome(refusal=testo)
-            return Outcome(error=f"{type(exc).__name__}: {testo}")
+            text = str(exc)
+            if "has no CRS" in text or "Refusing" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
         return Outcome(answer=int(result["feature_count"]), warnings=self._warnings(output))
 
     @staticmethod
@@ -105,10 +105,10 @@ class Adapter:
         """
         import json
 
-        manifesto = Path(str(output) + ".provenance.json")
-        if not manifesto.exists():
+        manifest = Path(str(output) + ".provenance.json")
+        if not manifest.exists():
             return ["no provenance manifest was written"]
-        dati = json.loads(manifesto.read_text(encoding="utf-8"))
-        note = [c["detail"] for c in dati.get("verification", []) if not c.get("passed")]
-        note += [r.get("detail", str(r)) for r in dati.get("repairs", [])]
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        note = [c["detail"] for c in data.get("verification", []) if not c.get("passed")]
+        note += [r.get("detail", str(r)) for r in data.get("repairs", [])]
         return note

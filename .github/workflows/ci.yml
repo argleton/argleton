@@ -42,11 +42,11 @@ jobs:
           python - <<'PY'
           import json, sys
           bad = []
-          for nome in ("rasterio", "geopandas"):
-              r = json.load(open(f"/tmp/{nome}.json"))
-              print(nome, r["silent_error_rate"], r["completion_rate"])
+          for name in ("rasterio", "geopandas"):
+              r = json.load(open(f"/tmp/{name}.json"))
+              print(name, r["silent_error_rate"], r["completion_rate"])
               if r["silent_error_rate"] != 0.0 or r["completion_rate"] != 1.0:
-                  bad.append(nome)
+                  bad.append(name)
           sys.exit(1 if bad else 0)
           PY
       # And the ones that are supposed to fail must still fail: a trap that

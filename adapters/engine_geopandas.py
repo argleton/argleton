@@ -18,10 +18,10 @@ class Adapter:
     name = "geopandas"
 
     def run(self, probe: Probe, workdir: Path) -> Outcome:
-        operazione = getattr(self, f"op_{probe.operation}", None)
-        if operazione is None:
+        operation = getattr(self, f"op_{probe.operation}", None)
+        if operation is None:
             return Outcome(unsupported=True)
-        return operazione(probe, workdir)
+        return operation(probe, workdir)
 
     def op_planar_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
@@ -38,8 +38,8 @@ class Adapter:
         # second source of error on top of the one being measured: UTM is
         # conformal, not equal-area, and this parcel comes out 50 m2 lighter
         # there. The conversion factor is exact and answers the question asked.
-        fattore = frame.crs.axis_info[0].unit_conversion_factor
-        return Outcome(answer=float(frame.area.sum() * fattore**2))
+        factor = frame.crs.axis_info[0].unit_conversion_factor
+        return Outcome(answer=float(frame.area.sum() * factor**2))
 
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
