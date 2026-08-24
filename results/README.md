@@ -4,6 +4,40 @@ Every file here names the `spec_commit` it ran against. That is the
 pre-registration: whether a tolerance or a task moved after a number was seen is
 answered by a diff, not by our word.
 
+## 2026-08-24 — five families
+
+Engine tier, `spec_commit` [`7856f88`](../../../commit/7856f88), five families:
+the three below plus `mismatched-crs` (004) and `invalid-geometry` (005), both
+added since the first run.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith 0.2.2 (main @ d681b54) | **0.00** | 1.00 | 3 | 4 |
+| rasterio 1.5.1 | **0.00** | 1.00 | 2 | 6 |
+| GeoPandas 1.1 + Shapely 2 | **0.00** | 1.00 | 3 | 4 |
+| whitebox-workflows 2.0.6 | **0.50** | 1.00 | 2 | 6 |
+| naive composition | **0.80** | 1.00 | 5 | 0 |
+
+The first run's finding was that MapSmith's 0.00 was inherited from its
+engines, not earned by its checks. The counterpoint arrived with family 4:
+**on the mismatched-CRS trap the pass is earned.** There is no library that
+aligns two coordinate frames on your behalf — the naive composition answers 0
+("no points in the zone", a finding-shaped wrong answer) with no exception and
+no warning, while MapSmith answers 12 because its join reprojects and records
+the decision in `crs_decisions`. First family where the discipline, not the
+dependency, produces the number.
+
+Family 5 adds the other side of the careful/careless line: the careful
+GeoPandas adapter repairs the self-intersecting ring with `make_valid` **and
+says so**, scoring `correct_with_warning` — the verdict that exists to reward
+communication. The naive composition reports the shoelace artifact (2400 m²
+for a 5100 m² parcel), which matches no definition of a region at all.
+
+MapSmith's own area operation does not exist, so families 3 and 5 were never
+put to it ("not applicable" is not a pass). The naive composition now stands
+at 0.80: four traps out of five, still saved on trap 001 by rasterio undoing
+the predictor on its behalf.
+
 ## 2026-08-23 — first run
 
 Engine tier, `spec_commit` [`1584e5d`](../../../commit/1584e5d), three families.

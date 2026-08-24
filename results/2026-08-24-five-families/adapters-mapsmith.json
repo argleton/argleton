@@ -1,0 +1,119 @@
+{
+  "system": "MapSmith 0.2.2 (main @ d681b54)",
+  "adapter": "adapters.mapsmith",
+  "spec_commit": "7856f88",
+  "date": "2026-08-24",
+  "silent_error_rate": 0.0,
+  "completion_rate": 1.0,
+  "traps_run": 3,
+  "clean_run": 3,
+  "unsupported": 4,
+  "verdict_counts": {
+    "correct": 6,
+    "unsupported": 4
+  },
+  "by_family": {
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 0
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "9",
+      "answer": 9
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "12",
+      "answer": 12
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    }
+  ]
+}

@@ -3,6 +3,9 @@
 **A correctness suite for geospatial systems.** Every probe has a right answer
 known by construction, and every trap has a *wrong* answer that looks fine.
 
+**[argleton.org](https://argleton.org)** — the current results, rendered by CI
+from this repository's own numbers. Nothing on that page is typed in by hand.
+
 That second half is the whole point. Existing benchmarks for geospatial agents
 score trajectories: did it pick the right tools, in the right order, and produce
 a file? A system can score full marks on all of that and hand you a number that
@@ -75,30 +78,34 @@ rate means a system did not fail silently *on these probes*.
 | `mismatched-crs` | 0 points in the zone instead of 12 | an empty result is a finding, not an error — nothing questions an empty join |
 | `invalid-geometry` | 2400 m² instead of 5100 m² | the shoelace artifact of a self-crossing ring: no exception, and both are ordinary parcels |
 
-## First results
+## Results
 
-Engine tier, three families, `spec_commit` pinned — [the numbers and what they
-do not say](results/).
+Engine tier, five families, `spec_commit` pinned — [every run, and what the
+numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run |
 |---|---|---|---|
-| MapSmith 0.2.2 | 0.00 | 1.00 | 2 |
+| MapSmith 0.2.2 (main) | 0.00 | 1.00 | 3 |
 | rasterio 1.5.1 | 0.00 | 1.00 | 2 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 1 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 3 |
 | whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 |
-| naive composition | 0.67 | 1.00 | 3 |
+| naive composition | 0.80 | 1.00 | 5 |
 
-The last column is not decoration. A rate over one trap and a rate over three
+The last column is not decoration. A rate over two traps and a rate over five
 are different claims, and an adapter that could only be asked one question must
 not be able to look better than one that faced all of them.
 
-**MapSmith scores 0.00 and its verification had nothing to do with it.** On trap
-001 it wrote a manifest with seven passing checks, and not one of them looks at
+Two findings frame everything here, one per run. From the first run:
+**MapSmith scored 0.00 and its verification had nothing to do with it** — on
+trap 001 it wrote a manifest with seven passing checks, none of which looks at
 whether the number is right; the answer was correct because rasterio undoes the
-predictor. A provenance manifest records what was done and does not certify that
-it was right — different claims, and MapSmith only makes the first. That is the
-gap this suite exists to measure, and the reason it is not in MapSmith's
-repository.
+predictor. A provenance manifest records what was done and does not certify
+that it was right — different claims, and MapSmith only makes the first. That
+is the gap this suite exists to measure, and the reason it is not in MapSmith's
+repository. From the five-family run: **on the mismatched-CRS trap the pass is
+earned, not inherited** — there is no library that aligns two frames on your
+behalf; MapSmith answers 12 because its join reprojects and records the
+decision, and the naive composition answers 0.
 
 ## The admission criterion
 

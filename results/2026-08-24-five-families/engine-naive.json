@@ -1,0 +1,119 @@
+{
+  "system": "naive composition",
+  "adapter": "engine:naive",
+  "spec_commit": "7856f88",
+  "date": "2026-08-24",
+  "silent_error_rate": 0.8,
+  "completion_rate": 1.0,
+  "traps_run": 5,
+  "clean_run": 5,
+  "unsupported": 0,
+  "verdict_counts": {
+    "correct": 6,
+    "silent_error": 4
+  },
+  "by_family": {
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 0
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "correct",
+      "detail": "1000000.0",
+      "answer": 1000000.0
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "9",
+      "answer": 9
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "correct",
+      "detail": "7600.0",
+      "answer": 7600.0
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "silent_error",
+      "detail": "expected 92903.41 \u00b1 0.5, got 1000000.0 \u2014 this is the predicted naive failure",
+      "answer": 1000000.0
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "silent_error",
+      "detail": "expected 1000.0 \u00b1 0.001, got 945.005 \u2014 this is the predicted naive failure",
+      "answer": 945.005
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "silent_error",
+      "detail": "expected 12 \u00b1 0.0, got 0 \u2014 this is the predicted naive failure",
+      "answer": 0
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "silent_error",
+      "detail": "expected 5100.0 \u00b1 0.01, got 2400.0 \u2014 this is the predicted naive failure",
+      "answer": 2400.0
+    }
+  ]
+}
