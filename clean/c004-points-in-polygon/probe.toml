@@ -1,0 +1,29 @@
+id         = "c004-points-in-polygon"
+population = "clean"
+family     = "mismatched-crs"
+title      = "Count of points inside a polygon, both layers in the same CRS"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "points_in_polygon_count(points.gpkg, zone.gpkg)"
+prompt = """
+How many of the points in points.gpkg fall inside the polygon in zone.gpkg?
+Answer with the count."""
+
+[truth]
+kind      = "count"
+value     = 9
+tolerance = 0
+derivation = """
+Both layers are in EPSG:32633, so containment is an interval comparison in
+their shared plane. The zone is the rectangle [391000, 401000] x
+[4629000, 4641000]. Nine points lie on the grid {393000, 396000, 399000} x
+{4632000, 4635000, 4638000}, inside with at least 2 km of margin to every
+edge; the other 27 lie at eastings 430000 or greater, at least 29 km east of
+the rectangle. Nothing is ever transformed, which is the point - the trap and
+this control differ only in whether the two frames already agree."""
+
+[provenance]
+source   = "control for 004-mismatched-crs-join"
+found_by = "mapsmith"
+date     = "2026-08-24"

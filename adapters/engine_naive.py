@@ -40,3 +40,12 @@ class Adapter:
             # `read(1)` and `read(1, masked=True)` differ by one keyword, and
             # the raw array is the one you get by default.
             return Outcome(answer=float(ds.read(1).mean()))
+
+    def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        points = gpd.read_file(workdir / probe.arguments[0])
+        zone = gpd.read_file(workdir / probe.arguments[1]).geometry.iloc[0]
+        # `within` against a bare geometry: there is no second CRS in sight,
+        # so not even geopandas' own mismatch warning can fire.
+        return Outcome(answer=int(points.within(zone).sum()))

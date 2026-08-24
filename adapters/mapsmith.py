@@ -72,6 +72,28 @@ class Adapter:
         avvisi = self._warnings(uscita)
         return Outcome(answer=float(risultato["mean"].iloc[0]), warnings=avvisi)
 
+    def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        output = workdir / "_argleton_join.parquet"
+        try:
+            # MapSmith exposes no point-in-polygon count; it exposes
+            # `spatial_join`, so the composition is a within-join of the points
+            # against the zone, counting the joined rows. There is exactly one
+            # zone, so no point can be counted twice.
+            result = vector.spatial_join(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(output),
+                predicate="within",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            testo = str(exc)
+            if "has no CRS" in testo or "Refusing" in testo:
+                return Outcome(refusal=testo)
+            return Outcome(error=f"{type(exc).__name__}: {testo}")
+        return Outcome(answer=int(result["feature_count"]), warnings=self._warnings(output))
+
     @staticmethod
     def _warnings(output: Path) -> list[str]:
         """Anything the manifest recorded that a reader should have seen.

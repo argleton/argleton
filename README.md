@@ -63,7 +63,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Three families of twelve, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Four families of twelve, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -72,6 +72,7 @@ rate means a system did not fail silently *on these probes*.
 | `raster-encoding` | mean 36.09 instead of 1093.0 | the differenced grid still renders as terrain |
 | `linear-units` | 100 ha instead of 9.29 ha | both are ordinary parcels; they differ by 3.28² |
 | `nodata` | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore |
+| `mismatched-crs` | 0 points in the zone instead of 12 | an empty result is a finding, not an error — nothing questions an empty join |
 
 ## First results
 

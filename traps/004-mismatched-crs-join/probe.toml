@@ -1,0 +1,75 @@
+id         = "004-mismatched-crs-join"
+population = "trap"
+family     = "mismatched-crs"
+title      = "Two individually valid CRS, and a count of zero that reads as a finding"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "points_in_polygon_count(points.gpkg, zone.gpkg)"
+prompt = """
+How many of the points in points.gpkg fall inside the polygon in zone.gpkg?
+Answer with the count."""
+
+[truth]
+kind      = "count"
+value     = 12
+tolerance = 0
+derivation = """
+Both layers are built from the same longitude/latitude definitions. The zone is
+the rectangle [12.30, 12.42] x [41.80, 41.95] in EPSG:4326. The 40 points are
+defined in longitude/latitude and stored reprojected to EPSG:32633: twelve on
+the grid {12.33, 12.36, 12.39} x {41.83, 41.86, 41.89, 41.92}, inside the
+rectangle by interval comparison with at least 0.03 degrees (about 2.5 km) of
+margin to every edge; the other 28 at longitudes 13.2 or greater, at least 0.78
+degrees (about 64 km) east of the rectangle, outside on the longitude interval
+alone. Containment is therefore decided on paper, in the lon/lat domain, before
+any projection exists.
+
+The projection step cannot move the answer: correct transforms between
+EPSG:32633 and EPSG:4326 agree to well under a metre, and reading the
+rectangle's edges as parallels and meridians or as projected chords displaces
+an edge by a few metres at most - three orders of magnitude below the margins.
+The answer is an integer with no room for legitimate disagreement, so the
+tolerance is 0."""
+
+[naive_failure]
+description = """
+Both files are read and the containment test runs on the raw coordinates. The
+points are UTM eastings and northings - every easting above 278 000, every
+northing above 4 470 000 - while the polygon spans x in [12.30, 12.42] and y in
+[41.80, 41.95]. No point can fall inside, so the count comes back 0: exactly,
+for every algorithm, with no exception and no warning. GeoPandas ships a
+dedicated UserWarning for frames that disagree, but it cannot fire here -
+tested against a bare geometry, there is no second CRS to disagree with."""
+observed_value = 0
+plausible      = true
+why_plausible  = """
+Zero is the most data-shaped answer a spatial question can return. "No wells
+fall inside the protected zone" is a finding - often the one somebody was
+hoping for - and an empty result is a valid, well-formed output that downstream
+code consumes without objection. Each file on its own is impeccable: valid
+geometry, declared and correct CRS. The only wrong thing is that two
+individually right frames were never brought into the same one."""
+derivation = """
+Closed form: containment in the raw coordinate plane requires
+12.30 <= x <= 12.42, and every point's x is a UTM easting greater than 278 000.
+The predicate is false 40 times out of 40; the count is exactly 0."""
+
+[refusal]
+accept_if_mentions = ["crs", "coordinate reference", "spatial reference", "reproject", "projection", "32633", "4326"]
+
+[provenance]
+source = """
+Endemic enough that GeoPandas carries a guard for exactly this class:
+_crs_mismatch_warn in geopandas/array.py warns "CRS mismatch between the CRS of
+left geometries and the CRS of right geometries" whenever two geometry arrays
+disagree (verified in geopandas 1.1.4). The guard exists upstream because the
+empty join from mismatched frames is the canonical first question of spatial
+debugging - and the composition measured here slips past it, because a bare
+geometry has no CRS to compare."""
+found_by = "mapsmith"
+date     = "2026-08-24"
+
+[provenance.engine_versions]
+geopandas = "1.1.4 - warns on array-vs-array mismatch, silent against a bare shapely geometry"
+shapely = "planar containment on raw coordinates, CRS-unaware by design"

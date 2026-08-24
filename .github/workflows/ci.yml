@@ -62,5 +62,6 @@ jobs:
           # point — a trap that stops catching its own naive adapter, or one
           # that starts catching a case it should not, has changed what it
           # measures, and that must be a decision rather than a surprise.
-          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.6667, 1.0) else 1)
+          # 0.75 = traps 002, 003 and 004 caught, 001 passed, out of 4.
+          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.75, 1.0) else 1)
           PY

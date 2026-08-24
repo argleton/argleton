@@ -40,3 +40,17 @@ class Adapter:
         # there. The conversion factor is exact and answers the question asked.
         fattore = frame.crs.axis_info[0].unit_conversion_factor
         return Outcome(answer=float(frame.area.sum() * fattore**2))
+
+    def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        points = gpd.read_file(workdir / probe.arguments[0])
+        zones = gpd.read_file(workdir / probe.arguments[1])
+        if points.crs is None or zones.crs is None:
+            return Outcome(refusal="a layer declares no CRS, so the two frames cannot be aligned")
+        if points.crs != zones.crs:
+            # Bring both into one frame before testing containment. Containment
+            # is invariant under a correct transform, so which frame wins does
+            # not matter; that it is a single frame is the whole job.
+            points = points.to_crs(zones.crs)
+        return Outcome(answer=int(points.within(zones.geometry.iloc[0]).sum()))
