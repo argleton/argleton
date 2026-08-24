@@ -8,7 +8,7 @@ name: Site
 on:
   push:
     branches: [main]
-    paths: ["site/**", "results/**", "traps/**", "clean/**", "argleton/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "results/**", "traps/**", "clean/**", "argleton/**", "docs/FAMILIES.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:

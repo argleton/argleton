@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use Argleton in your work, please cite it as below."
-title: "Argleton: a silent-error suite for geospatial systems"
+title: "Argleton: a correctness suite for geospatial systems"
 type: software
 authors:
   - name: "The Argleton project"

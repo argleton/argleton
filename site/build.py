@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -50,6 +51,17 @@ def latest_run() -> tuple[str, list[dict]]:
         (i for i, k in enumerate(ORDER) if d["system"].startswith(k)), len(ORDER)
     ))
     return latest.name, data
+
+
+def planned_families() -> int:
+    """Every family FAMILIES.md numbers, implemented or not.
+
+    Counted from the document rather than hardcoded in the template: a
+    hand-typed "nine more" survived two family additions on the published page
+    before anyone noticed it had gone stale.
+    """
+    text = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
+    return len(set(re.findall(r"^\|\s*(\d+)\s*\|", text, re.MULTILINE)))
 
 
 def probes() -> list[dict]:
@@ -173,6 +185,8 @@ def main(destination: Path) -> int:
         "{{NAIVE}}": str(zero["naive"]),
         "{{TRAPS}}": str(len(traps)),
         "{{FAMILIES}}": str(len({p["family"] for p in traps})),
+        "{{FAMILIES_PLANNED}}": str(planned_families()),
+        "{{FAMILIES_REMAINING}}": str(planned_families() - len({p["family"] for p in traps})),
         "{{PROBES}}": str(len(probe_list)),
         "{{SYSTEMS}}": str(len(data)),
         "{{COMMIT}}": _git("rev-parse", "--short", "HEAD") or "unknown",

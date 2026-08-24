@@ -81,8 +81,9 @@ does not certify that it was right.** Those are different claims and MapSmith
 only makes the first. The suite exists to measure the second, which is precisely
 why it is not in MapSmith's repository.
 
-The README promises that the first published result includes MapSmith with its
-verification switched off. There is no such switch, and we are not adding one —
+The README at launch promised that the first published result would include
+MapSmith with its verification switched off. There is no such switch, and we are
+not adding one —
 a "skip the checks" flag on a product whose argument is that it checks is a
 footgun somebody eventually ships with. On these three families it would change
 nothing anyway, for the reason above. When a family arrives that verification

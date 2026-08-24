@@ -24,6 +24,16 @@ ordinary elevations. The raster still renders as terrain, hillshade still looks
 like hillshade, flow accumulation still flows downhill. Nothing anywhere says
 anything is wrong.
 
+Seeing it needs a checkout and one install — every fixture is rebuilt
+deterministically on your machine, so there is nothing to download and nothing
+to take on trust:
+
+```
+git clone https://github.com/argleton/argleton
+cd argleton
+pip install -e ".[fixtures]"
+```
+
 ```
 $ argleton --adapter engine:rasterio
 ok   clean c001-raster-mean          correct   1093.0
@@ -34,19 +44,26 @@ silent_error_rate 0.0 over 2 traps  |  completion_rate 1.0 over 2 clean
 
 $ argleton --adapter engine:whitebox
 ok   clean c001-raster-mean          correct        1093.0
+ok   clean c003-raster-mean-nodata   correct        1000.0
 FAIL trap  001-tiff-predictor        silent_error   expected 1093.0 ± 0.001, got 36.09375
-silent_error_rate 1.0 over 1 traps  |  completion_rate 1.0 over 1 clean
+ok   trap  003-nodata-in-statistics  correct        1000.0
+silent_error_rate 0.5 over 2 traps  |  completion_rate 1.0 over 2 clean
 ```
 
-The two lines say different things and both matter: this engine can do the task
-(completion 1.0) *and* gets this file silently wrong (silent error 1.0).
+(`skip … unsupported` lines trimmed: the vector probes are outside what these
+two raster engines can be asked, and skipping them is not a failure.)
+
+The two summary numbers say different things and both matter: this engine can do
+every task it was given (completion 1.0) *and* gets this file silently wrong
+(the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.667 / 1.0**: it
-answers every clean probe correctly, falls into two traps, and **passes the
-third**, because rasterio undoes the predictor on its behalf. Careless code is
-not uniformly wrong. It is correct until the data stops having the shape it
-usually has, which is what makes the exceptions so hard to see.
+report it — and it is the most useful one here. It scores **0.8 / 1.0**: it
+answers every clean probe correctly, falls into four of the five traps, and
+**passes the remaining one**, because rasterio undoes the predictor on its
+behalf. Careless code is not uniformly wrong. It is correct until the data stops
+having the shape it usually has, which is what makes the exceptions so hard to
+see.
 
 ## Two numbers, never one
 
@@ -170,8 +187,8 @@ a permissive licence, with no CLA, because an evaluation that lives inside the
 thing it evaluates is easy to dismiss in one line — but pretending at
 independence we do not have would be worse than the problem. The defence is not
 the org chart: it is that every fixture is regenerable, every tolerance is in
-git history, and the first published result includes MapSmith with its own
-verification switched off.
+git history, and the finding on the first page of [results](results/) is about
+MapSmith itself — a 0.00 its own verification had nothing to do with.
 
 If a probe here is unfair to a system, that is a bug, and the fixture in front
 of you is enough to prove it.

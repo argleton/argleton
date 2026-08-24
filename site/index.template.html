@@ -224,12 +224,18 @@ feature_count_exact  expected 1, got 1</pre>
       not certify that it was right.</strong> Those are different claims, and measuring the second
       is what this repository is for.
     </p>
+    <p style="margin-top:1.1rem">
+      The five-family run added the counterpoint: on the mismatched-CRS trap the pass is
+      <strong>earned</strong> rather than inherited. No library aligns two coordinate frames on your
+      behalf — the naive composition returns an empty join there and calls it a finding, while
+      MapSmith answers correctly because its join reprojects and records the decision.
+    </p>
   </div>
 </div></section>
 
 <section id="families"><div class="wrap">
   <p class="kicker">Coverage</p>
-  <h2>{{FAMILIES}} families of twelve</h2>
+  <h2>{{FAMILIES}} families of {{FAMILIES_PLANNED}}</h2>
   <p>
     Stated rather than implied, because a rate of 0 means a system did not fail silently
     <em>on these probes</em> — not that it is correct, and not that it is safe.
@@ -244,7 +250,7 @@ feature_count_exact  expected 1, got 1</pre>
     </tbody>
   </table>
   <p class="caption">
-    Nine more are named, with their gaps kept under their original numbers, in
+    {{FAMILIES_REMAINING}} more are named, with their gaps kept under their original numbers, in
     <a href="https://github.com/argleton/argleton/blob/main/docs/FAMILIES.md">FAMILIES.md</a>.
     The fastest way to improve this suite is to bring a thirteenth.
   </p>
@@ -304,9 +310,9 @@ feature_count_exact  expected 1, got 1</pre>
   </p>
   <p>
     The defence is not the org chart. Every fixture is regenerable, every tolerance is in git
-    history, and the first published result is the one above, which says our own verification does
-    not catch any of this. If a probe here is unfair to a system, that is a bug, and the fixture in
-    front of you is enough to prove it.
+    history, and the first thing our first published run said — the finding above — is that our own
+    verification does not catch any of this. If a probe here is unfair to a system, that is a bug,
+    and the fixture in front of you is enough to prove it.
   </p>
 </div></section>
 
