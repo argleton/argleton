@@ -1,0 +1,180 @@
+{
+  "system": "whitebox-workflows 2.0.6",
+  "adapter": "engine:whitebox",
+  "spec_commit": "bc95d3b",
+  "date": "2026-08-25",
+  "silent_error_rate": 0.5,
+  "completion_rate": 1.0,
+  "traps_run": 2,
+  "clean_run": 2,
+  "unsupported": 12,
+  "verdict_counts": {
+    "correct": 3,
+    "silent_error": 1,
+    "unsupported": 12
+  },
+  "by_family": {
+    "ambiguous-layer": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "implicit-parameter-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "projection-distortion": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 1
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "c006-named-layer",
+      "population": "clean",
+      "family": "ambiguous-layer",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "c007-distance-in-metres",
+      "population": "clean",
+      "family": "implicit-parameter-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "c008-equal-area-crs",
+      "population": "clean",
+      "family": "projection-distortion",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "silent_error",
+      "detail": "expected 1093.0 \u00b1 0.001, got 36.09375 \u2014 this is the predicted naive failure",
+      "answer": 36.09375
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "006-default-layer",
+      "population": "trap",
+      "family": "ambiguous-layer",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "007-buffer-in-degrees",
+      "population": "trap",
+      "family": "implicit-parameter-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    },
+    {
+      "probe_id": "008-web-mercator-area",
+      "population": "trap",
+      "family": "projection-distortion",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null
+    }
+  ]
+}

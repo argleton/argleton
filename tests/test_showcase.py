@@ -28,14 +28,43 @@ NUMBER_WORDS = {
 
 
 def latest_run() -> tuple[str, dict[str, dict]]:
-    """The newest results directory, keyed by system name."""
-    runs = sorted(p for p in (ROOT / "results").iterdir() if p.is_dir())
-    assert runs, "no published results — nothing for the showcase to claim"
+    """The published run — the one `results/LATEST` names — keyed by system.
+
+    This used to sort the directory names and take the last, which is the same
+    mistake the page builder made: two runs on one day sort by their words, so
+    "…-eight-families" came before "…-six-families" and both the page and this
+    test agreed on the older one. A test that shares the defect it exists to
+    catch is worse than no test, and this is the second time in this repo.
+    """
+    results = ROOT / "results"
+    pointer = results / "LATEST"
+    assert pointer.exists(), "results/LATEST must name the published run"
+    name = pointer.read_text(encoding="utf-8").strip()
+    run = results / name
+    assert run.is_dir(), f"results/LATEST names {name!r}, which is not a run directory"
     data = {}
-    for f in sorted(runs[-1].glob("*.json")):
+    for f in sorted(run.glob("*.json")):
         record = json.loads(f.read_text(encoding="utf-8"))
         data[record["system"]] = record
-    return runs[-1].name, data
+    assert data, f"{name} holds no result files"
+    return name, data
+
+
+def test_the_published_run_is_the_one_with_the_most_families():
+    """`results/LATEST` is written by hand, so it can be forgotten. It cannot
+    silently point at a run measuring fewer families than one we already have:
+    that is the superseded-front-page failure, one indirection later."""
+    published, systems = latest_run()
+    covered = max(len(r["by_family"]) for r in systems.values())
+    for directory in (ROOT / "results").iterdir():
+        if not directory.is_dir() or directory.name == published:
+            continue
+        for f in directory.glob("*.json"):
+            other = json.loads(f.read_text(encoding="utf-8"))
+            assert len(other["by_family"]) <= covered, (
+                f"{directory.name} covers more families than the published "
+                f"{published}: update results/LATEST"
+            )
 
 
 def by_base_name(name: str, systems: dict[str, dict]) -> dict:

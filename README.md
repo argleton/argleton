@@ -58,8 +58,8 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 (the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.8333 / 1.0**: it
-answers every clean probe correctly, falls into five of the six traps, and
+report it — and it is the most useful one here. It scores **0.875 / 1.0**: it
+answers every clean probe correctly, falls into seven of the eight traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -100,20 +100,23 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-Engine tier, six families, `spec_commit` pinned — [every run, and what the
+Engine tier, eight families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
-| system | silent error rate | completion rate | traps run |
-|---|---|---|---|
-| MapSmith 0.2.2 (main) | 0.25 | 1.00 | 4 |
-| rasterio 1.5.1 | 0.00 | 1.00 | 2 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 4 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 |
-| naive composition | 0.8333 | 1.00 | 6 |
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 8 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 2 | 12 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 4 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 12 |
+| naive composition | 0.875 | 1.00 | 8 | 0 |
 
-The last column is not decoration. A rate over two traps and a rate over six
-are different claims, and an adapter that could only be asked one question must
-not be able to look better than one that faced all of them.
+The last two columns are not decoration. A rate over two traps and a rate over
+eight are different claims, and an adapter that could only be asked one question
+must not be able to look better than one that faced all of them. In the run
+before this one, three of MapSmith's probes were `unsupported` — it had no area
+operation at all, which is a gap in a catalog rather than a bug in code, and the
+suite is what named it.
 
 Three findings frame everything here, one per run. From the first run:
 **MapSmith scored 0.00 and its verification had nothing to do with it** — on
@@ -130,6 +133,13 @@ before the trap was published, with the fix landing after this run rather than
 before it. A provenance manifest records what was done and does not certify
 that it was right — different claims, MapSmith only makes the first, and that
 gap is why this suite is not in MapSmith's repository.
+
+And from the eight-family run: **the suite wrote its author's roadmap.** Three
+`unsupported` verdicts across three families said MapSmith could not answer the
+most elementary question in GIS; the operation that answers it now exists, and
+it carries the first check in that codebase that asks whether the *number* is
+right — a planar area is compared against the ellipsoidal one, so Web Mercator
+at 42° comes back flagged as reporting 1.80× the land it covers.
 
 ## The admission criterion
 

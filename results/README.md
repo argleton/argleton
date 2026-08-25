@@ -4,6 +4,51 @@ Every file here names the `spec_commit` it ran against. That is the
 pre-registration: whether a tolerance or a task moved after a number was seen is
 answered by a diff, not by our word.
 
+## 2026-08-25 (later) — eight families, and the suite writes its author's roadmap
+
+Engine tier, `spec_commit` [`bc95d3b`](../../../commit/bc95d3b), eight families:
+`projection-distortion` (008) joins the seven below.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main @ 40bddcb) | **0.00** | 1.00 | 8 | 0 |
+| rasterio 1.5.1 | **0.00** | 1.00 | 2 | 12 |
+| GeoPandas 1.1 + Shapely 2 | **0.00** | 1.00 | 6 | 4 |
+| whitebox-workflows 2.0.6 | **0.50** | 1.00 | 2 | 12 |
+| naive composition | **0.875** | 1.00 | 8 | 0 |
+
+**Read the "not applicable" column before the rate.** In the run above, three
+of MapSmith's eight probes came back `unsupported`, across three families —
+because MapSmith had **no area operation at all**, and area is the most
+elementary question in GIS. Composing one out of raw SQL would have measured
+DuckDB, so the adapter said so instead, three times. That is what a suite is
+for: the gap was in our catalog and the number named it.
+
+The operation exists now (`measure_area`), and this run is the first where
+MapSmith answers every probe. Two of the four passes it earned today are worth
+separating from the two it inherited:
+
+- **002, feet-as-metres — earned.** The linear unit is read off the CRS and
+  applied once: 10⁶ square US survey feet is 92903.41 m², never 10⁶.
+- **005, bowtie — earned, and reported.** The invalid ring is repaired *before*
+  the measurement, and the repair lands in the manifest's `repairs` and in the
+  tool result. The planar area of a self-crossing ring is the signed shoelace:
+  2400 for a 5100 m² parcel, returned without complaint by everything that does
+  not look.
+- **008, Web Mercator — earned by default, not by care.** Ground area is
+  geodesic unless asked otherwise, so the map plane never enters. Ask for the
+  planar area of the same parcel and MapSmith answers 12000 — and attaches the
+  ratio 1.8038 against the ellipsoidal area as a non-critical check. That is
+  the first check in the codebase that asks whether the *number* is right
+  rather than whether the operation ran, which is exactly the criticism this
+  suite levelled at MapSmith's seven green checks on 2026-08-23.
+- **001, TIFF predictor — still inherited.** rasterio undoes the predictor;
+  MapSmith's checks would pass either way. Unchanged since the first run, and
+  still the honest reading.
+
+The naive composition is now at 0.875 — seven traps of eight, saved only by
+rasterio on the predictor.
+
 ## 2026-08-25 — six families, and the suite catches its author
 
 Engine tier, `spec_commit` [`06d4e66`](../../../commit/06d4e66), six families:
