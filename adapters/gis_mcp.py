@@ -46,6 +46,40 @@ class Adapter:
         result = get_area.fn(geometry.wkt)
         return Outcome(answer=float(result["area"]))
 
+    def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
+        from gis_mcp.geopandas_functions import read_file_gpd
+
+        # gis-mcp's reader takes a path and nothing else — no tool in the set
+        # can name the layer the question names — so the composition is the
+        # bare read, and num_rows is whatever layer the container defaults to.
+        result = read_file_gpd.fn(str(workdir / probe.arguments[0]))
+        return Outcome(answer=int(result["num_rows"]))
+
+    def op_count_within_distance(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # The charitable composition, on purpose: gis-mcp also ships a
+        # units-blind buffer, but its geodetic-distance tool is the right
+        # instrument for a metric question on geographic coordinates, and a
+        # careful client would reach for it. On projected data the plain
+        # planar distance is already in the right unit.
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        target_id = probe.arguments[1].split("=", 1)[1]
+        distance = float(probe.arguments[2].split("=", 1)[1])
+        target = frame[frame["well_id"] == target_id].geometry.iloc[0]
+        others = frame[frame["well_id"] != target_id]
+        if frame.crs is not None and frame.crs.is_geographic:
+            from gis_mcp.pyproj_functions import calculate_geodetic_distance
+
+            count = 0
+            for geometry in others.geometry:
+                measured = calculate_geodetic_distance.fn(
+                    [target.x, target.y], [geometry.x, geometry.y]
+                )
+                count += measured["distance"] <= distance
+            return Outcome(answer=int(count))
+        return Outcome(answer=int((others.distance(target) <= distance).sum()))
+
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         from gis_mcp.geopandas_functions import sjoin_gpd
 
