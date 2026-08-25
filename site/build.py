@@ -41,31 +41,14 @@ ORDER = ["MapSmith", "rasterio", "GeoPandas", "whitebox", "naive"]
 
 
 def latest_run() -> tuple[str, list[dict]]:
-    """The results directory `results/LATEST` names, and everything in it.
+    """The published run and everything in it (see `argleton.published`)."""
+    # Runs from a checkout as well as from an install: the page must be
+    # buildable without `pip install -e .` first.
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from argleton.published import published_run
 
-    Named explicitly rather than inferred. Sorting the directory names is what
-    this did first, and it silently published the OLDER of two runs made on the
-    same day ("…-eight-families" sorts before "…-six-families"): the convention
-    assumed the name grows with the date, which stops being true the second
-    time you run the suite in one afternoon. A pointer cannot be wrong by
-    accident — it can only be forgotten, and a test checks that.
-    """
-    runs = sorted(p for p in RESULTS.iterdir() if p.is_dir())
-    if not runs:
-        raise RuntimeError("no results yet — run the suite before building the page")
-    pointer = RESULTS / "LATEST"
-    if not pointer.exists():
-        raise RuntimeError(
-            f"{pointer} is missing: write the name of the run to publish into it "
-            f"(one of {[p.name for p in runs]})"
-        )
-    name = pointer.read_text(encoding="utf-8").strip()
-    latest = RESULTS / name
-    if not latest.is_dir():
-        raise RuntimeError(
-            f"results/LATEST names {name!r}, which is not a results directory "
-            f"(have: {[p.name for p in runs]})"
-        )
+    latest = published_run(ROOT)
     data = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(latest.glob("*.json"))]
     data.sort(key=lambda d: next(
         (i for i, k in enumerate(ORDER) if d["system"].startswith(k)), len(ORDER)

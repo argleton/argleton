@@ -37,13 +37,14 @@ jobs:
       - name: the page must agree with the results it was built from
         run: |
           python - <<'PY'
-          import json, pathlib, sys
+          import pathlib, sys
           page = pathlib.Path("dist/index.html").read_text(encoding="utf-8")
           if "{{" in page:
               sys.exit(f"unreplaced placeholder: {page[page.index('{{'):][:60]}")
-          run_id = sorted(p for p in pathlib.Path("results").iterdir() if p.is_dir())[-1]
-          for f in run_id.glob("*.json"):
-              d = json.load(f.open(encoding="utf-8"))
+          # The published run, from the one place that decides it: sorting the
+          # directory names here is what checked the page against the WRONG run.
+          from argleton.published import published_results
+          for d in published_results():
               if d["system"] not in page:
                   sys.exit(f"{d['system']} is in the results and not on the page")
           for expected in ("card.png", "summary_large_image"):

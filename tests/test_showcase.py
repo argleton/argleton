@@ -36,18 +36,15 @@ def latest_run() -> tuple[str, dict[str, dict]]:
     test agreed on the older one. A test that shares the defect it exists to
     catch is worse than no test, and this is the second time in this repo.
     """
-    results = ROOT / "results"
-    pointer = results / "LATEST"
-    assert pointer.exists(), "results/LATEST must name the published run"
-    name = pointer.read_text(encoding="utf-8").strip()
-    run = results / name
-    assert run.is_dir(), f"results/LATEST names {name!r}, which is not a run directory"
+    from argleton.published import published_run
+
+    run = published_run(ROOT)
     data = {}
     for f in sorted(run.glob("*.json")):
         record = json.loads(f.read_text(encoding="utf-8"))
         data[record["system"]] = record
-    assert data, f"{name} holds no result files"
-    return name, data
+    assert data, f"{run.name} holds no result files"
+    return run.name, data
 
 
 def test_the_published_run_is_the_one_with_the_most_families():
