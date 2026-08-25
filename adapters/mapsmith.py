@@ -11,8 +11,9 @@ Two things worth stating before the numbers.
 raster's own extent — which is how you ask MapSmith the question. Composing a
 system's real tools to answer the probe is the adapter's whole job; inventing an
 operation it does not have would measure a system that does not exist. For
-`planar_area_m2` there is nothing to compose, and the honest answer is
-`unsupported`.
+`planar_area_m2` and `ground_area_m2` there is nothing to compose, and the
+honest answer is `unsupported` — twice now, which makes an area operation the
+best-documented gap in MapSmith's own catalog.
 
 **There is no switch to turn MapSmith's verification off**, and adding one to a
 product whose argument is that it verifies would be a footgun someone eventually

@@ -1,0 +1,68 @@
+id         = "008-web-mercator-area"
+population = "trap"
+family     = "projection-distortion"
+title      = "Metres of map read as metres of ground"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "ground_area_m2(parcel.gpkg)"
+prompt = """
+parcel.gpkg holds one land parcel near Rome. How large is the parcel on the
+ground, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 6654.0
+tolerance = 8.0
+derivation = """
+The parcel is an exact 120 x 100 m rectangle in the EPSG:3857 map plane, at
+y in [5140000, 5140100] (latitude 41.8598 to 41.8605 north). On the sphere
+EPSG:3857 is defined on (R = 6378137), the ground area of a map rectangle has
+a closed form: width x R x (tanh(y2/R) - tanh(y1/R)) = 120 x 6378137 x
+(tanh(5140100/6378137) - tanh(5140000/6378137)) = 6656.30 m2 — equivalently,
+12000 x cos2(41.8601) = 6656.30. On the WGS84 ellipsoid the geodesic area of
+the same footprint is 6651.34 m2 (0.075% below the sphere); a UTM 33N planar
+measurement gives 6653.65 m2. The truth 6654 +/- 8 spans every correct
+method, whose whole spread is 5 m2; the map-plane answer 12000 misses the
+band by 668 tolerances."""
+
+[naive_failure]
+description = """
+Read the file, sum .area, report it: the coordinates are in metres — the CRS
+says so, and for once the label is telling the truth — so the shoelace over
+them comes back 12000 and gets reported as square metres of land. Web Mercator
+is conformal, not equal-area: at latitude 41.86 its linear scale is 1/cos(lat)
+= 1.34, so every planar area is 1.80 times the ground it covers. No exception,
+no warning — the arithmetic is exact, in the wrong plane."""
+observed_value = 12000.0
+plausible      = true
+why_plausible  = """
+Both numbers are ordinary parcels — 1.2 hectares against 0.67 — and nothing
+in the file tips the reader off: the geometry is valid, the CRS is declared
+and common (every web-exported dataset ships in 3857), and the unit really is
+the metre. The factor between wrong and right is cos2(latitude), which is
+smooth, latitude-dependent, and invisible in any single number. This is the
+same failure as feet-read-as-metres one step deeper: there the unit label
+lied; here the label is true and the plane it measures is not the ground."""
+derivation = """
+Closed form: the rectangle is exactly 120 x 100 in map coordinates, so the
+planar shoelace is exactly 12000 whatever the vertex order. GeoPandas .area
+computes precisely that."""
+
+[refusal]
+accept_if_mentions = ["mercator", "3857", "distortion", "cos", "equal-area", "reproject", "not equal area", "web mercator"]
+
+[provenance]
+source = """
+The EPSG registry entry for 3857 carries the remark that the projection is
+'not a recognised geodetic system' and 'uses spherical development of
+ellipsoidal coordinates'; NGA advisory notice on web Mercator (2014) warns
+that it 'may cause geo-location / geo-coordinate errors of up to 40,000
+meters' and bans it for DoD mission use; 'why is my area wrong in 3857' is a
+perennial GIS Stack Exchange genre. The trap plants the case where the wrong
+area is an ordinary parcel rather than an absurd one."""
+found_by = "mapsmith"
+date     = "2026-08-25"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2 - .area is the planar shoelace in the CRS plane, by design"

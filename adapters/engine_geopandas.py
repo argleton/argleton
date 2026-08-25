@@ -54,6 +54,33 @@ class Adapter:
             )
         return Outcome(answer=float(geoms.area.sum() * factor**2), warnings=warns)
 
+    def op_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from pyproj import Geod
+
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        if frame.crs is None:
+            return Outcome(
+                refusal="the layer declares no CRS, so its coordinates cannot be "
+                "placed on the ground"
+            )
+        # Ground area is a property of the ellipsoid, not of any map plane:
+        # take the geodesic area of the footprint. Measuring in a projected
+        # CRS instead would answer with that projection's distortion — which
+        # is exactly the failure this family measures.
+        geoms = frame.to_crs("EPSG:4326").geometry
+        warns = []
+        if not geoms.is_valid.all():
+            from shapely.validation import make_valid
+
+            geoms = geoms.apply(make_valid)
+            warns.append(
+                "invalid geometry (self-intersection): repaired with make_valid before measuring"
+            )
+        geod = Geod(ellps="WGS84")
+        total = sum(abs(geod.geometry_area_perimeter(g)[0]) for g in geoms)
+        return Outcome(answer=float(total), warnings=warns)
+
     def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

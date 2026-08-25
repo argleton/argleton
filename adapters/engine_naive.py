@@ -33,6 +33,15 @@ class Adapter:
 
         return Outcome(answer=float(gpd.read_file(workdir / probe.arguments[0]).area.sum()))
 
+    def op_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # "How big is the parcel" gets the same three lines as any other area
+        # question: read, sum .area, report. The shoelace runs in whatever
+        # plane the file is in, and nobody asked the plane whether its metres
+        # are metres of ground.
+        return Outcome(answer=float(gpd.read_file(workdir / probe.arguments[0]).area.sum()))
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import rasterio
 

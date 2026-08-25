@@ -83,7 +83,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Seven families of twelve, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Eight families of thirteen, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -96,6 +96,7 @@ rate means a system did not fail silently *on these probes*.
 | `invalid-geometry` | 2400 m² instead of 5100 m² | the shoelace artifact of a self-crossing ring: no exception, and both are ordinary parcels |
 | `ambiguous-layer` | 4 wells instead of 31 | the container's default layer answers a question nobody asked; the only signal is a stderr warning attached to no result |
 | `implicit-parameter-units` | 24 wells "within 500 m" instead of 3 | the buffer runs in the layer's units and swallows the map; the count is an ordinary number for a dense wellfield |
+| `projection-distortion` | 12000 m² instead of 6654 m² | the CRS declares metres and delivers them — metres of map; the factor is cos²(latitude), and both readings are ordinary parcels |
 
 ## Results
 

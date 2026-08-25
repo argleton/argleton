@@ -46,6 +46,24 @@ class Adapter:
         result = get_area.fn(geometry.wkt)
         return Outcome(answer=float(result["area"]))
 
+    def op_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from gis_mcp.pyproj_functions import calculate_geodetic_area, project_geometry
+
+        # The charitable composition, like the geodetic distance in 007:
+        # gis-mcp has the right tools for this question — project_geometry to
+        # get the footprint into lon/lat, then calculate_geodetic_area. The
+        # glue reads the file and carries the CRS between the two calls,
+        # because no gis-mcp tool returns a geometry together with its CRS.
+        # (Worth recording: calculate_geodetic_area fed projected coordinates
+        # directly returns area=NaN wrapped in status='success'.)
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        wkt = frame.geometry.iloc[0].wkt
+        if frame.crs is not None and str(frame.crs).upper() not in ("EPSG:4326", "OGC:CRS84"):
+            wkt = project_geometry.fn(wkt, str(frame.crs), "EPSG:4326")["geometry"]
+        result = calculate_geodetic_area.fn(wkt)
+        return Outcome(answer=float(result["area"]))
+
     def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
         from gis_mcp.geopandas_functions import read_file_gpd
 

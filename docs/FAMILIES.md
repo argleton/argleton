@@ -1,6 +1,7 @@
 # Families, and what is actually covered
 
-Twelve families are planned. **Seven are implemented.** This page exists so that
+Thirteen families are on the list — twelve planned at the start, one added from
+a reproduction while building. **Eight are implemented.** This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -19,6 +20,12 @@ cannot read as ten independent findings.
 | 7 | `invalid-geometry` | [005](../traps/005-bowtie-area/) + [c005](../clean/c005-polygon-area/) | 2400 m² instead of 5100 m² | The signed-shoelace artifact of a self-crossing ring: no exception, no warning, and both numbers are ordinary parcels |
 | 11 | `ambiguous-layer` | [006](../traps/006-default-layer/) + [c006](../clean/c006-named-layer/) | 4 wells instead of 31 | The container's default layer answers a question nobody asked; the only signal is a stderr warning attached to no result |
 | 12 | `implicit-parameter-units` | [007](../traps/007-buffer-in-degrees/) + [c007](../clean/c007-distance-in-metres/) | 24 wells "within 500 m" instead of 3 | The buffer runs in the layer's units (degrees) and swallows the map; the count it returns is an ordinary number for a dense wellfield |
+| 13 | `projection-distortion` | [008](../traps/008-web-mercator-area/) + [c008](../clean/c008-equal-area-crs/) | 12000 m² instead of 6654 m² | The CRS declares metres and delivers them — metres of map. The factor is cos²(latitude): smooth, invisible in any single number, and both readings are ordinary parcels |
+
+Family 13 was not in the original design: it came out of building family 3
+(`linear-units`) and noticing that the unit label can be *true* while the plane
+it measures is not the ground. Added under the same four conditions as the
+rest — which is what the closing section of this page asks of anyone.
 
 ## Planned
 
