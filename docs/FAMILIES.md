@@ -1,6 +1,6 @@
 # Families, and what is actually covered
 
-Twelve families are planned. **Six are implemented.** This page exists so that
+Twelve families are planned. **Seven are implemented.** This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -18,6 +18,7 @@ cannot read as ten independent findings.
 | 6 | `nodata` | [003](../traps/003-nodata-in-statistics/) + [c003](../clean/c003-raster-mean-nodata/) | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore in a volume or a flood level |
 | 7 | `invalid-geometry` | [005](../traps/005-bowtie-area/) + [c005](../clean/c005-polygon-area/) | 2400 m² instead of 5100 m² | The signed-shoelace artifact of a self-crossing ring: no exception, no warning, and both numbers are ordinary parcels |
 | 11 | `ambiguous-layer` | [006](../traps/006-default-layer/) + [c006](../clean/c006-named-layer/) | 4 wells instead of 31 | The container's default layer answers a question nobody asked; the only signal is a stderr warning attached to no result |
+| 12 | `implicit-parameter-units` | [007](../traps/007-buffer-in-degrees/) + [c007](../clean/c007-distance-in-metres/) | 24 wells "within 500 m" instead of 3 | The buffer runs in the layer's units (degrees) and swallows the map; the count it returns is an ordinary number for a dense wellfield |
 
 ## Planned
 
@@ -31,7 +32,6 @@ renumbered away.
 | 8 | `mixed-geometry` | A layer holding more than one geometry type |
 | 9 | `antimeridian` | Extents that invert across the 180th meridian or at the poles |
 | 10 | `raster-affine` | Flipped axes or a non-standard affine transform |
-| 12 | `implicit-parameter-units` | A buffer of "500" against coordinates measured in degrees |
 
 Three more came out of a 2026 survey of what the industry is shipping now, and
 matter because they are wrong on the asset class everyone is adopting:

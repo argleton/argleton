@@ -64,6 +64,22 @@ class Adapter:
             answer=len(gpd.read_file(workdir / probe.arguments[0], layer=layer))
         )
 
+    def op_count_within_distance(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        target_id = probe.arguments[1].split("=", 1)[1]
+        distance = float(probe.arguments[2].split("=", 1)[1])
+        if frame.crs is None:
+            return Outcome(refusal="the layer declares no CRS, so a metric distance is undefined")
+        if frame.crs.is_geographic:
+            # The question is metric and the layer is in degrees: project to
+            # the local UTM zone before measuring anything in meters.
+            frame = frame.to_crs(frame.estimate_utm_crs())
+        target = frame[frame["well_id"] == target_id].geometry.iloc[0]
+        others = frame[frame["well_id"] != target_id]
+        return Outcome(answer=int((others.distance(target) <= distance).sum()))
+
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

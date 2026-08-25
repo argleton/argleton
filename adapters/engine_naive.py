@@ -49,6 +49,18 @@ class Adapter:
         # frame carries no trace, and this composition never looks.
         return Outcome(answer=len(gpd.read_file(workdir / probe.arguments[0])))
 
+    def op_count_within_distance(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        target_id = probe.arguments[1].split("=", 1)[1]
+        distance = float(probe.arguments[2].split("=", 1)[1])
+        target = frame[frame["well_id"] == target_id].geometry.iloc[0]
+        others = frame[frame["well_id"] != target_id]
+        # buffer() works in the layer's own units, whatever they are. The
+        # question said meters; nobody told the buffer.
+        return Outcome(answer=int(others.within(target.buffer(distance)).sum()))
+
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

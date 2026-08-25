@@ -1,0 +1,27 @@
+id         = "c007-distance-in-metres"
+population = "clean"
+family     = "implicit-parameter-units"
+title      = "Count of wells within a distance, layer already in metres"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "count_within_distance(wells.gpkg, target=W-1, distance_meters=500)"
+prompt = """
+How many other wells in wells.gpkg lie within 500 meters of the well W-1?
+Answer with the count."""
+
+[truth]
+kind      = "count"
+value     = 5
+tolerance = 0
+derivation = """
+By construction in EPSG:32633 (metres), by Pythagoras on the offsets from W-1:
+300, 400, ~354, ~446 and 460 metres for the five inside wells; every other
+well lies 2,500 m away or more. The farthest included (460) and the nearest
+excluded (2,500) leave no boundary case: the count is 5. The trap and this
+control differ only in whether the layer's unit is the one the question uses."""
+
+[provenance]
+source   = "control for 007-buffer-in-degrees"
+found_by = "mapsmith"
+date     = "2026-08-25"

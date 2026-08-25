@@ -1,0 +1,64 @@
+id         = "007-buffer-in-degrees"
+population = "trap"
+family     = "implicit-parameter-units"
+title      = "A distance of 500, applied in the layer's units instead of the question's"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "count_within_distance(wells.gpkg, target=W-1, distance_meters=500)"
+prompt = """
+How many other wells in wells.gpkg lie within 500 meters of the well W-1?
+Answer with the count."""
+
+[truth]
+kind      = "count"
+value     = 3
+tolerance = 0
+derivation = """
+By construction, in the local metric at 41.9 degrees north (1 degree of
+latitude = 111.1 km, 1 degree of longitude = 82.9 km): three wells lie ~300 m
+north, ~398 m east and ~359 m south-west of W-1; every other well lies at
+least ~4 km away (0.05 degrees in both axes; nearest excluded measured at
+6,932 m). The margins carry the derivation: at these distances a flat-earth
+approximation, a geodesic, and a UTM-planar distance agree to within
+centimetres, while the gap between the farthest included well (398 m) and the
+nearest excluded one (6.9 km) is three orders of magnitude wider than any
+method disagreement. The count is 3 under every correct reading; tolerance 0."""
+
+[naive_failure]
+description = """
+Buffer W-1 by 500 and count the wells inside. Shapely, GeoPandas and PostGIS
+all buffer in the LAYER'S units by design — here degrees — and none of them
+can know the caller meant metres. A buffer of 500 degrees spans the planet
+several times over: every other well in the file falls inside, and the count
+comes back 24. No exception, no warning — the buffer is a perfectly valid
+polygon."""
+observed_value = 24
+plausible      = true
+why_plausible  = """
+"24 wells within half a kilometre" is an ordinary number for a dense urban
+wellfield — nothing about it looks broken, and a count carries no trace of the
+absurd geometry that produced it. The file is honest, the CRS is declared, the
+figure 500 is exactly what the question said. The only thing implicit was the
+unit, and the code applied it in the one the layer happened to use."""
+derivation = """
+Closed form: a buffer of 500 (degrees) around (12.40, 41.90) spans longitudes
+-487.6 to 512.4 and latitudes -458.1 to 541.9 — the whole coordinate space of
+the file. All 24 other wells fall inside; the count is exactly 24."""
+
+[refusal]
+accept_if_mentions = ["degree", "geographic", "crs", "unit", "reproject", "utm", "4326"]
+
+[provenance]
+source = """
+The buffer-units confusion is the canonical first question of working with
+geographic coordinates: GeoPandas' own documentation states that buffer
+distances are expressed in the units of the CRS and tells users to project
+first, and 'buffer in meters with lat/lon data' is among the most-asked
+GIS Stack Exchange questions. The trap plants the case where the wrong answer
+is a plausible COUNT rather than a planet-sized area nobody would believe."""
+found_by = "mapsmith"
+date     = "2026-08-25"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2 - buffer in the coordinates' own units, by design; no unit awareness"
