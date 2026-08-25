@@ -1,0 +1,26 @@
+id         = "c006-named-layer"
+population = "clean"
+family     = "ambiguous-layer"
+title      = "Feature count of a single-layer container"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "feature_count(wells.gpkg, layer=wells)"
+prompt = """
+How many features are in the `wells` layer of wells.gpkg? Answer with the
+count."""
+
+[truth]
+kind      = "count"
+value     = 17
+tolerance = 0
+derivation = """
+By construction: wells.gpkg holds exactly one layer, `wells`, with 17 point
+features (W-1 through W-17). With a single layer there is nothing to choose
+wrongly — the trap and this control differ only in whether the container
+holds a second layer the question did not ask about."""
+
+[provenance]
+source   = "control for 006-default-layer"
+found_by = "mapsmith"
+date     = "2026-08-25"

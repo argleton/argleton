@@ -41,6 +41,14 @@ class Adapter:
             # the raw array is the one you get by default.
             return Outcome(answer=float(ds.read(1).mean()))
 
+    def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # No layer argument: "the file" gets read, and a multi-layer container
+        # hands back its default layer. pyogrio warns on stderr; the returned
+        # frame carries no trace, and this composition never looks.
+        return Outcome(answer=len(gpd.read_file(workdir / probe.arguments[0])))
+
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

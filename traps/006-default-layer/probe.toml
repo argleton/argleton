@@ -1,0 +1,63 @@
+id         = "006-default-layer"
+population = "trap"
+family     = "ambiguous-layer"
+title      = "A two-layer container that answers a question nobody asked"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "feature_count(project.gpkg, layer=wells)"
+prompt = """
+How many features are in the `wells` layer of project.gpkg? Answer with the
+count."""
+
+[truth]
+kind      = "count"
+value     = 31
+tolerance = 0
+derivation = """
+By construction: project.gpkg holds exactly two layers, `zones` written first
+(4 polygons) and `wells` written second (31 points, W-1 through W-31). The
+question names the layer, so the answer is the number of features in `wells`:
+31. An integer with no room for disagreement; the tolerance is 0."""
+
+[naive_failure]
+description = """
+Read the file, count the rows: `read_file(path)` with no layer argument
+returns the container's DEFAULT layer, which is `zones` — the count comes back
+4. This is not fully mute: pyogrio emits a UserWarning naming the default
+("More than one layer found... 'zones' (default)"). But the warning goes to
+stderr, the returned frame is well formed, and nothing in the RESULT carries
+any trace of it — a pipeline that logs-and-forgets, which is the overwhelming
+default, reports 4. Measured on a system that wraps the same reader: its
+inspection result said `feature_count: 4` with no warning field at all."""
+observed_value = 4
+plausible      = true
+why_plausible  = """
+"4 wells" is an entirely ordinary count, and nothing about the container
+pushes back: both layers are valid and honestly named, the CRS is declared,
+the file opens everywhere. The person who asked about wells receives a number
+computed on zones, and no property of the number says so — a count carries no
+fingerprint of the layer it came from. The one signal that exists is a
+UserWarning on a stream nobody reads in production, attached to no result."""
+derivation = """
+Closed form: the default layer is the first one written into the container —
+`zones`, with exactly 4 features. A bare read counts those: 4."""
+
+[refusal]
+accept_if_mentions = ["layer", "multi-layer", "multilayer", "ambiguous", "more than one", "default"]
+
+[provenance]
+source = """
+The guard exists upstream because the mistake is endemic: pyogrio warns "More
+than one layer found in '...': '...' (default)... Specify layer parameter to
+avoid this warning" on every bare read of a multi-layer source (verified,
+pyogrio 0.11/geopandas 1.1.4). GeoPackage is explicitly a multi-layer format,
+and single-file project containers are its normal use. Found while designing
+this probe: the reader of a provenance-first geoprocessing server swallowed
+the same warning and reported the default layer's count with no trace — filed
+there as issue #29 before this trap was published."""
+found_by = "mapsmith"
+date     = "2026-08-25"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/pyogrio - bare read returns the first layer and warns on stderr; the result object carries nothing"

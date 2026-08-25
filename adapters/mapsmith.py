@@ -72,6 +72,17 @@ class Adapter:
         warns = self._warnings(output)
         return Outcome(answer=float(result["mean"].iloc[0]), warnings=warns)
 
+    def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import dispatch
+
+        # MapSmith's inspection tool takes a path and nothing else: there is no
+        # way to pass the layer the question names, and on a multi-layer
+        # container the reader silently resolves to the default. That gap is
+        # filed as MapSmith issue #29; this composition measures the tool as
+        # shipped, which is the adapter's whole job.
+        result = dispatch.describe_routed(str(workdir / probe.arguments[0]))
+        return Outcome(answer=int(result["feature_count"]))
+
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         from mapsmith.engines import vector
 

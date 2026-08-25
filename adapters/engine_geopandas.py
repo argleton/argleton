@@ -54,6 +54,16 @@ class Adapter:
             )
         return Outcome(answer=float(geoms.area.sum() * factor**2), warnings=warns)
 
+    def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # The question names a layer, so the read does too. On a multi-layer
+        # container this is the whole difference between 31 and 4.
+        layer = probe.arguments[1].split("=", 1)[1]
+        return Outcome(
+            answer=len(gpd.read_file(workdir / probe.arguments[0], layer=layer))
+        )
+
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 
