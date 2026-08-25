@@ -58,8 +58,8 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 (the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.8 / 1.0**: it
-answers every clean probe correctly, falls into four of the five traps, and
+report it — and it is the most useful one here. It scores **0.8333 / 1.0**: it
+answers every clean probe correctly, falls into five of the six traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -98,32 +98,36 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-Engine tier, five families, `spec_commit` pinned — [every run, and what the
+Engine tier, six families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run |
 |---|---|---|---|
-| MapSmith 0.2.2 (main) | 0.00 | 1.00 | 3 |
+| MapSmith 0.2.2 (main) | 0.25 | 1.00 | 4 |
 | rasterio 1.5.1 | 0.00 | 1.00 | 2 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 3 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 4 |
 | whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 |
-| naive composition | 0.80 | 1.00 | 5 |
+| naive composition | 0.8333 | 1.00 | 6 |
 
-The last column is not decoration. A rate over two traps and a rate over five
+The last column is not decoration. A rate over two traps and a rate over six
 are different claims, and an adapter that could only be asked one question must
 not be able to look better than one that faced all of them.
 
-Two findings frame everything here, one per run. From the first run:
+Three findings frame everything here, one per run. From the first run:
 **MapSmith scored 0.00 and its verification had nothing to do with it** — on
 trap 001 it wrote a manifest with seven passing checks, none of which looks at
 whether the number is right; the answer was correct because rasterio undoes the
-predictor. A provenance manifest records what was done and does not certify
-that it was right — different claims, and MapSmith only makes the first. That
-is the gap this suite exists to measure, and the reason it is not in MapSmith's
-repository. From the five-family run: **on the mismatched-CRS trap the pass is
-earned, not inherited** — there is no library that aligns two frames on your
-behalf; MapSmith answers 12 because its join reprojects and records the
-decision, and the naive composition answers 0.
+predictor. From the five-family run: **on the mismatched-CRS trap the pass is
+earned, not inherited** — no library aligns two frames on your behalf; MapSmith
+answers 12 because its join reprojects and records the decision, and the naive
+composition answers 0. And from the six-family run: **the suite caught its
+author** — MapSmith's reader resolves a multi-layer container to its default
+layer silently, answered 4 where the truth is 31, and the failure was
+[filed against MapSmith](https://github.com/mapsmith-ai/MapSmith/issues/29)
+before the trap was published, with the fix landing after this run rather than
+before it. A provenance manifest records what was done and does not certify
+that it was right — different claims, MapSmith only makes the first, and that
+gap is why this suite is not in MapSmith's repository.
 
 ## The admission criterion
 

@@ -4,6 +4,35 @@ Every file here names the `spec_commit` it ran against. That is the
 pre-registration: whether a tolerance or a task moved after a number was seen is
 answered by a diff, not by our word.
 
+## 2026-08-25 — six families, and the suite catches its author
+
+Engine tier, `spec_commit` [`06d4e66`](../../../commit/06d4e66), six families:
+`ambiguous-layer` (006) joins the five below.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith 0.2.2 (main @ d681b54) | **0.25** | 1.00 | 4 | 4 |
+| rasterio 1.5.1 | **0.00** | 1.00 | 2 | 8 |
+| GeoPandas 1.1 + Shapely 2 | **0.00** | 1.00 | 4 | 4 |
+| whitebox-workflows 2.0.6 | **0.50** | 1.00 | 2 | 8 |
+| naive composition | **0.8333** | 1.00 | 6 | 0 |
+
+**MapSmith's 0.00 is gone, and we took it away ourselves.** Trap 006 hands
+every reader a two-layer container and asks about the layer by name. MapSmith's
+reader resolves to the container's default layer **silently** — quieter than
+the bare pyogrio call it wraps, which at least warns on stderr — so its
+inspection tool answered 4 where the truth is 31, with no warning field and,
+per [issue #29](https://github.com/mapsmith-ai/MapSmith/issues/29), no record
+in the manifest of which layer was read. The issue was filed before the trap
+was published, and the fix lands after this run — in that order on purpose: a
+suite that publishes its author's failures only once they are fixed is an
+advertisement, not a measurement.
+
+The rest moves as the families predict: the careful GeoPandas composition
+passes everything it can be asked (repairing the bowtie **and saying so**),
+and the naive composition now stands at 0.83 — five traps of six, still saved
+on the predictor by rasterio.
+
 ## 2026-08-24 — five families
 
 Engine tier, `spec_commit` [`7856f88`](../../../commit/7856f88), five families:
