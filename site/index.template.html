@@ -230,6 +230,18 @@ feature_count_exact  expected 1, got 1</pre>
       behalf — the naive composition returns an empty join there and calls it a finding, while
       MapSmith answers correctly because its join reprojects and records the decision.
     </p>
+    <p style="margin-top:1.1rem">
+      Two runs later the suite has twice cost its own author something, which is the only reason
+      this arrangement is worth anything. <strong>It caught him:</strong> on the ambiguous-container
+      trap MapSmith resolved a multi-layer file to its default layer without saying so and answered
+      4 wells where the truth is 31 — filed against MapSmith before the trap was published, and
+      fixed after that run rather than before it. <strong>Then it wrote his roadmap:</strong> three
+      probes came back <code>unsupported</code> because MapSmith had no area operation at all, so
+      the number named a gap in a catalogue rather than a bug in code. The operation exists now, and
+      it carries the first check in that codebase that asks whether the <em>number</em> is right: a
+      planar area compared against the ellipsoidal one, so a Web Mercator parcel comes back flagged
+      as reporting 1.80× the ground it covers.
+    </p>
   </div>
 </div></section>
 
@@ -310,9 +322,10 @@ feature_count_exact  expected 1, got 1</pre>
   </p>
   <p>
     The defence is not the org chart. Every fixture is regenerable, every tolerance is in git
-    history, and the first thing our first published run said — the finding above — is that our own
-    verification does not catch any of this. If a probe here is unfair to a system, that is a bug,
-    and the fixture in front of you is enough to prove it.
+    history, the first thing our first published run said is that our own verification does not
+    catch any of this, and since then this suite has filed a defect and a missing operation
+    <em>against</em> MapSmith rather than around it. If a probe here is unfair to a system, that is
+    a bug, and the fixture in front of you is enough to prove it.
   </p>
 </div></section>
 

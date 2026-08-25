@@ -187,6 +187,77 @@ def test_the_site_template_has_no_hand_typed_count_and_no_orphan_placeholder():
         assert word not in template.lower(), f"hand-typed count {word!r} in the template"
 
 
+def test_every_live_family_count_in_public_markdown_is_current():
+    """The stale-caveat defect, one directory over. `results/README.md` carried
+    "three families of twelve" in the section the front page links as *what the
+    numbers do not say* — four families after it stopped being true, and in the
+    one paragraph whose whole job is to keep a reader from over-reading a 0.00.
+
+    Present tense marks a live claim. A past-tense sentence about a superseded
+    run is a record of what was claimed then and stays exactly as written.
+    """
+    implemented = len({p.family for p in discover(ROOT) if p.population == "trap"})
+    planned = len(set(re.findall(
+        r"^\|\s*(\d+)\s*\|",
+        (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )))
+    live = re.compile(r"([A-Za-z]+) families of ([a-z]+) are implemented")
+    checked = 0
+    for page in public_markdown():
+        for stated, out_of in live.findall(page.read_text(encoding="utf-8")):
+            assert NUMBER_WORDS[stated.lower()] == implemented, f"{page.name}: implemented count"
+            assert NUMBER_WORDS[out_of] == planned, f"{page.name}: planned count"
+            checked += 1
+    assert checked, (
+        "no live family count found in public markdown — the caveat that stops a 0.00 "
+        "being read as broader than it is has to state the coverage somewhere"
+    )
+
+
+def test_the_repository_and_its_site_point_at_each_other():
+    """Found by a reader, not by a test: argleton.org was linked from the
+    repository's `homepage` field — which nobody looks at — and from nowhere in
+    the README. Each surface must name the other, and the README must do it on
+    the first screen. The link to the system this suite measures is checked in
+    the same breath, because hiding it would be the more tempting mistake."""
+    template = (ROOT / "site" / "index.template.html").read_text(encoding="utf-8")
+    first_screen = README.split("\n## ", 1)[0]
+    assert "argleton.org" in first_screen, (
+        "the README does not link the published site on its first screen"
+    )
+    assert "github.com/argleton/argleton" in template, (
+        "argleton.org does not link the repository it renders"
+    )
+    # The conflict-of-interest disclosure has to exist and has to be findable.
+    # Deliberately *not* required on the first screen, and not in either
+    # navigation bar: a suite that leads with the name of the product whose
+    # authors wrote it reads as that product's marketing, which is the one
+    # criticism no amount of regenerable fixtures answers.
+    assert "mapsmith" in README.lower(), (
+        "the README no longer says who wrote this and which system it measures"
+    )
+    assert "mapsmith.dev" in template, (
+        "the site no longer declares whose suite this is: stated, not hidden"
+    )
+    assert "mapsmith" not in template.split('<div class="lead">', 1)[0].lower(), (
+        "MapSmith has reached the masthead of argleton.org — the disclosure belongs in "
+        "'Who wrote this', not in the navigation of the suite that grades it"
+    )
+
+
+def test_the_published_run_directory_is_linked_from_the_results_index():
+    """`results/README.md` is what GitHub renders for that directory, and it
+    described four runs without linking any of them. The JSON records are the
+    evidence — per-probe verdicts and the `by_family` breakdown — so the index
+    has to reach them, not just summarise them."""
+    run_name, _ = latest_run()
+    text = (ROOT / "results" / "README.md").read_text(encoding="utf-8")
+    assert f"]({run_name}/)" in text or f"]({run_name})" in text, (
+        f"results/README.md never links {run_name}/, the run it publishes"
+    )
+
+
 def public_markdown() -> list[Path]:
     return [
         p for p in ROOT.rglob("*.md")

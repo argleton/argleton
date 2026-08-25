@@ -204,8 +204,10 @@ a permissive licence, with no CLA, because an evaluation that lives inside the
 thing it evaluates is easy to dismiss in one line — but pretending at
 independence we do not have would be worse than the problem. The defence is not
 the org chart: it is that every fixture is regenerable, every tolerance is in
-git history, and the finding on the first page of [results](results/) is about
-MapSmith itself — a 0.00 its own verification had nothing to do with.
+git history, and every headline finding in [results](results/) so far has cost
+MapSmith something — a 0.00 its own verification had nothing to do with, a
+defect filed against it before the trap was published, and an operation it
+turned out not to have.
 
 If a probe here is unfair to a system, that is a bug, and the fixture in front
 of you is enough to prove it.

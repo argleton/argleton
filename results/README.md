@@ -4,8 +4,41 @@ Every file here names the `spec_commit` it ran against. That is the
 pre-registration: whether a tolerance or a task moved after a number was seen is
 answered by a diff, not by our word.
 
+`LATEST` names the published run — the one [argleton.org](https://argleton.org)
+renders. Each section below links the directory its numbers come from, one JSON
+record per system, with a per-probe verdict and a `by_family` breakdown so one
+family with several probes cannot read as several independent findings.
+
+## What these numbers do not say
+
+This section is at the top rather than the bottom on purpose, and it grows with
+the suite. Eight families of thirteen are implemented
+([FAMILIES.md](../docs/FAMILIES.md)).
+
+- **A 0.00 means a system did not fail silently *on these probes*.** Not that it
+  is correct, not that it is safe, and not that it would survive the five
+  families that are named and not yet built.
+- **Read "not applicable" before the rate.** A rate over two traps and a rate
+  over eight are different claims. An adapter that can only be asked two
+  questions must not be able to look better than one that faced all of them.
+- **One family can still move any of these rates a long way**, because there are
+  eight of them and each carries one trap. Treat a difference of one probe as one
+  probe.
+- **Engine tier only.** Every number here comes from an adapter calling a
+  library directly. Nothing on this page measures an agent, and the agent tier
+  will be reported with its variance rather than as a single run.
+- **These are not verdicts on libraries.** whitebox-workflows fails one trap
+  because of [one open upstream defect](https://github.com/jblindsay/whitebox_next_gen/issues/32)
+  we reported; everything else here is a library behaving exactly as documented.
+
+Nobody is notified before publication as long as nothing here is a new claim
+about a third party: the Whitebox defect was reported upstream first, and the
+rest is documented behaviour. That changes the moment a result says something a
+maintainer has not already been told.
+
 ## 2026-08-25 (later) — eight families, and the suite writes its author's roadmap
 
+Published run: [`2026-08-25-eight-families/`](2026-08-25-eight-families/).
 Engine tier, `spec_commit` [`bc95d3b`](../../../commit/bc95d3b), eight families:
 `projection-distortion` (008) joins the seven below.
 
@@ -51,6 +84,7 @@ rasterio on the predictor.
 
 ## 2026-08-25 — six families, and the suite catches its author
 
+Superseded run: [`2026-08-25-six-families/`](2026-08-25-six-families/).
 Engine tier, `spec_commit` [`06d4e66`](../../../commit/06d4e66), six families:
 `ambiguous-layer` (006) joins the five below.
 
@@ -80,6 +114,7 @@ on the predictor by rasterio.
 
 ## 2026-08-24 — five families
 
+Superseded run: [`2026-08-24-five-families/`](2026-08-24-five-families/).
 Engine tier, `spec_commit` [`7856f88`](../../../commit/7856f88), five families:
 the three below plus `mismatched-crs` (004) and `invalid-geometry` (005), both
 added since the first run.
@@ -114,6 +149,7 @@ the predictor on its behalf.
 
 ## 2026-08-23 — first run
 
+Superseded run: [`2026-08-23-first-run/`](2026-08-23-first-run/).
 Engine tier, `spec_commit` [`1584e5d`](../../../commit/1584e5d), three families.
 
 | system | silent error rate | completion rate | traps run | not applicable |
@@ -182,15 +218,10 @@ failure. MapSmith exposes no area operation, so `002-feet-as-metres` was never
 put to it. Scoring an operation a system was never asked to perform would
 measure the adapter.
 
-### What these numbers do not say
+### What the first run's numbers did not say
 
-Three families of twelve are implemented ([FAMILIES.md](../docs/FAMILIES.md)).
-A 0.00 here means a system did not fail silently **on these probes** — not that
-it is correct, and not that it is safe. With this few probes, one new family can
-move any of these rates a long way, which is the honest state of a suite that is
-four days old.
-
-Nobody was notified before publication because nothing here is a new claim about
-a third party: the Whitebox defect was reported upstream first, and everything
-else is a library behaving as documented. That changes the moment a result says
-something a maintainer has not already been told.
+Kept as written, because a superseded caveat is still a record of what was
+claimed at the time: three families of twelve were implemented, so a 0.00 over
+two traps was a narrow statement — and one that four later families have since
+tested. The standing version of this caveat is
+[at the top of this page](#what-these-numbers-do-not-say).
