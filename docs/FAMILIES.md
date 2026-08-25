@@ -68,6 +68,8 @@ See [ADDING-A-TRAP.md](ADDING-A-TRAP.md).
 
 ## What this list does not claim
 
-That these twelve are the complete set. They are the families we can currently
-argue for, each with a source. A thirteenth that meets the four conditions
-belongs here, and the fastest way to improve this suite is to bring one.
+That these thirteen are the complete set. They are the families we can currently
+argue for, each with a source — and the thirteenth arrived exactly the way a
+fourteenth should: it turned up while building another one, met the four
+conditions, and was added. A fourteenth that meets them belongs here, and the
+fastest way to improve this suite is to bring one.
