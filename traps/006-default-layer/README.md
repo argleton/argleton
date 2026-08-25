@@ -44,12 +44,18 @@ downstream can see is not a defence, it is a description of the defect.
 | `adapters.mapsmith` — `describe_dataset`, which takes a path and nothing else | 4 | ✗ **silent error** |
 
 The third row is the reason this probe exists, and it is about the suite's own
-author: MapSmith's reader resolves a multi-layer container to its default
-layer **silently** — its inspection result says `feature_count: 4` with no
+author: MapSmith's reader resolved a multi-layer container to its default
+layer **silently** — its inspection result said `feature_count: 4` with no
 warning field at all, quieter than the bare pyogrio call it wraps. Filed as
-[MapSmith issue #29](https://github.com/mapsmith-ai/MapSmith/issues/29)
-before this trap was published. When it is fixed, this row is the regression
-test with a date on it.
+[MapSmith issue #29](https://github.com/mapsmith-ai/MapSmith/issues/29) before
+this trap was published, and that number is in the published
+[2026-08-25 run](../../results/2026-08-25-six-families/).
+
+**After the fix** (MapSmith `ebea7d0`, the same day, in that order on
+purpose): operations refuse a container with no chosen layer, naming the
+layers; `describe_dataset` describes every layer so the caller can choose; and
+this adapter's composition now answers **31, correct**. The row above is the
+regression test with a date on it — both dates.
 
 ## Clean twin
 

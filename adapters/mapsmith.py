@@ -75,12 +75,17 @@ class Adapter:
     def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
         from mapsmith.engines import dispatch
 
-        # MapSmith's inspection tool takes a path and nothing else: there is no
-        # way to pass the layer the question names, and on a multi-layer
-        # container the reader silently resolves to the default. That gap is
-        # filed as MapSmith issue #29; this composition measures the tool as
-        # shipped, which is the adapter's whole job.
+        # The composition that measured the 2026-08-25 silent error is one
+        # line shorter than this: describe_dataset used to answer about the
+        # container's default layer with no trace (MapSmith issue #29, caught
+        # by this trap). Since the fix, describe returns a per-layer summary
+        # for containers, and the composition picks the layer the question
+        # names — which is now possible, which was the point.
         result = dispatch.describe_routed(str(workdir / probe.arguments[0]))
+        if result.get("kind") == "vector-container":
+            layer = probe.arguments[1].split("=", 1)[1]
+            entry = next(e for e in result["layers"] if e["layer"] == layer)
+            return Outcome(answer=int(entry["feature_count"]))
         return Outcome(answer=int(result["feature_count"]))
 
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
