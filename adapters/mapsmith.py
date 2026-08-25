@@ -6,14 +6,18 @@ whatever it says.
 
 Two things worth stating before the numbers.
 
-**MapSmith exposes no `raster_mean` and no area operation.** It exposes
-`zonal_statistics`, so that is what this adapter calls, with a zone covering the
-raster's own extent — which is how you ask MapSmith the question. Composing a
-system's real tools to answer the probe is the adapter's whole job; inventing an
-operation it does not have would measure a system that does not exist. For
-`planar_area_m2` and `ground_area_m2` there is nothing to compose, and the
-honest answer is `unsupported` — twice now, which makes an area operation the
-best-documented gap in MapSmith's own catalog.
+**MapSmith exposes no `raster_mean`.** It exposes `zonal_statistics`, so that is
+what this adapter calls, with a zone covering the raster's own extent — which is
+how you ask MapSmith the question. Composing a system's real tools to answer the
+probe is the adapter's whole job; inventing an operation it does not have would
+measure a system that does not exist.
+
+**The area operations arrived because of this suite.** Until 2026-08-25 the two
+area families (`linear-units`, `invalid-geometry`) and then
+`projection-distortion` came back `unsupported` three times: MapSmith had no
+area operation at all, and composing one out of raw SQL would have measured
+DuckDB instead. Three `unsupported` verdicts on the most elementary question in
+GIS is a finding about the catalog, and `measure_area` is the answer to it.
 
 **There is no switch to turn MapSmith's verification off**, and adding one to a
 product whose argument is that it verifies would be a footgun someone eventually
@@ -72,6 +76,32 @@ class Adapter:
         result = gpd.read_parquet(output)
         warns = self._warnings(output)
         return Outcome(answer=float(result["mean"].iloc[0]), warnings=warns)
+
+    def op_planar_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # The question asks for the area in the layer's own plane, in square
+        # metres: measure_area(method="planar") reads the linear unit off the
+        # CRS and converts, and repairs an invalid ring before measuring it.
+        return self._area(probe, workdir, method="planar")
+
+    def op_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # This question is about the land, not the map, so the default:
+        # geodesic on the ellipsoid the layer's CRS names.
+        return self._area(probe, workdir, method="geodesic")
+
+    def _area(self, probe: Probe, workdir: Path, method: str) -> Outcome:
+        from mapsmith.engines import vector
+
+        output = workdir / f"_argleton_area_{method}.parquet"
+        try:
+            result = vector.measure_area(
+                str(workdir / probe.arguments[0]), str(output), method=method
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            text = str(exc)
+            if "has no CRS" in text or "Refusing" in text or "square degrees" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
+        return Outcome(answer=float(result["total_area_m2"]), warnings=self._warnings(output))
 
     def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
         from mapsmith.engines import dispatch
