@@ -12,7 +12,7 @@ family with several probes cannot read as several independent findings.
 ## What these numbers do not say
 
 This section is at the top rather than the bottom on purpose, and it grows with
-the suite. Nine families of fourteen are implemented
+the suite. Ten families of fifteen are implemented
 ([FAMILIES.md](../docs/FAMILIES.md)).
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
@@ -21,10 +21,10 @@ the suite. Nine families of fourteen are implemented
   mechanisms a survey of the literature turned up while this run was being
   made.
 - **Read "not applicable" before the rate.** A rate over two traps and a rate
-  over nine are different claims. An adapter that can only be asked two
+  over ten are different claims. An adapter that can only be asked two
   questions must not be able to look better than one that faced all of them.
 - **One family can still move any of these rates a long way**, because there are
-  nine of them and each carries one trap. Treat a difference of one probe as one
+  ten of them and each carries one trap. Treat a difference of one probe as one
   probe.
 - **Engine tier only.** Every number here comes from an adapter calling a
   library directly. Nothing on this page measures an agent, and the agent tier
@@ -37,6 +37,39 @@ Nobody is notified before publication as long as nothing here is a new claim
 about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
+
+## 2026-08-26 (later) — ten families, and the archive's own calibration
+
+Published run: [`2026-08-26-ten-families/`](2026-08-26-ten-families/).
+Engine tier, `spec_commit` [`d97d2ae`](../../../commit/d97d2ae), ten families:
+`radiometric-scale-offset` (010) joins the nine below.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 10 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 12 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 8 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 16 |
+| naive composition | 0.90 | 1.00 | 10 | 0 |
+
+**The new family is about a conversion the file asks for and nobody performs.**
+A scene declares scale 0.0001 and offset −0.1, so its stored 3000 and 5000 are
+reflectances of 0.2 and 0.4 and NDVI is exactly one third. Read the bands and
+apply the formula and the answer is 0.25 — GDAL's documentation states that
+applying scale and offset is the caller's responsibility and that `RasterIO`
+does not do it.
+
+**Why careful people have this one.** Without an offset, NDVI is invariant to
+the scale factor: it cancels in the ratio. Dividing digital numbers by 10000,
+or skipping the conversion entirely, gave the right answer for years — until
+ESA introduced a non-zero `BOA_ADD_OFFSET` with Sentinel-2 baseline 04.00 on
+25 January 2022. The invariance stopped holding, on unchanged code, for scenes
+acquired after that date and not before.
+
+**MapSmith returned `unsupported` the first time this trap ran**: it had no
+band arithmetic at all. That is the fourth gap this suite has named in its own
+author's catalogue rather than in someone else's code, and the pattern is now
+the normal way this repository sets MapSmith's roadmap.
 
 ## 2026-08-26 — nine families, and a class that was never there
 

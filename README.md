@@ -39,10 +39,12 @@ $ argleton --adapter engine:rasterio
 ok   clean c001-raster-mean               correct   1093.0
 ok   clean c003-raster-mean-nodata        correct   1000.0
 ok   clean c009-native-resolution-classes correct   900.0
+ok   clean c010-physical-values           correct   0.5
 ok   trap  001-tiff-predictor             correct   1093.0
 ok   trap  003-nodata-in-statistics       correct   1000.0
 ok   trap  009-resampled-classes          correct   0.0
-silent_error_rate 0.0 over 3 traps  |  completion_rate 1.0 over 3 clean
+ok   trap  010-scale-offset               correct   0.3333333333333334
+silent_error_rate 0.0 over 4 traps  |  completion_rate 1.0 over 4 clean
 
 $ argleton --adapter engine:whitebox
 ok   clean c001-raster-mean          correct        1093.0
@@ -109,11 +111,11 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 9 | 0 |
-| rasterio 1.5.1 | 0.00 | 1.00 | 3 | 12 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 6 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 14 |
-| naive composition | 0.8889 | 1.00 | 9 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 10 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 12 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 8 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 16 |
+| naive composition | 0.90 | 1.00 | 10 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question
