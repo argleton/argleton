@@ -30,6 +30,21 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+    def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
+        # gis-mcp ships no band-math or index tool: composing one here out of
+        # numpy would measure numpy. Resolved at call time rather than assumed,
+        # so the day they add one this adapter picks it up.
+        try:
+            from gis_mcp import rasterio_functions
+        except ImportError:
+            return Outcome(unsupported=True)
+        for name in ("calculate_ndvi", "band_math", "raster_algebra", "raster_calculator"):
+            if hasattr(rasterio_functions, name):
+                break
+        else:
+            return Outcome(unsupported=True)
+        return Outcome(unsupported=True)
+
     def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         # Charitable composition (their own tools, at their best): gis-mcp wraps
         # rasterio, so the reader is theirs and the resampling choice is the

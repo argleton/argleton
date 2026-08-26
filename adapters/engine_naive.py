@@ -42,6 +42,20 @@ class Adapter:
         # are metres of ground.
         return Outcome(answer=float(gpd.read_file(workdir / probe.arguments[0]).area.sum()))
 
+    def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        red_band = int(probe.arguments[1].split("=", 1)[1])
+        nir_band = int(probe.arguments[2].split("=", 1)[1])
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            # Read the two bands, put them in the formula. GDAL states that
+            # applying scale and offset is the caller's job and RasterIO will
+            # not do it; nothing in the returned array says it was skipped.
+            red = ds.read(red_band).astype("float64")
+            nir = ds.read(nir_band).astype("float64")
+        return Outcome(answer=float(np.mean((nir - red) / (nir + red))))
+
     def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import rasterio
         from rasterio.enums import Resampling

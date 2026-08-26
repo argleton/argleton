@@ -1,0 +1,30 @@
+id         = "c010-physical-values"
+population = "clean"
+family     = "radiometric-scale-offset"
+title      = "The same index on a scene already in physical units"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "ndvi_mean(scene.tif, red_band=1, nir_band=2)"
+prompt = """
+scene.tif holds two bands of an optical satellite scene: band 1 is red, band 2
+is near-infrared. Compute the mean NDVI, (NIR - RED) / (NIR + RED). Answer with
+the number."""
+
+[truth]
+kind      = "scalar"
+value     = 0.5
+tolerance = 0.0001
+derivation = """
+The bands are float reflectances with no scale and no offset declared: red 0.2,
+NIR 0.6 in every pixel. NDVI = (0.6 - 0.2) / (0.6 + 0.2) = 0.4 / 0.8 = 0.5
+exactly. Deliberately a different number from the trap's, so the two cannot be
+confused when reading a run."""
+
+[provenance]
+source   = "control for 010-scale-offset"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+rasterio = "1.5.1"

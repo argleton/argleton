@@ -60,8 +60,8 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 (the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.8889 / 1.0**: it
-answers every clean probe correctly, falls into eight of the nine traps, and
+report it — and it is the most useful one here. It scores **0.9 / 1.0**: it
+answers every clean probe correctly, falls into nine of the ten traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -85,7 +85,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Nine families of fourteen, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Ten families of fifteen, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -100,10 +100,11 @@ rate means a system did not fail silently *on these probes*.
 | `implicit-parameter-units` | 24 wells "within 500 m" instead of 3 | the buffer runs in the layer's units and swallows the map; the count is an ordinary number for a dense wellfield |
 | `projection-distortion` | 12000 m² instead of 6654 m² | the CRS declares metres and delivers them — metres of map; the factor is cos²(latitude), and both readings are ordinary parcels |
 | `categorical-resampling` | 900 m² of urban where the file has none | the average of two class codes is another valid class code: forest (1) and water (3) interpolate to urban (2), on the shoreline where a town would be |
+| `radiometric-scale-offset` | NDVI 0.25 instead of 0.3333 | without an offset the scale cancels in the ratio, so ignoring the declared calibration was right for years — until Sentinel-2 added a non-zero offset in 2022 |
 
 ## Results
 
-Engine tier, nine families, `spec_commit` pinned — [every run, and what the
+Engine tier, ten families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

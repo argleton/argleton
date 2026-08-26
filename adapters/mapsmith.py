@@ -42,6 +42,35 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+    def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        from mapsmith.engines import raster
+
+        red_band = int(probe.arguments[1].split("=", 1)[1])
+        nir_band = int(probe.arguments[2].split("=", 1)[1])
+        source = workdir / probe.arguments[0]
+        output = workdir / "_argleton_ndvi.tif"
+        try:
+            result = raster.band_math(
+                str(source),
+                str(output),
+                expression="(b2 - b1) / (b2 + b1)"
+                if (red_band, nir_band) == (1, 2)
+                else f"(b{nir_band} - b{red_band}) / (b{nir_band} + b{red_band})",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            text = str(exc)
+            if "declares no CRS" in text or "Refusing" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
+
+        with rasterio.open(output) as ds:
+            band = ds.read(1, masked=True)
+        warns = [w["detail"] for w in result.get("warnings", [])]
+        return Outcome(answer=float(np.ma.mean(band)), warnings=warns)
+
     def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio

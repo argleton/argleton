@@ -1,0 +1,69 @@
+id         = "010-scale-offset"
+population = "trap"
+family     = "radiometric-scale-offset"
+title      = "The band was stored, not measured, and the index skipped the conversion"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "ndvi_mean(scene.tif, red_band=1, nir_band=2)"
+prompt = """
+scene.tif holds two bands of an optical satellite scene: band 1 is red, band 2
+is near-infrared. Compute the mean NDVI, (NIR - RED) / (NIR + RED). Answer with
+the number."""
+
+[truth]
+kind      = "scalar"
+value     = 0.3333333333
+tolerance = 0.0001
+derivation = """
+The file declares scale 0.0001 and offset -0.1 on both bands, so the physical
+value of a stored number is raw * scale + offset — the definition GDAL uses and
+the one written in the file. Red 3000 becomes 0.2 and NIR 5000 becomes 0.4.
+NDVI = (0.4 - 0.2) / (0.4 + 0.2) = 0.2 / 0.6 = 1/3 exactly. Every pixel carries
+the same pair, so the mean is that number and no averaging error enters.
+Tolerance 0.0001 covers float32 storage, nothing more."""
+
+[naive_failure]
+description = """
+Read the two bands and put them in the formula. GDAL's own documentation states
+that "applying scale and offset is of the responsibility of the user, and is not
+done by methods such as RasterIO() or ReadBlock()", so the arrays that come back
+hold 3000 and 5000, and the index comes out (5000-3000)/(5000+3000) = 0.25.
+No exception, no warning, and nothing in the array says it is not a
+reflectance."""
+observed_value = 0.25
+plausible      = true
+why_plausible  = """
+0.25 and 0.3333 are both ordinary NDVI values for vegetation — neither is out
+of range, neither looks like an artefact, and the difference between them is a
+quarter, which is the sort of gap that separates a stressed crop from a healthy
+one rather than a bug from a result. The reason this survives everywhere is
+subtler: without an offset, NDVI is invariant to the scale factor, because the
+scale cancels in the ratio. Code that divided digital numbers by 10000 — or
+skipped the conversion entirely — gave the right answer for years. Sentinel-2
+processing baseline 04.00 introduced a non-zero BOA_ADD_OFFSET on 25 January
+2022, and that invariance quietly stopped holding, on the same code, for scenes
+acquired after that date and not before."""
+derivation = """
+Closed form: (5000 - 3000) / (5000 + 3000) = 2000 / 8000 = 0.25 exactly, for
+every pixel, so the mean is 0.25."""
+
+[refusal]
+accept_if_mentions = ["scale", "offset", "digital number", "physical", "reflectance", "calibrat", "baseline"]
+
+[provenance]
+source = """
+GDAL's raster data model states that "applying scale and offset is of the
+responsibility of the user, and is not done by methods such as RasterIO() or
+ReadBlock()" — the conversion is declared in the file and performed by nobody.
+ESA introduced BOA_ADD_OFFSET (-1000 DN) with Sentinel-2 processing baseline
+04.00 on 25 January 2022, so the same unchanged pipeline returns different
+numbers for scenes on either side of that date; the change is documented by ESA
+and was still generating corrections in downstream archives long afterwards.
+The trap plants the case where the wrong answer is a plausible index rather
+than a physically impossible reflectance."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+rasterio = "1.5.1 - read() returns stored values; scales and offsets are exposed as dataset attributes and applied by nobody"

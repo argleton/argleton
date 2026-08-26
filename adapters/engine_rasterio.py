@@ -25,6 +25,25 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+    def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        red_band = int(probe.arguments[1].split("=", 1)[1])
+        nir_band = int(probe.arguments[2].split("=", 1)[1])
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            # rasterio exposes what the file declares; applying it is still the
+            # caller's job, and this is the caller doing it. A scale of 1 and an
+            # offset of 0 is the no-op the clean twin needs.
+            scales, offsets = ds.scales, ds.offsets
+            red = ds.read(red_band).astype("float64") * scales[red_band - 1] + offsets[
+                red_band - 1
+            ]
+            nir = ds.read(nir_band).astype("float64") * scales[nir_band - 1] + offsets[
+                nir_band - 1
+            ]
+        return Outcome(answer=float(np.mean((nir - red) / (nir + red))))
+
     def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import rasterio
         from rasterio.enums import Resampling
