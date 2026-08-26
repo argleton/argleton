@@ -45,7 +45,6 @@ class Adapter:
     def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio
-
         from mapsmith.engines import raster
 
         red_band = int(probe.arguments[1].split("=", 1)[1])
