@@ -1,7 +1,7 @@
 {
   "system": "whitebox-workflows 2.0.6",
   "adapter": "engine:whitebox",
-  "spec_commit": "461ef15",
+  "spec_commit": "547fc09",
   "date": "2026-08-26",
   "silent_error_rate": 0.5,
   "completion_rate": 1.0,

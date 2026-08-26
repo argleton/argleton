@@ -1,7 +1,7 @@
 {
   "system": "naive composition",
   "adapter": "engine:naive",
-  "spec_commit": "461ef15",
+  "spec_commit": "547fc09",
   "date": "2026-08-26",
   "silent_error_rate": 0.9524,
   "completion_rate": 1.0,

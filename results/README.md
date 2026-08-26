@@ -48,7 +48,7 @@ one new one, `datum-ballpark`, joins the eighteen below.
 |---|---|---|---|---|
 | MapSmith (main) | **0.0476** | 1.00 | 21 | 0 |
 | rasterio 1.5.1 | 0.00 | 1.00 | 4 | 34 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 7 | 28 |
+| GeoPandas 1.1 + Shapely 2 | **0.1429** | 1.00 | 7 | 28 |
 | whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 38 |
 | naive composition | 0.9524 | 1.00 | 21 | 0 |
 
@@ -75,12 +75,20 @@ There PROJ selects a 4 m operation and lands on the truth to 0.000 m. So the
 answer to this trap cannot be *datum transformations are hard*: difficulty is not
 the variable, the declared variant is.
 
-And what it takes to pass is a **computation**, not a declaration: read
+**Nothing passes this trap yet**, and that is worth saying plainly rather than
+leaving to a reader to notice. GeoPandas falls in too: `to_crs` is one line and it
+hands the pair to the same `Transformer.from_crs`, which is also the line under
+MapSmith's `reproject_layer`. All three failures are the same failure, reached
+three ways.
+
+What it takes to pass is a **computation**, not a declaration: read
 `get_last_used_operation().accuracy`, and if it is negative take the first
 `TransformerGroup` operation that states one. Fourteen lines, no manifest and no
-provenance format — the GeoPandas adapter does exactly that and passes. A trap
-only winnable by systems that keep a provenance record would be a benchmark for
-the product this suite was built beside, and that is not what this is for.
+provenance format — which is the property that keeps this trap from being a
+benchmark for the product the suite was built beside. It is stated in the trap's
+README as the specification of a fix, and deliberately not scored under any
+library's name: an earlier version of this run did exactly that, and told a
+reader GeoPandas handles a case it does not.
 
 ## 2026-08-26 (tier A) — eighteen families, and two that are not geometry at all
 
