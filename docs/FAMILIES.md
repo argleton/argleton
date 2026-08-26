@@ -1,7 +1,7 @@
 # Families, and what is actually covered
 
-Thirteen families are on the list — twelve planned at the start, one added from
-a reproduction while building. **Eight are implemented.** This page exists so that
+Fourteen families are on the list — twelve planned at the start, two added from
+reproductions while building. **Nine are implemented.** This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -21,11 +21,14 @@ cannot read as ten independent findings.
 | 11 | `ambiguous-layer` | [006](../traps/006-default-layer/) + [c006](../clean/c006-named-layer/) | 4 wells instead of 31 | The container's default layer answers a question nobody asked; the only signal is a stderr warning attached to no result |
 | 12 | `implicit-parameter-units` | [007](../traps/007-buffer-in-degrees/) + [c007](../clean/c007-distance-in-metres/) | 24 wells "within 500 m" instead of 3 | The buffer runs in the layer's units (degrees) and swallows the map; the count it returns is an ordinary number for a dense wellfield |
 | 13 | `projection-distortion` | [008](../traps/008-web-mercator-area/) + [c008](../clean/c008-equal-area-crs/) | 12000 m² instead of 6654 m² | The CRS declares metres and delivers them — metres of map. The factor is cos²(latitude): smooth, invisible in any single number, and both readings are ordinary parcels |
+| 14 | `categorical-resampling` | [009](../traps/009-resampled-classes/) + [c009](../clean/c009-native-resolution-classes/) | 900 m² of a class that is not in the file | The interpolated value between two class codes is another valid class code: averaging forest (1) and water (3) yields urban (2), on the shoreline where a town would actually be |
 
-Family 13 was not in the original design: it came out of building family 3
-(`linear-units`) and noticing that the unit label can be *true* while the plane
-it measures is not the ground. Added under the same four conditions as the
-rest — which is what the closing section of this page asks of anyone.
+Families 13 and 14 were not in the original design, and both came out of
+building something else: 13 from family 3 (`linear-units`), on noticing that a
+unit label can be *true* while the plane it measures is not the ground; 14 from
+writing a resampling operation and asking what its output alphabet is allowed to
+contain. Both were added under the same four conditions as the rest — which is
+what the closing section of this page asks of anyone.
 
 ## Planned
 
@@ -68,8 +71,8 @@ See [ADDING-A-TRAP.md](ADDING-A-TRAP.md).
 
 ## What this list does not claim
 
-That these thirteen are the complete set. They are the families we can currently
-argue for, each with a source — and the thirteenth arrived exactly the way a
-fourteenth should: it turned up while building another one, met the four
-conditions, and was added. A fourteenth that meets them belongs here, and the
+That these fourteen are the complete set. They are the families we can currently
+argue for, each with a source — and the last two arrived exactly the way the
+next one should: they turned up while building something else, met the four
+conditions, and were added. A fifteenth that meets them belongs here, and the
 fastest way to improve this suite is to bring one.

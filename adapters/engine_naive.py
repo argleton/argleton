@@ -42,6 +42,25 @@ class Adapter:
         # are metres of ground.
         return Outcome(answer=float(gpd.read_file(workdir / probe.arguments[0]).area.sum()))
 
+    def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import rasterio
+        from rasterio.enums import Resampling
+
+        resolution = float(probe.arguments[1].split("=", 1)[1])
+        wanted = int(probe.arguments[2].split("=", 1)[1])
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            left, bottom, right, top = ds.bounds
+            width = round((right - left) / resolution)
+            height = round((top - bottom) / resolution)
+            # `bilinear` is what a pipeline configured once for elevation applies
+            # to everything, and what the resampling docs recommend for "continuous
+            # data" — which nothing in a GeoTIFF says this is not.
+            band = ds.read(
+                1, out_shape=(1, height, width), resampling=Resampling.bilinear
+            )
+        cells = int((band == wanted).sum())
+        return Outcome(answer=float(cells * resolution * resolution))
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import rasterio
 

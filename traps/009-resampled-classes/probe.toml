@@ -1,0 +1,76 @@
+id         = "009-resampled-classes"
+population = "trap"
+family     = "categorical-resampling"
+title      = "A class that is not in the file, produced by resampling"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "class_area_m2(landcover.tif, resolution=15, class=2)"
+prompt = """
+landcover.tif is a land-cover map with the legend 1=forest, 2=urban, 3=water.
+Put it on a 15 metre grid so it lines up with another dataset, and report how
+many square metres of URBAN (class 2) it contains. Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 0.0
+tolerance = 0.0
+derivation = """
+The file contains exactly two values, 1 and 3 — verifiable by reading it. A
+class code is a label, not a measurement, so no resampling rule that is valid
+for labels can produce a label that was not there: nearest neighbour and mode
+both select one of the contributing cells' values, so the output alphabet is a
+subset of the input alphabet {1, 3}. Class 2 is therefore absent from every
+correct answer, at any target resolution, and the urban area is exactly zero.
+Tolerance 0: this is not a measurement with error bars, it is the extent of
+something that does not exist."""
+
+[naive_failure]
+description = """
+Resample with the method that produces smooth output — bilinear, cubic or
+average, all three of which are the recommended choice for continuous rasters
+and are what a pipeline configured once for elevation applies to everything
+that passes through it. The 15 m cell centres fall between the 20 m ones, so
+across the forest/water boundary the interpolated value is the average of 1
+and 3. That is 2. Four cells of 225 m2 come back as urban: 900 m2 of a class
+that is not in the source. No exception, no warning — the output is a valid
+GeoTIFF whose values are all legal class codes."""
+observed_value = 900.0
+plausible      = true
+why_plausible  = """
+900 m2 of urban between a forest and a lake is not a suspicious number: it is
+what a road, a car park or a few buildings on a shoreline look like, and
+shorelines are exactly where settlements are. Nothing in the result hints that
+the value was derived rather than observed — the raster is well formed, every
+code is in the legend, and the areas still add up. The tell-tale would be the
+value 2 appearing where the input had none, and no raster library reports
+that: rasterio's own documentation recommends bilinear and cubic for
+'continuous data' and never warns about categorical data, because nothing in a
+GeoTIFF says which of the two it is holding."""
+derivation = """
+Closed form: with a 60 m extent and 15 m cells the output is 4x4. Bilinear
+interpolation at the new cell centres averages the neighbouring 20 m cells;
+across the forest/water boundary that is (1+3)/2 = 2, stored in the uint8 band
+as 2. Measured on rasterio 1.5.1: bilinear, cubic and average each give
+exactly 4 cells of value 2 (4 x 225 = 900 m2), while nearest and mode give 0."""
+
+[refusal]
+accept_if_mentions = ["categorical", "class code", "nearest", "mode", "interpolat", "discrete", "legend"]
+
+[provenance]
+source = """
+That categorical rasters must be resampled with nearest neighbour or majority
+is stated in every vendor's documentation (Esri's Resample tool lists MAJORITY
+and NEAREST for 'discrete data'; GDAL's warp documentation offers 'mode' for
+thematic rasters) and is a standing question on GIS Stack Exchange. What no
+library does is CHECK it: rasterio 1.5.1 carries no warning about bilinear on
+categorical data anywhere in its source or docs, and recommends bilinear and
+cubic for continuous data without saying how a caller is meant to tell the
+difference. The trap plants the case where the invented code is a class that
+exists in the legend, so the wrong answer is a plausible quantity rather than
+an obvious artefact."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+rasterio = "1.5.1 - read(out_shape=...) accepts nine of the fifteen Resampling members; no categorical-data warning exists"

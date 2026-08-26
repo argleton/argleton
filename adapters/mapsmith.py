@@ -42,6 +42,39 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+    def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        from mapsmith.engines import raster
+
+        resolution = float(probe.arguments[1].split("=", 1)[1])
+        wanted = int(probe.arguments[2].split("=", 1)[1])
+        source = workdir / probe.arguments[0]
+        resampled = workdir / "_argleton_resampled.tif"
+        try:
+            # resample_raster has NO default method: the composition has to
+            # state one, and the question states a legend, so these are class
+            # codes. That forced choice is the whole defence — and if this
+            # composition had said "bilinear", the result would have come back
+            # with `invented_values` naming the class that appeared out of
+            # nothing, which is the second defence.
+            result = raster.resample(
+                str(source), str(resampled), resolution, "nearest"
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            text = str(exc)
+            if "declares no CRS" in text or "Refusing" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
+
+        with rasterio.open(resampled) as ds:
+            band = ds.read(1)
+            cell = abs(float(ds.res[0])) * abs(float(ds.res[1]))
+        area = float(int(np.sum(band == wanted)) * cell)
+        warns = [w["detail"] for w in result.get("warnings", [])]
+        return Outcome(answer=area, warnings=warns)
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
         import rasterio

@@ -1,0 +1,31 @@
+id         = "c009-native-resolution-classes"
+population = "clean"
+family     = "categorical-resampling"
+title      = "The same urban-area question, with urban actually present"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "class_area_m2(landcover.tif, resolution=15, class=2)"
+prompt = """
+landcover.tif is a land-cover map with the legend 1=forest, 2=urban, 3=water.
+Put it on a 15 metre grid so it lines up with another dataset, and report how
+many square metres of URBAN (class 2) it contains. Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 900.0
+tolerance = 0.0
+derivation = """
+The file is already on the 15 m grid the question asks for, so no resampling
+is needed and none can change the answer: the third column of a 4x4 grid is
+coded 2, which is 4 cells of 15 x 15 = 225 m2 each, so 900 m2 exactly.
+Deliberately the same number the trap's naive answer produces — what separates
+the two probes is not the quantity but whether the class is in the data."""
+
+[provenance]
+source   = "control for 009-resampled-classes"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+rasterio = "1.5.1"

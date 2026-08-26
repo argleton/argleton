@@ -30,6 +30,48 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+    def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # Charitable composition (their own tools, at their best): gis-mcp wraps
+        # rasterio, so the reader is theirs and the resampling choice is the
+        # caller's. Whether a resample tool exists in the set is resolved at
+        # call time rather than assumed: if it does not, the honest verdict is
+        # unsupported, not a number produced by glue we wrote.
+        try:
+            from gis_mcp.rasterio_functions import resample_raster
+        except ImportError:
+            return Outcome(unsupported=True)
+
+        import rasterio
+
+        resolution = float(probe.arguments[1].split("=", 1)[1])
+        wanted = int(probe.arguments[2].split("=", 1)[1])
+        source = workdir / probe.arguments[0]
+        destination = workdir / "_argleton_resampled.tif"
+        # Their tool takes a scale factor for width/height, not a target cell
+        # size, so the glue converts: the question asks for a 15 m grid and the
+        # source is 20 m, hence 20/15. Their `resampling` argument, like ours,
+        # has NO default — the caller must state it, and a caller told the
+        # legend states a categorical method. Same charity as trap 007.
+        with rasterio.open(source) as ds:
+            scale = abs(float(ds.res[0])) / resolution
+        try:
+            resample_raster.fn(
+                source=str(source),
+                scale_factor=scale,
+                resampling="nearest",
+                destination=str(destination),
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return Outcome(error=f"{type(exc).__name__}: {exc}")
+
+        import numpy as np
+        import rasterio
+
+        with rasterio.open(destination) as ds:
+            band = ds.read(1)
+            cell = abs(float(ds.res[0])) * abs(float(ds.res[1]))
+        return Outcome(answer=float(int(np.sum(band == wanted)) * cell))
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         from gis_mcp.rasterio_functions import raster_band_statistics
 
