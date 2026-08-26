@@ -1,0 +1,28 @@
+id         = "c019-fully-contained"
+population = "clean"
+family     = "double-counting"
+title      = "The same question where the band covers whole parcels"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "flooded_farmland_m2(fields.gpkg, flood.gpkg)"
+prompt = """
+How many square metres of farmland fall inside the flood band? The fields are
+in fields.gpkg and the band is in flood.gpkg. Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 30000.0
+tolerance = 0.01
+derivation = """
+The band is 100 m deep, so it contains the first three fields entirely.
+Intersection area and whole-parcel area agree at 30000, and a system that
+counts parcels answers this one correctly."""
+
+[provenance]
+source   = "control for 019-partial-overlap"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

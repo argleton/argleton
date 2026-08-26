@@ -1,0 +1,53 @@
+id         = "018-join-key-typing"
+population = "trap"
+family     = "tabular-join"
+title      = "The leading zero the CSV reader threw away"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "total_population(municipalities.gpkg, population.csv)"
+prompt = """
+Join population.csv to the municipalities by ISTAT code. What is the total
+population of the twelve municipalities? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 100000
+tolerance = 0
+derivation = """
+Twelve municipalities: four with 9500 inhabitants and eight with 7750.
+4*9500 + 8*7750 = 38000 + 62000 = 100000 exactly. The codes are strings in
+both files — '001' in the layer and '001' in the CSV — so every row matches."""
+
+[naive_failure]
+description = """
+Read the CSV with type inference. '001' becomes the integer 1, which matches
+no code in the layer, and the four municipalities whose codes begin with a
+zero drop out of the join with 38000 people. The total comes back 62000."""
+observed_value = 62000
+plausible      = true
+why_plausible  = """
+62000 is an ordinary total for twelve municipalities, and the join reports no
+error: an inner join that loses rows is indistinguishable from an inner join
+that had fewer to find. Leading-zero codes are the norm in national
+identifier schemes — ISTAT, FIPS, INSEE, postcodes — and every CSV reader
+infers integer columns by default. Verified: pandas reads this column as
+int64."""
+derivation = """
+Closed form: the eight codes without a leading zero carry 8 * 7750 = 62000."""
+
+[refusal]
+accept_if_mentions = ["leading zero", "dtype", "string", "type inference", "key type"]
+
+[provenance]
+source = """
+pandas.read_csv infers column dtypes unless `dtype` is given, which turns
+zero-padded identifiers into integers; the behaviour is documented and is the
+single most common cause of a join that silently loses rows. Verified against
+the installed pandas while building this fixture: the column comes back
+int64 and '001' becomes 1."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+pandas = "2.x - read_csv infers column types unless told otherwise"

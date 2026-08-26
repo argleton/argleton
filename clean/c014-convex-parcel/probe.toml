@@ -1,0 +1,28 @@
+id         = "c014-convex-parcel"
+population = "clean"
+family     = "centroid-outside"
+title      = "The same question for a parcel whose centroid is inside it"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "district_of_parcel(parcel.gpkg, districts.gpkg)"
+prompt = """
+Which district is the depot in? Its parcel is in parcel.gpkg and the
+districts are in districts.gpkg. Answer with the district name."""
+
+[truth]
+kind      = "scalar"
+value     = "A"
+tolerance = 0
+derivation = """
+The parcel is the 100 x 20 rectangle, entirely inside district A, and convex —
+so its centroid at (50, 10) is on it and in A. Centroid and containment agree,
+and a system that uses the centroid answers this one correctly."""
+
+[provenance]
+source   = "control for 014-centroid-outside"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

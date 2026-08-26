@@ -1,0 +1,59 @@
+id         = "011-polygon-holes"
+population = "trap"
+family     = "polygon-holes"
+title      = "The courtyard added instead of subtracted"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "buildable_area_m2(parcel.gpkg)"
+prompt = """
+parcel.gpkg holds one parcel with an internal courtyard. How many square
+metres can be built on? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 8400.0
+tolerance = 0.01
+derivation = """
+The outer ring is a 100 x 100 square, 10000 m2 exactly; the inner ring is
+40 x 40, 1600 m2 exactly. A polygon with a hole covers the difference:
+10000 - 1600 = 8400 m2. Every number here comes from the fixture's own
+definition, not from a measurement."""
+
+[naive_failure]
+description = """
+Read the rings as two separate polygons — or as the parts of a multipolygon
+— and add their areas: 10000 + 1600 = 11600. The shapefile format encodes
+holes only by ring winding order, with no explicit structure, so a converted
+file whose inner ring is wound the wrong way loses its hole with no error at
+all; and a naive reader that iterates rings does the same to a file that is
+perfectly well formed."""
+observed_value = 11600.0
+plausible      = true
+why_plausible  = """
+1.16 ha against 0.84 ha are both ordinary parcels, the ratio 1.38 is not a
+suspicious number, and nothing downstream questions a buildable area. The
+courtyard is the part of the parcel you cannot build on, so getting its sign
+wrong is worth exactly twice its area — and the result is still a plausible
+planning figure."""
+derivation = """
+Closed form: 10000 + 1600 = 11600, the two rings summed instead of
+subtracted."""
+
+[refusal]
+accept_if_mentions = ["hole", "interior ring", "courtyard", "winding", "donut"]
+
+[provenance]
+source = """
+The ESRI shapefile specification encodes holes with ring winding order
+(outer rings clockwise, inner rings counter-clockwise) and no explicit
+structure, so a file whose rings are wound wrongly has no holes and raises
+nothing; GDAL documents the driver and its tolerances
+(https://gdal.org/en/stable/drivers/vector/shapefile.html, read 2026-08-26).
+The trap plants the case where the wrong answer is an ordinary parcel rather
+than an obvious artefact."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

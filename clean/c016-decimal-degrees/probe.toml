@@ -1,0 +1,27 @@
+id         = "c016-decimal-degrees"
+population = "clean"
+family     = "coordinate-parsing"
+title      = "The same coordinate already in decimal degrees"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "latitude_decimal(stations.csv, station=ST-1)"
+prompt = """
+Station ST-1 in stations.csv has its latitude in degrees, minutes and
+seconds. What is that latitude in decimal degrees? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 41.89
+tolerance = 0.0001
+derivation = """
+The file holds 41.89 in a single decimal column. Nothing to convert, and a
+system that reads the number answers correctly."""
+
+[provenance]
+source   = "control for 016-coordinate-parsing"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+pandas = "2.x - read_csv infers column types unless told otherwise"

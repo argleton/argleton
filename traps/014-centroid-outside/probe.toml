@@ -1,0 +1,59 @@
+id         = "014-centroid-outside"
+population = "trap"
+family     = "centroid-outside"
+title      = "The parcel located by a point that is not on it"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "district_of_parcel(parcel.gpkg, districts.gpkg)"
+prompt = """
+Which district is the depot in? Its parcel is in parcel.gpkg and the
+districts are in districts.gpkg. Answer with the district name."""
+
+[truth]
+kind      = "scalar"
+value     = "A"
+tolerance = 0
+derivation = """
+The parcel is an L: a 100 x 20 horizontal bar (2000 m2) plus a 20 x 80
+vertical one (1600 m2), 3600 m2 in all. District A is exactly that L;
+district B is the notch the L does not occupy. Every point of the parcel is
+in A, so the parcel is in A — by containment, which is what the question
+asks. The parcel's centroid, by the composite formula, is at
+x = (2000*50 + 1600*10)/3600 = 32.22 and y = (2000*10 + 1600*60)/3600 =
+32.22: a point in the notch, on no part of the parcel at all."""
+
+[naive_failure]
+description = """
+Reduce the parcel to its centroid and ask which district contains that point.
+It is the standard way to give a polygon a position — for labelling, for
+joining, for 'which region is this in' — and for a convex parcel it is right.
+Here the centroid falls in the notch, so the depot is reported in district B,
+where no part of it stands."""
+observed_value = "B"
+plausible      = true
+why_plausible  = """
+A district name is the least suspicious answer form there is: it carries no
+magnitude to sanity-check, no units, no precision. L-shaped, U-shaped and
+crescent parcels are ordinary — a plot around a courtyard, a municipality
+wrapping a bay — and the centroid of any of them can sit outside. Nothing in
+the answer says the question was replaced by a different one."""
+derivation = """
+Closed form: the centroid at (32.22, 32.22) satisfies x > 20 and y > 20, so
+it is in the notch, which is district B."""
+
+[refusal]
+accept_if_mentions = ["centroid", "outside", "representative point", "point on surface", "concave"]
+
+[provenance]
+source = """
+PostGIS documents ST_PointOnSurface as the function that returns a point
+guaranteed to lie on the geometry, precisely because ST_Centroid does not
+(https://postgis.net/docs/ST_PointOnSurface.html); Shapely mirrors this with
+representative_point(). Both read 2026-08-26. The trap plants the case where
+the wrong answer is a name rather than a number."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

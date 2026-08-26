@@ -1,0 +1,27 @@
+id         = "c020-one-owner-each"
+population = "clean"
+family     = "tabular-join"
+title      = "The same join with one owner per parcel"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "sheet_area_m2(parcels.gpkg, owners.csv)"
+prompt = """
+What is the total area of the parcels in parcels.gpkg? The owners table is in
+owners.csv. Answer with the number in square metres."""
+
+[truth]
+kind      = "scalar"
+value     = 50000.0
+tolerance = 0.01
+derivation = """
+Ten parcels, ten owners, one each: the join returns ten rows and the sum is
+50000. A system that sums after joining answers this one correctly."""
+
+[provenance]
+source   = "control for 020-join-cardinality"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

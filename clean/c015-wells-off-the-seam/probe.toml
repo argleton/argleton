@@ -1,0 +1,28 @@
+id         = "c015-wells-off-the-seam"
+population = "clean"
+family     = "boundary-semantics"
+title      = "The same partition with no well on the boundary"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "wells_in_districts(wells.gpkg, districts.gpkg)"
+prompt = """
+The two districts in districts.gpkg partition the study area. How many of the
+12 wells in wells.gpkg fall inside the districts? Answer with the count."""
+
+[truth]
+kind      = "count"
+value     = 12
+tolerance = 0
+derivation = """
+The four seam wells move one metre west, so every well is strictly inside a
+district. `within` and boundary-inclusive predicates agree at 12, and a
+system that uses `within` answers this one correctly."""
+
+[provenance]
+source   = "control for 015-boundary-semantics"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

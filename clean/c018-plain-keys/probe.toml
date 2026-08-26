@@ -1,0 +1,28 @@
+id         = "c018-plain-keys"
+population = "clean"
+family     = "tabular-join"
+title      = "The same join with keys that survive type inference"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "total_population(municipalities.gpkg, population.csv)"
+prompt = """
+Join population.csv to the municipalities by ISTAT code. What is the total
+population of the twelve municipalities? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 100000
+tolerance = 0
+derivation = """
+Twelve codes with no leading zeros, same 100000 total. Type inference turns
+them into integers on both sides or neither, so every row matches and a
+system that ignores key typing answers this one correctly."""
+
+[provenance]
+source   = "control for 018-join-key-typing"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+pandas = "2.x - read_csv infers column types unless told otherwise"

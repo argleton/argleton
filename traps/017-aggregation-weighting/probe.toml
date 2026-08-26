@@ -1,0 +1,53 @@
+id         = "017-aggregation-weighting"
+population = "trap"
+family     = "aggregation-weighting"
+title      = "Rates averaged as though the places were the same size"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "area_unemployment_rate_pct(municipalities.gpkg)"
+prompt = """
+What is the unemployment rate of the wider area formed by the three
+municipalities in municipalities.gpkg? Answer with the percentage."""
+
+[truth]
+kind      = "scalar"
+value     = 1.38
+tolerance = 0.005
+derivation = """
+A rate is a ratio of totals, not an average of ratios. Labour forces are
+1000, 1000 and 98000; rates 20%, 20% and 1%. Unemployed: 200 + 200 + 980 =
+1380. Labour force: 100000. The area's rate is 1380/100000 = 1.38% exactly."""
+
+[naive_failure]
+description = """
+Average the rate column: (20 + 20 + 1)/3 = 13.67%. It is the obvious
+aggregation, every tool offers it as `mean`, and it is right whenever the
+units being averaged are the same size."""
+observed_value = 13.6667
+plausible      = true
+why_plausible  = """
+Both numbers are ordinary unemployment rates and neither is out of range;
+13.67% describes a region in difficulty and 1.38% one at full employment, and
+the report that carries either looks identical. The error grows with the size
+imbalance between the units, which is exactly what administrative geography
+is made of: a metropolis and the villages around it."""
+derivation = """
+Closed form: (20 + 20 + 1)/3 = 41/3 = 13.6667."""
+
+[refusal]
+accept_if_mentions = ["weighted", "population", "denominator", "ratio of totals", "unweighted"]
+
+[provenance]
+source = """
+The modifiable areal unit problem and rate aggregation are standard cautions
+in the spatial-statistics literature; the specific failure — averaging rates
+instead of recomputing from totals — is why every statistical office
+publishes numerators and denominators rather than percentages alone. This is
+the one candidate in this tier that is not geometric at all, which is the
+point: an agent aggregates attributes more often than it reprojects."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

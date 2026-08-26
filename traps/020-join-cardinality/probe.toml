@@ -1,0 +1,51 @@
+id         = "020-join-cardinality"
+population = "trap"
+family     = "tabular-join"
+title      = "The join that multiplied the land"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "sheet_area_m2(parcels.gpkg, owners.csv)"
+prompt = """
+What is the total area of the parcels in parcels.gpkg? The owners table is in
+owners.csv. Answer with the number in square metres."""
+
+[truth]
+kind      = "scalar"
+value     = 50000.0
+tolerance = 0.01
+derivation = """
+Ten parcels of 5000 m2 each: 50000 m2 of land. The owners table has thirteen
+rows because three parcels are jointly held by two people, but a parcel's
+area does not depend on how many names are on the deed."""
+
+[naive_failure]
+description = """
+Join parcels to owners and sum the area column: thirteen rows, and the three
+jointly-held parcels contribute twice. 65000 m2 — 30% more land than exists."""
+observed_value = 65000.0
+plausible      = true
+why_plausible  = """
+6.5 ha against 5 ha are both ordinary figures for a cadastral sheet, and the
+join succeeded: no error, no duplicate warning, thirteen perfectly good rows.
+Joint ownership is the norm rather than the exception in cadastral data, and
+the inflation is proportional to how much of it there is — so the figure is
+wrong by a different amount in every sheet, which makes it impossible to spot
+by comparison."""
+derivation = """
+Closed form: 13 rows * 5000 = 65000, the three shared parcels counted twice."""
+
+[refusal]
+accept_if_mentions = ["cardinality", "one-to-many", "duplicate", "distinct", "fan-out"]
+
+[provenance]
+source = """
+Second probe of the tabular-join family (018): fan-out on a one-to-many join
+is the textbook aggregation error, and the reason SQL style guides recommend
+aggregating before joining. It is included because an agent joins attribute
+tables far more often than it reprojects, and no suite measures that."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

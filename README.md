@@ -62,8 +62,8 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 (the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.9 / 1.0**: it
-answers every clean probe correctly, falls into nine of the ten traps, and
+report it — and it is the most useful one here. It scores **0.95 / 1.0**: it
+answers every clean probe correctly, falls into nineteen of the twenty traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -87,7 +87,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Ten families of fifteen, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Eighteen families of twenty-three, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -103,10 +103,18 @@ rate means a system did not fail silently *on these probes*.
 | `projection-distortion` | 12000 m² instead of 6654 m² | the CRS declares metres and delivers them — metres of map; the factor is cos²(latitude), and both readings are ordinary parcels |
 | `categorical-resampling` | 900 m² of urban where the file has none | the average of two class codes is another valid class code: forest (1) and water (3) interpolate to urban (2), on the shoreline where a town would be |
 | `radiometric-scale-offset` | NDVI 0.25 instead of 0.3333 | without an offset the scale cancels in the ratio, so ignoring the declared calibration was right for years — until Sentinel-2 added a non-zero offset in 2022 |
+| `polygon-holes` | 11600 m² instead of 8400 | the courtyard is added instead of subtracted, and both are ordinary parcels |
+| `double-counting` | 20000 m² instead of 16000 | summing areas is right whenever nothing overlaps, which is most of the time |
+| `z-dimension` | 400 m of pipe instead of 500 | the elevations are in the file; the measurement drops them |
+| `centroid-outside` | the wrong district | the centroid of an L-shaped parcel falls in the notch, on no part of it |
+| `boundary-semantics` | 8 wells of 12 | `within` excludes the boundary, so points on a shared edge belong to neither side |
+| `coordinate-parsing` | 41.5324 instead of 41.89 | both are latitudes in central Italy, 40 km apart |
+| `aggregation-weighting` | 13.67% instead of 1.38% | averaging rates treats a village as equal to a city |
+| `tabular-join` | 62000 people instead of 100000 | a CSV reader turns "001" into 1 and four municipalities leave the join |
 
 ## Results
 
-Engine tier, ten families, `spec_commit` pinned — [every run, and what the
+Engine tier, eighteen families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

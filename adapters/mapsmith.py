@@ -42,6 +42,225 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+    # ---- tier A ---------------------------------------------------------------
+
+    def op_buildable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # measure_area on a polygon with a hole: the courtyard is part of the
+        # geometry's definition, so nothing here has to know it exists.
+        return self._area(probe, workdir, method="planar")
+
+    def op_total_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        # Two steps, both catalogue operations: dissolve with no key merges the
+        # overlapping licences into one piece of ground, then measure it. The
+        # shared strip stops being two things before anything is added up.
+        merged = workdir / "_argleton_dissolved.parquet"
+        try:
+            vector.dissolve(str(workdir / probe.arguments[0]), str(merged))
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        return self._measure(merged, workdir, "planar")
+
+    def op_flooded_farmland_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        # overlay(intersection) cuts the fields to the band, so what gets
+        # measured is the flooded part rather than the parcels that touch it.
+        clipped = workdir / "_argleton_flooded.parquet"
+        try:
+            vector.overlay(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(clipped),
+                how="intersection",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        return self._measure(clipped, workdir, "planar")
+
+    def op_district_of_parcel(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # spatial_join with `within`: the parcel is joined as a polygon, not
+        # reduced to a point first, so a concave parcel keeps its shape.
+        joined = workdir / "_argleton_district.parquet"
+        try:
+            vector.spatial_join(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(joined),
+                predicate="within",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        frame = gpd.read_parquet(joined)
+        if frame.empty:
+            return Outcome(answer="")
+        return Outcome(answer=str(frame["district"].iloc[0]), warnings=self._warnings(joined))
+
+    def op_wells_in_districts(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # `intersects` rather than `within`, because the question is about a
+        # partition and a well on the shared edge is in the study area whichever
+        # district claims it. A seam well then matches both districts, so the
+        # count is over distinct wells — reading the join, not rewriting it.
+        joined = workdir / "_argleton_wells.parquet"
+        try:
+            vector.spatial_join(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(joined),
+                predicate="intersects",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        frame = gpd.read_parquet(joined)
+        return Outcome(
+            answer=int(frame["well_id"].nunique()), warnings=self._warnings(joined)
+        )
+
+    def op_pipe_length_m(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        # measure_length(method="3d"), which exists because this probe returned
+        # unsupported the first time it ran. The method is stated rather than
+        # defaulted: a pipe follows the ground, so the question is about the
+        # length through space and the composition has to say so.
+        output = workdir / "_argleton_length.parquet"
+        try:
+            result = vector.measure_length(
+                str(workdir / probe.arguments[0]), str(output), method="3d"
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        return Outcome(
+            answer=float(result["total_length_m"]), warnings=self._warnings(output)
+        )
+
+    def op_latitude_decimal(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        import pandas as pd
+        from mapsmith.engines import vector
+
+        # parse_coordinates: the caller names the columns, because the file
+        # cannot say whether 41.5324 is a decimal degree or a mangled DMS.
+        station = probe.arguments[1].split("=", 1)[1]
+        table = workdir / probe.arguments[0]
+        columns = set(pd.read_csv(table, nrows=1).columns)
+        if {"lat_deg", "lat_min", "lat_sec"} <= columns:
+            latitude = "lat_deg,lat_min,lat_sec,lat_hem"
+            longitude = "lon_deg,lon_min,lon_sec,lon_hem"
+        else:
+            latitude, longitude = "latitude", "longitude"
+        output = workdir / "_argleton_points.parquet"
+        try:
+            vector.parse_coordinates(
+                str(table),
+                str(output),
+                latitude_columns=latitude,
+                longitude_columns=longitude,
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        points = gpd.read_parquet(output)
+        row = points[points["station_id"] == station].iloc[0]
+        return Outcome(answer=float(row.geometry.y), warnings=self._warnings(output))
+
+    def op_area_unemployment_rate_pct(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        # aggregate_weighted: a rate over an area is the ratio of totals, and
+        # the weight column has to be named — which is the whole operation.
+        output = workdir / "_argleton_rate.parquet"
+        try:
+            result = vector.aggregate_weighted(
+                str(workdir / probe.arguments[0]),
+                str(output),
+                value_column="unemployment_rate_pct",
+                weight_column="labour_force",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        return Outcome(
+            answer=float(result["weighted_value"]), warnings=self._warnings(output)
+        )
+
+    def op_total_population(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # join_table reads keys as text on both sides, so a code like "001"
+        # still matches after the CSV has been through a reader.
+        output = workdir / "_argleton_joined.parquet"
+        try:
+            vector.join_table(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(output),
+                on="istat_code",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        joined = gpd.read_parquet(output)
+        return Outcome(
+            answer=int(joined["population"].sum()), warnings=self._warnings(output)
+        )
+
+    def op_sheet_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # The join is where this goes wrong, so the join is where MapSmith
+        # says something: join_table reports that the table multiplied the
+        # features, and the composition answers over the parcels rather than
+        # over the joined rows.
+        output = workdir / "_argleton_owners.parquet"
+        try:
+            result = vector.join_table(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(output),
+                on="parcel_id",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        joined = gpd.read_parquet(output)
+        # One row per parcel, whatever the deed says: the duplicate keys are
+        # named in the result, so this is reading MapSmith's answer rather than
+        # working around it.
+        area = float(joined.drop_duplicates(subset="parcel_id")["area_m2"].sum())
+        warnings = self._warnings(output)
+        if result.get("duplicate_keys"):
+            warnings.append(
+                f"the owners table has {result['duplicate_keys']} duplicate key(s): "
+                f"the join produced {result['feature_count']} rows from "
+                f"{result['input_feature_count']} parcels"
+            )
+        return Outcome(answer=area, warnings=warnings)
+
+    def _measure(self, dataset: Path, workdir: Path, method: str) -> Outcome:
+        from mapsmith.engines import vector
+
+        output = workdir / f"_argleton_measured_{method}.parquet"
+        try:
+            result = vector.measure_area(str(dataset), str(output), method=method)
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        return Outcome(
+            answer=float(result["total_area_m2"]), warnings=self._warnings(output)
+        )
+
+    @staticmethod
+    def _refusal_or_error(exc: Exception) -> Outcome:
+        text = str(exc)
+        if "has no CRS" in text or "Refusing" in text or "square degrees" in text:
+            return Outcome(refusal=text)
+        return Outcome(error=f"{type(exc).__name__}: {text}")
+
     def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio

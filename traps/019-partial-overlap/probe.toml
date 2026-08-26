@@ -1,0 +1,53 @@
+id         = "019-partial-overlap"
+population = "trap"
+family     = "double-counting"
+title      = "The whole parcel counted as flooded"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "flooded_farmland_m2(fields.gpkg, flood.gpkg)"
+prompt = """
+How many square metres of farmland fall inside the flood band? The fields are
+in fields.gpkg and the band is in flood.gpkg. Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 9000.0
+tolerance = 0.01
+derivation = """
+Five fields of 10000 m2 (100 x 100). The flood band is 300 m wide and 30 m
+deep, so it covers a 100 x 30 = 3000 m2 strip of each of the first three
+fields, and none of the other two (there is a 10 m gap after the third).
+3 * 3000 = 9000 m2 of farmland inside the band."""
+
+[naive_failure]
+description = """
+Select the fields that intersect the band and sum their areas: 30000. The
+selection is right — those three fields do meet the band — and the
+aggregation quietly changes the unit of measurement from the square metre to
+the parcel."""
+observed_value = 30000.0
+plausible      = true
+why_plausible  = """
+3 ha of flooded farmland is an ordinary figure, and it is more than three
+times the truth. Nothing in the result says the parcels were counted whole:
+the query returned the right features, the sum returned a number, and the
+report reads as an area. This is how flood-exposure and compensation figures
+are inflated without anyone making an arithmetic mistake."""
+derivation = """
+Closed form: three fields of 10000 m2 each = 30000."""
+
+[refusal]
+accept_if_mentions = ["intersection", "clip", "partial", "proportion", "overlay"]
+
+[provenance]
+source = """
+Second probe of the double-counting family (012): the same mechanism — an
+aggregation whose unit is not the one the question asks about — in the form
+it takes in exposure analysis. The pattern is the reason PostGIS
+documentation shows ST_Intersection inside ST_Area rather than beside it."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

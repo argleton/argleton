@@ -12,7 +12,7 @@ family with several probes cannot read as several independent findings.
 ## What these numbers do not say
 
 This section is at the top rather than the bottom on purpose, and it grows with
-the suite. Ten families of fifteen are implemented
+the suite. Eighteen families of twenty-three are implemented
 ([FAMILIES.md](../docs/FAMILIES.md)).
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
@@ -21,10 +21,10 @@ the suite. Ten families of fifteen are implemented
   mechanisms a survey of the literature turned up while this run was being
   made.
 - **Read "not applicable" before the rate.** A rate over two traps and a rate
-  over ten are different claims. An adapter that can only be asked two
+  over twenty are different claims. An adapter that can only be asked two
   questions must not be able to look better than one that faced all of them.
-- **One family can still move any of these rates a long way**, because there are
-  ten of them and each carries one trap. Treat a difference of one probe as one
+- **One family can still move any of these rates a long way**, because most of
+  them carry one trap each — treat a difference of one probe as one probe. Treat a difference of one probe as one
   probe.
 - **Engine tier only.** Every number here comes from an adapter calling a
   library directly. Nothing on this page measures an agent, and the agent tier

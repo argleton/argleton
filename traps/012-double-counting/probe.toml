@@ -1,0 +1,52 @@
+id         = "012-double-counting"
+population = "trap"
+family     = "double-counting"
+title      = "Overlapping concessions added instead of united"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "total_ground_area_m2(overlap.gpkg)"
+prompt = """
+The two concessions in overlap.gpkg overlap in part. How much ground do they
+cover in total, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 16000.0
+tolerance = 0.01
+derivation = """
+Two 100 x 100 squares, 10000 m2 each; the second starts at x = 60, so they
+share a 40 x 100 = 4000 m2 strip. Inclusion-exclusion: 10000 + 10000 - 4000
+= 16000 m2 of ground. The strip is counted once because it is one piece of
+ground, whatever the number of licences over it."""
+
+[naive_failure]
+description = """
+Sum the area column, or sum the geometries' areas: 20000. It is the natural
+way to answer 'how much in total', and it is right whenever the features do
+not overlap — which is most of the time, which is why the habit survives."""
+observed_value = 20000.0
+plausible      = true
+why_plausible  = """
+2 ha against 1.6 ha are both ordinary concession totals, nothing in the
+result hints at a shared strip, and the sum is what the question sounds like
+it is asking for. The documented real-world case is mosaicked satellite
+tiles, which overlap by construction: adding their footprints inflates every
+coverage figure by the overlap, silently."""
+derivation = """
+Closed form: 10000 + 10000 = 20000, the shared 4000 m2 counted twice."""
+
+[refusal]
+accept_if_mentions = ["union", "overlap", "double", "dissolve", "intersection"]
+
+[provenance]
+source = """
+The sum-versus-union distinction is the textbook case for ST_Union in the
+PostGIS manual (https://postgis.net/docs/ST_Union.html), which exists
+precisely so that ST_Area(ST_Union(...)) can be written. The trap uses a
+single overlap so the wrong answer is 25% high rather than absurd."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

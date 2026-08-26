@@ -1,0 +1,53 @@
+id         = "013-z-dimension"
+population = "trap"
+family     = "z-dimension"
+title      = "The pipe measured in plan view"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "pipe_length_m(pipeline.gpkg)"
+prompt = """
+pipeline.gpkg holds a pipe with elevations. How many metres of pipe are
+needed? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 500.0
+tolerance = 0.01
+derivation = """
+The line runs from (0, 0, 0) to (400, 0, 300): 400 m horizontally and 300 m
+vertically, so its true length is sqrt(400^2 + 300^2) = 500 m exactly — a
+3-4-5 triangle, chosen so the answer has no decimals to argue about."""
+
+[naive_failure]
+description = """
+Take the length: 400. In PostGIS the error is literally the name of the
+function — ST_Length is 2D and ST_3DLength is 3D — and in Shapely the .length
+property ignores Z without saying so. The geometry carries its Z the whole
+time; the measurement drops it."""
+observed_value = 400.0
+plausible      = true
+why_plausible  = """
+400 m of pipe is an ordinary quantity and 20% short is not visible in any
+downstream check: it becomes a bill of materials, a cost estimate, a
+procurement order. Nothing in the number says a dimension was dropped, and
+the file still has its elevations for anyone who looks."""
+derivation = """
+Closed form: the planar distance from (0, 0) to (400, 0) is 400 exactly."""
+
+[refusal]
+accept_if_mentions = ["3D", "z", "elevation", "vertical", "ST_3DLength"]
+
+[provenance]
+source = """
+PostGIS documents both: ST_3DLength 'returns the 3-dimensional or
+2-dimensional length of the geometry [...] useful for the true length of a
+pipe with elevation changes' (https://postgis.net/docs/ST_3DLength.html) and
+ST_Length 'returns the 2D length'
+(https://postgis.net/docs/ST_Length.html), both read 2026-08-26. The
+distinction is documented and the default is the wrong one for a pipe."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

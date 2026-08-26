@@ -1,0 +1,28 @@
+id         = "c011-solid-parcel"
+population = "clean"
+family     = "polygon-holes"
+title      = "The same parcel with no courtyard"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "buildable_area_m2(parcel.gpkg)"
+prompt = """
+parcel.gpkg holds one parcel with an internal courtyard. How many square
+metres can be built on? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 10000.0
+tolerance = 0.01
+derivation = """
+A 100 x 100 square with no inner ring: 10000 m2 exactly, and no subtraction
+to get wrong. A system that answers this and misses the trap handles rings,
+not areas."""
+
+[provenance]
+source   = "control for 011-polygon-holes"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

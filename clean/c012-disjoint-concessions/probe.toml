@@ -1,0 +1,28 @@
+id         = "c012-disjoint-concessions"
+population = "clean"
+family     = "double-counting"
+title      = "The same question where the concessions do not overlap"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "total_ground_area_m2(overlap.gpkg)"
+prompt = """
+The two concessions in overlap.gpkg overlap in part. How much ground do they
+cover in total, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 20000.0
+tolerance = 0.01
+derivation = """
+The same two 10000 m2 squares, 60 m apart and disjoint. Sum and union agree
+at 20000, so a system that adds areas answers this one correctly — which is
+what makes the habit survive."""
+
+[provenance]
+source   = "control for 012-double-counting"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

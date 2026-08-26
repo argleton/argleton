@@ -1,0 +1,52 @@
+id         = "016-coordinate-parsing"
+population = "trap"
+family     = "coordinate-parsing"
+title      = "Degrees, minutes and seconds read as a decimal"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "latitude_decimal(stations.csv, station=ST-1)"
+prompt = """
+Station ST-1 in stations.csv has its latitude in degrees, minutes and
+seconds. What is that latitude in decimal degrees? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 41.89
+tolerance = 0.0001
+derivation = """
+41 deg 53 min 24 s = 41 + 53/60 + 24/3600. In sixtieths: 3180/3600 +
+24/3600 = 3204/3600 = 0.89 exactly, so the answer is 41.89 with no rounding
+anywhere — the minutes and seconds were chosen to divide out."""
+
+[naive_failure]
+description = """
+Concatenate the fields into a decimal: 41.5324. It is what happens when a
+DMS string is parsed with the wrong pattern, when a spreadsheet column is
+read as a number, or when three columns are pasted together — and the result
+is a well-formed latitude."""
+observed_value = 41.5324
+plausible      = true
+why_plausible  = """
+41.53 and 41.89 are both latitudes in central Italy, 40 km apart: close
+enough that a map still looks right at country scale, far enough that every
+distance, every join and every catchment is wrong. The value is in range,
+has the right number of decimals, and carries no trace of the conversion
+that did not happen."""
+derivation = """
+Closed form: the digits 41, 53 and 24 concatenated as 41.5324."""
+
+[refusal]
+accept_if_mentions = ["minutes", "seconds", "DMS", "sexagesimal", "60"]
+
+[provenance]
+source = """
+Degrees-minutes-seconds is the notation of every survey record, gazetteer and
+GPS display, and mixing it with decimal degrees is among the most-asked
+questions on GIS Stack Exchange. The trap uses values that convert exactly,
+so the truth needs no tolerance and no rounding convention."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+pandas = "2.x - read_csv infers column types unless told otherwise"

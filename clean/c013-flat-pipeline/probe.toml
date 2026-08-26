@@ -1,0 +1,28 @@
+id         = "c013-flat-pipeline"
+population = "clean"
+family     = "z-dimension"
+title      = "The same pipe on flat ground"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "pipe_length_m(pipeline.gpkg)"
+prompt = """
+pipeline.gpkg holds a pipe with elevations. How many metres of pipe are
+needed? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 500.0
+tolerance = 0.01
+derivation = """
+From (0, 0, 0) to (500, 0, 0): the pipe is flat, so 3D and 2D length agree at
+500 m. A system that ignores Z answers this one correctly, which is how the
+habit stays invisible."""
+
+[provenance]
+source   = "control for 013-z-dimension"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

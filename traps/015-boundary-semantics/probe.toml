@@ -1,0 +1,57 @@
+id         = "015-boundary-semantics"
+population = "trap"
+family     = "boundary-semantics"
+title      = "The wells on the seam that belong to neither district"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "wells_in_districts(wells.gpkg, districts.gpkg)"
+prompt = """
+The two districts in districts.gpkg partition the study area. How many of the
+12 wells in wells.gpkg fall inside the districts? Answer with the count."""
+
+[truth]
+kind      = "count"
+value     = 12
+tolerance = 0
+derivation = """
+The districts are x in [0, 50] and x in [50, 100]: together they cover the
+whole study area, leaving no gap. Every one of the 12 wells lies within that
+area, so the answer is 12 — and it stays 12 whichever district the four wells
+on the shared line x = 50 are assigned to, because the question is about the
+partition and not about either district."""
+
+[naive_failure]
+description = """
+Join the wells to the districts with `within` (or ST_Contains) and count the
+result: 8. Strict containment excludes the boundary, so a point exactly on
+the shared edge is in neither polygon — it vanishes from a partition that
+covers it. No error, no warning: the join simply returns fewer rows."""
+observed_value = 8
+plausible      = true
+why_plausible  = """
+8 of 12 wells is an ordinary result for a spatial join — nobody expects every
+feature to match — and the four that vanished do not appear anywhere. The
+case is common by construction: administrative boundaries are shared edges,
+and features digitised against them land exactly on the line. The report says
+8 wells and nothing says 4 were dropped."""
+derivation = """
+Closed form: 8 wells have x strictly inside one district; the other 4 have
+x = 50 exactly, which `within` excludes for both polygons."""
+
+[refusal]
+accept_if_mentions = ["boundary", "edge", "intersects", "within", "partition", "touches"]
+
+[provenance]
+source = """
+The OGC simple-features rules make `within` exclude the boundary by design;
+PostGIS documents that ST_Contains is false for points on the boundary and
+offers ST_Covers as the variant that includes it
+(https://postgis.net/docs/ST_Covers.html, read 2026-08-26). The trap asks
+about a partition, so the answer does not depend on which side the seam wells
+are assigned to — which is what keeps it a question with one right answer."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"

@@ -1,0 +1,28 @@
+id         = "c017-equal-populations"
+population = "clean"
+family     = "aggregation-weighting"
+title      = "The same average where the places are the same size"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "area_unemployment_rate_pct(municipalities.gpkg)"
+prompt = """
+What is the unemployment rate of the wider area formed by the three
+municipalities in municipalities.gpkg? Answer with the percentage."""
+
+[truth]
+kind      = "scalar"
+value     = 15.0
+tolerance = 0.005
+derivation = """
+Three municipalities with 1000 in the labour force each, rates 20%, 20% and
+5%. Weighted: (200 + 200 + 50)/3000 = 15%. Unweighted: (20 + 20 + 5)/3 = 15%.
+They agree, so a system that averages rates answers this one correctly."""
+
+[provenance]
+source   = "control for 017-aggregation-weighting"
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2"
