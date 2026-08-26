@@ -12,17 +12,19 @@ family with several probes cannot read as several independent findings.
 ## What these numbers do not say
 
 This section is at the top rather than the bottom on purpose, and it grows with
-the suite. Eight families of thirteen are implemented
+the suite. Nine families of fourteen are implemented
 ([FAMILIES.md](../docs/FAMILIES.md)).
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
   is correct, not that it is safe, and not that it would survive the five
-  families that are named and not yet built.
+  families that are named and not yet built — nor the thirty further
+  mechanisms a survey of the literature turned up while this run was being
+  made.
 - **Read "not applicable" before the rate.** A rate over two traps and a rate
-  over eight are different claims. An adapter that can only be asked two
+  over nine are different claims. An adapter that can only be asked two
   questions must not be able to look better than one that faced all of them.
 - **One family can still move any of these rates a long way**, because there are
-  eight of them and each carries one trap. Treat a difference of one probe as one
+  nine of them and each carries one trap. Treat a difference of one probe as one
   probe.
 - **Engine tier only.** Every number here comes from an adapter calling a
   library directly. Nothing on this page measures an agent, and the agent tier
@@ -35,6 +37,44 @@ Nobody is notified before publication as long as nothing here is a new claim
 about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
+
+## 2026-08-26 — nine families, and a class that was never there
+
+Published run: [`2026-08-26-nine-families/`](2026-08-26-nine-families/).
+Engine tier, `spec_commit` [`cfb2919`](../../../commit/cfb2919), nine families:
+`categorical-resampling` (009) joins the eight below.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 9 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 3 | 12 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 6 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 14 |
+| naive composition | 0.8889 | 1.00 | 9 | 0 |
+
+**The new family measures an alphabet, not a quantity.** A land-cover file holds
+the codes 1 (forest) and 3 (water); the legend also defines 2 (urban), which no
+cell carries. Asked for the urban area on a 15 m grid — the ordinary reason
+anyone resamples — the correct answer is zero at any resolution, because a rule
+that is valid for labels selects an existing label and cannot mint a new one.
+Interpolate instead and the forest/water boundary averages to 2: four cells,
+900 m² of urban on a shoreline, where a town would plausibly be. rasterio's
+bilinear, cubic and average all do it; nearest and mode do not.
+
+**What makes it admissible is that nothing can tell the difference for you.**
+Nothing in a GeoTIFF says whether it holds measurements or labels, so no library
+can warn: rasterio's documentation recommends bilinear and cubic for
+"continuous data" and carries no categorical-data warning anywhere. The rule is
+in every vendor's manual and enforced by none of them.
+
+**MapSmith's pass is earned narrowly, and the narrow part is the point.** Its
+resampling operation has no default method, so the composition had to state one,
+and a caller who was told the legend states a categorical one. Had it said
+bilinear anyway, the result would have carried `invented_values: [2.0]` and a
+failed non-critical check named `no_invented_class_codes`. Two defences: the
+question is asked, and the answer is checked against the input's own alphabet
+afterwards. Neither is the manifest — a manifest records what was done, and this
+is about what came back.
 
 ## 2026-08-25 (later) — eight families, and the suite writes its author's roadmap
 

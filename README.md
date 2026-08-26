@@ -36,11 +36,13 @@ pip install -e ".[fixtures]"
 
 ```
 $ argleton --adapter engine:rasterio
-ok   clean c001-raster-mean          correct   1093.0
-ok   clean c003-raster-mean-nodata   correct   1000.0
-ok   trap  001-tiff-predictor        correct   1093.0
-ok   trap  003-nodata-in-statistics  correct   1000.0
-silent_error_rate 0.0 over 2 traps  |  completion_rate 1.0 over 2 clean
+ok   clean c001-raster-mean               correct   1093.0
+ok   clean c003-raster-mean-nodata        correct   1000.0
+ok   clean c009-native-resolution-classes correct   900.0
+ok   trap  001-tiff-predictor             correct   1093.0
+ok   trap  003-nodata-in-statistics       correct   1000.0
+ok   trap  009-resampled-classes          correct   0.0
+silent_error_rate 0.0 over 3 traps  |  completion_rate 1.0 over 3 clean
 
 $ argleton --adapter engine:whitebox
 ok   clean c001-raster-mean          correct        1093.0
@@ -106,11 +108,11 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 8 | 0 |
-| rasterio 1.5.1 | 0.00 | 1.00 | 2 | 12 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 4 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 12 |
-| naive composition | 0.875 | 1.00 | 8 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 9 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 3 | 12 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 6 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 14 |
+| naive composition | 0.8889 | 1.00 | 9 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question

@@ -1,0 +1,199 @@
+{
+  "system": "MapSmith (main)",
+  "adapter": "adapters.mapsmith",
+  "spec_commit": "cfb2919",
+  "date": "2026-08-26",
+  "silent_error_rate": 0.0,
+  "completion_rate": 1.0,
+  "traps_run": 9,
+  "clean_run": 9,
+  "unsupported": 0,
+  "verdict_counts": {
+    "correct": 17,
+    "correct_with_warning": 1
+  },
+  "by_family": {
+    "ambiguous-layer": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "categorical-resampling": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "implicit-parameter-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "projection-distortion": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 0
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "correct",
+      "detail": "1000000.0",
+      "answer": 1000000.0
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "9",
+      "answer": 9
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "correct",
+      "detail": "7600.0",
+      "answer": 7600.0
+    },
+    {
+      "probe_id": "c006-named-layer",
+      "population": "clean",
+      "family": "ambiguous-layer",
+      "verdict": "correct",
+      "detail": "17",
+      "answer": 17
+    },
+    {
+      "probe_id": "c007-distance-in-metres",
+      "population": "clean",
+      "family": "implicit-parameter-units",
+      "verdict": "correct",
+      "detail": "5",
+      "answer": 5
+    },
+    {
+      "probe_id": "c008-equal-area-crs",
+      "population": "clean",
+      "family": "projection-distortion",
+      "verdict": "correct",
+      "detail": "10000.000003516674",
+      "answer": 10000.000003516674
+    },
+    {
+      "probe_id": "c009-native-resolution-classes",
+      "population": "clean",
+      "family": "categorical-resampling",
+      "verdict": "correct",
+      "detail": "900.0",
+      "answer": 900.0
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "correct",
+      "detail": "92903.41161327486",
+      "answer": 92903.41161327486
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "12",
+      "answer": 12
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "correct_with_warning",
+      "detail": "{'round': 1, 'check': 'input_geometry_valid', 'operation': 'measure_area', 'action': 'make_valid applied to 1 input geometries BEFORE measuring: the planar area of a self-intersecting ring is the signed shoelace, which matches no region and is returned without complaint', 'error': None, 'resolved': True}",
+      "answer": 5100.0
+    },
+    {
+      "probe_id": "006-default-layer",
+      "population": "trap",
+      "family": "ambiguous-layer",
+      "verdict": "correct",
+      "detail": "31",
+      "answer": 31
+    },
+    {
+      "probe_id": "007-buffer-in-degrees",
+      "population": "trap",
+      "family": "implicit-parameter-units",
+      "verdict": "correct",
+      "detail": "3",
+      "answer": 3
+    },
+    {
+      "probe_id": "008-web-mercator-area",
+      "population": "trap",
+      "family": "projection-distortion",
+      "verdict": "correct",
+      "detail": "6651.335028409958",
+      "answer": 6651.335028409958
+    },
+    {
+      "probe_id": "009-resampled-classes",
+      "population": "trap",
+      "family": "categorical-resampling",
+      "verdict": "correct",
+      "detail": "0.0",
+      "answer": 0.0
+    }
+  ]
+}

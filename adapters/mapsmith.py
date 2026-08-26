@@ -45,7 +45,6 @@ class Adapter:
     def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio
-
         from mapsmith.engines import raster
 
         resolution = float(probe.arguments[1].split("=", 1)[1])
