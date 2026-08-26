@@ -38,6 +38,55 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-26 (tier A) — eighteen families, and two that are not geometry at all
+
+Published run: [`2026-08-26-eighteen-families/`](2026-08-26-eighteen-families/).
+Engine tier, `spec_commit` [`cadf41b`](../../../commit/cadf41b), eighteen families:
+eight new ones join the ten below.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 20 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 32 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 28 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 36 |
+| naive composition | 0.95 | 1.00 | 20 | 0 |
+
+**The eight new families are the ones whose truth is arithmetic**, selected from a
+survey of forty-seven documented mechanisms because their fixtures are small enough
+to derive on paper: a courtyard subtracted rather than added, overlapping concessions
+united rather than summed, a pipe measured through space rather than in plan view, a
+parcel located by a point in its own notch, wells on a shared edge belonging to
+neither district, degrees-minutes-seconds read as a decimal, unemployment rates
+averaged as though the towns were the same size, and a leading zero thrown away by a
+CSV reader.
+
+**Two of them are not geometric at all** — `aggregation-weighting` and `tabular-join`
+— and that is deliberate. An agent joins attribute tables and aggregates columns far
+more often than it reprojects, and no suite was measuring that. They are also the
+cheapest fixtures in the whole set, which says something about why the gap existed.
+
+**Verifying the survey's numbers before building changed three of them.** The
+partial-overlap band touched four parcels instead of three, because the fourth
+started exactly where the band ended and `intersects` counts a zero-area contact —
+which is a different family, so the fixture moved rather than the derivation. The
+join fixture's populations did not add up to a round total. And the ring-orientation
+candidate turned out not to be reproducible with Shapely at all, which ignores
+winding order: it is documented as planned rather than quietly built against an
+engine that cannot fail it.
+
+**MapSmith answered five of the ten new traps with `unsupported` on the first run**,
+and the operations that close them exist now — a length that counts the third
+dimension, a join that reads keys as text and measures its own fan-out, a weighted
+aggregate, a coordinate parser, and a representative point that is verified to lie on
+its feature. Fifth time this suite has written its author's roadmap.
+
+**And trap 011 found a defect in code that had shipped the day before.** MapSmith's
+geodesic area took `abs()` of the whole geometry, so a courtyard was added on the
+ellipsoid while the planar path subtracted it — 11609 against 8400. What noticed was
+the distortion check comparing the two paths, which is a second-order reason for
+having it. Fixed before this run, which is why the row above says 0.00.
+
 ## 2026-08-26 (later) — ten families, and the archive's own calibration
 
 Published run: [`2026-08-26-ten-families/`](2026-08-26-ten-families/).

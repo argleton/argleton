@@ -168,7 +168,7 @@ def test_the_family_counts_agree_everywhere():
     assert stated, "FAMILIES.md no longer states how many families are implemented"
     assert NUMBER_WORDS[stated.group(1).lower()] == implemented, "FAMILIES.md implemented count"
 
-    covered = re.search(r"([A-Za-z]+) families of ([a-z]+)", README)
+    covered = re.search(r"([A-Za-z-]+) families of ([a-z-]+)", README)
     assert covered, "the README no longer states its coverage"
     assert NUMBER_WORDS[covered.group(1).lower()] == implemented, "README implemented count"
     assert NUMBER_WORDS[covered.group(2)] == planned, "README planned count"
@@ -205,7 +205,7 @@ def test_every_live_family_count_in_public_markdown_is_current():
         (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8"),
         re.MULTILINE,
     )))
-    live = re.compile(r"([A-Za-z]+) families of ([a-z]+) are implemented")
+    live = re.compile(r"([A-Za-z-]+) families of ([a-z-]+) are implemented")
     checked = 0
     for page in public_markdown():
         for stated, out_of in live.findall(page.read_text(encoding="utf-8")):
