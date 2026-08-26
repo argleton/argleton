@@ -1,0 +1,92 @@
+id         = "021-ballpark-datum"
+population = "trap"
+family     = "datum-ballpark"
+title      = "The transformation the one-liner picks, and the datum it skips"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "wgs84_latitude(station.gpkg)"
+prompt = """
+station.gpkg holds one station, stored on the Monte Mario datum with the Rome
+prime meridian (EPSG:4806). What is its latitude in WGS 84 (EPSG:4326)? Answer
+with the number in decimal degrees."""
+
+[truth]
+kind      = "scalar"
+value     = 45.500669074
+tolerance = 0.00009
+derivation = """
+The stored position is longitude -3.5 and latitude 45.5 on Monte Mario with
+the Rome meridian, which is 12.452333333... east of Greenwich: the point is
+therefore at 8.952333333 east, 45.5 north on that datum.
+
+Going to WGS 84 is the published EPSG operation "Monte Mario to WGS 84 (4)", a
+Position Vector 7-parameter transformation whose values are in the EPSG dataset
+and can be read out of any PROJ installation:
+
+  translations  -104.1, -49.1, -9.9 metres
+  rotations      0.971, -2.917, 0.714 arc-seconds
+  scale         -11.68 ppm
+  source ellipsoid International 1924 (a = 6378388.0, 1/f = 297.0)
+
+Applying it by hand — geodetic to geocentric on International 1924, the Position
+Vector formula, geocentric to geodetic on WGS 84 — gives latitude
+45.500669074. The arithmetic is closed form and was checked against PROJ's own
+application of the SAME published operation: they agree to 0.000 m at three
+separate points in Italy, which is the point of doing it by hand. The truth here
+is the published transformation applied correctly, not what any one library
+chooses to do.
+
+Tolerance 0.00009 degrees is 10 m, generously above the operation's own stated
+accuracy of 4 m: every correct route to the answer fits inside it, and the
+failure below sits 7.4x outside."""
+
+[naive_failure]
+description = """
+Ask the library for a transformation and use what it returns.
+`Transformer.from_crs(CRS(4806), CRS(4326))` — the one line every caller writes
+— selects a BALLPARK transformation, which is the engine declaring that it will
+treat the two datums as equivalent. The Rome meridian is still applied
+correctly, so the longitude looks right; the latitude comes back EXACTLY as it
+went in.
+
+The same library does the right thing on the Greenwich variant of the same
+datum (EPSG:4265, the clean twin), where it picks a 4 m transformation. And a
+non-ballpark route exists for 4806 too — `TransformerGroup` lists it first.
+Nothing warns that the one-liner took the other one: the operation's accuracy
+is reported as -1, and only a caller who asks sees it."""
+observed_value = 45.5
+plausible      = true
+why_plausible  = """
+45.5 is not a suspicious number: it is a plausible latitude in Piedmont, it is
+inside Italy, and it is 74 m from where the station is. Seventy-four metres
+places a station on the other side of a road or in the next field — enough to
+change which parcel it sits in, which municipality it is attributed to, and
+which side of a boundary it falls on, and not enough for anything downstream to
+question. The longitude, which most eyes check first, is right to 27 m."""
+derivation = """
+Closed form: the ballpark transformation applies no datum shift, so the output
+latitude equals the input latitude, 45.5 exactly. The error is the whole
+north component of the Monte Mario to WGS 84 shift, 74.4 m at this location
+(71-77 m everywhere in Italy)."""
+
+[refusal]
+accept_if_mentions = ["ballpark", "datum", "accuracy", "transformation", "grid", "no shift"]
+
+[provenance]
+source = """
+PROJ documents ballpark transformations as its fallback when no datum
+transformation is available, and reports them with an accuracy of -1
+(https://proj.org/en/stable/glossary.html, read 2026-08-26). What the
+documentation does not say is that a ballpark can be selected even when a
+non-ballpark operation IS available: measured on PROJ 9.5.1 / pyproj 3.7.2,
+`Transformer.from_crs` returns the ballpark for EPSG:4806 to EPSG:4326 while
+`TransformerGroup` lists a 44 m operation first, and the Greenwich variant of
+the same datum gets a 4 m operation. Monte Mario is the datum of Italian
+cadastral and historic mapping and both EPSG variants are in daily use, so the
+file is ordinary and the choice is not."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+pyproj = "3.7.2/PROJ 9.5.1"

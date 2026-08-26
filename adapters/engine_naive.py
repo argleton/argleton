@@ -208,3 +208,13 @@ class Adapter:
         # `within` against a bare geometry: there is no second CRS in sight,
         # so not even geopandas' own mismatch warning can fire.
         return Outcome(answer=int(points.within(zone).sum()))
+
+    def op_wgs84_latitude(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # The one line every caller writes. GeoPandas hands the pair to
+        # pyproj's `Transformer.from_crs`, which on EPSG:4806 selects a
+        # ballpark transformation and applies no datum shift at all -- while
+        # doing the right thing on the Greenwich variant of the same datum.
+        frame = gpd.read_file(workdir / probe.arguments[0]).to_crs("EPSG:4326")
+        return Outcome(answer=float(frame.geometry.iloc[0].y))

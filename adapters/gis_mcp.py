@@ -172,3 +172,21 @@ class Adapter:
             predicate="within",
         )
         return Outcome(answer=int(result["num_features"]))
+
+    def op_wgs84_latitude(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from gis_mcp.pyproj_functions import project_geometry
+        from shapely import wkt as shapely_wkt
+
+        # gis-mcp has the right tool for this question: `project_geometry`. This
+        # is the charitable composition D-035 asks for -- their dedicated tool,
+        # called the way their documentation shows.
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        if frame.crs is None:
+            return Outcome(refusal="the layer declares no CRS")
+        result = project_geometry.fn(
+            frame.geometry.iloc[0].wkt, str(frame.crs), "EPSG:4326"
+        )
+        if not isinstance(result, dict) or "geometry" not in result:
+            return Outcome(error=f"project_geometry returned {result!r}")
+        return Outcome(answer=float(shapely_wkt.loads(result["geometry"]).y))

@@ -62,8 +62,8 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 (the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.95 / 1.0**: it
-answers every clean probe correctly, falls into nineteen of the twenty traps, and
+report it — and it is the most useful one here. It scores **0.9524 / 1.0**: it
+answers every clean probe correctly, falls into twenty of the twenty-one traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -87,13 +87,14 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Eighteen families of twenty-three, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Nineteen families of twenty-four, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
 | family | the wrong answer | why it survives |
 |---|---|---|
 | `raster-encoding` | mean 36.09 instead of 1093.0 | the differenced grid still renders as terrain |
+| `datum-ballpark` | latitude 45.5 instead of 45.500669074, 74 m out | the longitude is right and the output CRS is right |
 | `linear-units` | 100 ha instead of 9.29 ha | both are ordinary parcels; they differ by 3.28² |
 | `nodata` | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore |
 | `mismatched-crs` | 0 points in the zone instead of 12 | an empty result is a finding, not an error — nothing questions an empty join |
@@ -114,7 +115,7 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-Engine tier, eighteen families, `spec_commit` pinned — [every run, and what the
+Engine tier, nineteen families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

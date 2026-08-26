@@ -1,0 +1,41 @@
+id         = "c021-greenwich-variant"
+population = "clean"
+family     = "datum-ballpark"
+title      = "The same station on the same datum, declared with the Greenwich meridian"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "wgs84_latitude(station.gpkg)"
+prompt = """
+station.gpkg holds one station, stored on the Monte Mario datum with the
+Greenwich prime meridian (EPSG:4265). What is its latitude in WGS 84
+(EPSG:4326)? Answer with the number in decimal degrees."""
+
+[truth]
+kind      = "scalar"
+value     = 45.500669074
+tolerance = 0.00009
+derivation = """
+The same physical point as trap 021 and therefore the same answer: 45.5 north
+on Monte Mario, 8.952333333 east of Greenwich, which is -3.5 east of Rome. The
+published EPSG operation "Monte Mario to WGS 84 (4)" applied by hand — Position
+Vector, translations -104.1/-49.1/-9.9 m, rotations 0.971/-2.917/0.714 arc-sec,
+scale -11.68 ppm, source ellipsoid International 1924 — gives latitude
+45.500669074.
+
+This twin exists to isolate the cause. Same datum, same shift, same truth: only
+the declared CRS differs, Greenwich instead of Rome. A system that answers this
+one correctly and the trap wrongly has not met a hard transformation, it has met
+a variant its library treats differently. PROJ 9.5.1 selects a 4 m operation
+here and lands on this value to 0.000 m."""
+
+[provenance]
+source = """
+Both variants of Monte Mario are current EPSG codes in daily use on Italian
+data: 4265 with the Greenwich meridian, 4806 with the Rome meridian. Nothing in
+either file is unusual, which is the point of the pair."""
+found_by = "mapsmith"
+date     = "2026-08-26"
+
+[provenance.engine_versions]
+pyproj = "3.7.2/PROJ 9.5.1"

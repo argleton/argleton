@@ -471,3 +471,26 @@ class Adapter:
         note = [c["detail"] for c in data.get("verification", []) if not c.get("passed")]
         note += [r.get("detail", str(r)) for r in data.get("repairs", [])]
         return note
+
+    def op_wgs84_latitude(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        # MapSmith exposes `reproject_layer`, so that is what this asks, and the
+        # answer is read from the dataset MapSmith wrote -- composing its own
+        # operation, not reaching past it into pyproj.
+        output = workdir / "_argleton_wgs84.parquet"
+        try:
+            vector.reproject(
+                str(workdir / probe.arguments[0]), "EPSG:4326", str(output)
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            text = str(exc)
+            if "has no CRS" in text or "Refusing" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
+        import geopandas as gpd
+
+        frame = gpd.read_parquet(output)
+        return Outcome(
+            answer=float(frame.geometry.iloc[0].y), warnings=self._warnings(output)
+        )
