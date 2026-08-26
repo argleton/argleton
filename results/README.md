@@ -38,6 +38,50 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-26 (evening) — nineteen families, and MapSmith stops being 0.00
+
+Published run: [`2026-08-26-nineteen-families/`](2026-08-26-nineteen-families/).
+Engine tier, `spec_commit` [`461ef15`](../../../commit/461ef15), nineteen families:
+one new one, `datum-ballpark`, joins the eighteen below.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | **0.0476** | 1.00 | 21 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 34 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 7 | 28 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 38 |
+| naive composition | 0.9524 | 1.00 | 21 | 0 |
+
+**MapSmith's 0.00 ended here, and on the first family that asked a question the
+previous twenty did not.** The trap is
+[021](../traps/021-ballpark-datum/): a station stored on Monte Mario with the Rome
+prime meridian, asked for its WGS 84 latitude.
+`Transformer.from_crs(CRS(4806), CRS(4326))` — the one line every caller writes,
+and the line under MapSmith's `reproject_layer` — selects a **ballpark**
+transformation. A ballpark is PROJ declaring that it will treat the two datums as
+equivalent: no shift is applied, the Rome meridian is still handled correctly so
+the longitude looks right, and the latitude comes back exactly as it went in.
+74.4 m out, accuracy reported as `-1`, nothing raised and nothing logged.
+
+MapSmith's manifest for that run records a **successful** reprojection, and it is
+not lying: `crs_matches` passes, because the output CRS really is EPSG:4326.
+Seven green checks beside a number 74 m wrong — which is word for word the
+finding this suite made about MapSmith on 2026-08-23, on a different operation.
+A manifest records what was done; it does not certify that it was right.
+
+**The clean twin is what makes the trap arguable.** `c021` is the same physical
+point, the same datum and the same truth, declared as EPSG:4265 instead of 4806.
+There PROJ selects a 4 m operation and lands on the truth to 0.000 m. So the
+answer to this trap cannot be *datum transformations are hard*: difficulty is not
+the variable, the declared variant is.
+
+And what it takes to pass is a **computation**, not a declaration: read
+`get_last_used_operation().accuracy`, and if it is negative take the first
+`TransformerGroup` operation that states one. Fourteen lines, no manifest and no
+provenance format — the GeoPandas adapter does exactly that and passes. A trap
+only winnable by systems that keep a provenance record would be a benchmark for
+the product this suite was built beside, and that is not what this is for.
+
 ## 2026-08-26 (tier A) — eighteen families, and two that are not geometry at all
 
 Published run: [`2026-08-26-eighteen-families/`](2026-08-26-eighteen-families/).

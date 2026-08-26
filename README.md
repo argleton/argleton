@@ -120,11 +120,11 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 20 | 0 |
-| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 32 |
-| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 6 | 28 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 36 |
-| naive composition | 0.95 | 1.00 | 20 | 0 |
+| MapSmith (main) | 0.0476 | 1.00 | 21 | 0 |
+| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 34 |
+| GeoPandas 1.1 + Shapely 2 | 0.00 | 1.00 | 7 | 28 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 38 |
+| naive composition | 0.9524 | 1.00 | 21 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question
