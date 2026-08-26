@@ -60,9 +60,9 @@ accept_if_mentions = ["categorical", "class code", "nearest", "mode", "interpola
 [provenance]
 source = """
 That categorical rasters must be resampled with nearest neighbour or majority
-is stated in every vendor's documentation (Esri's Resample tool lists MAJORITY
-and NEAREST for 'discrete data'; GDAL's warp documentation offers 'mode' for
-thematic rasters) and is a standing question on GIS Stack Exchange. What no
+is stated in the documentation of the toolkits that offer the method (GDAL's
+warp documentation offers 'mode' for thematic rasters) and is a standing
+question on GIS Stack Exchange. What no
 library does is CHECK it: rasterio 1.5.1 carries no warning about bilinear on
 categorical data anywhere in its source or docs, and recommends bilinear and
 cubic for continuous data without saying how a caller is meant to tell the

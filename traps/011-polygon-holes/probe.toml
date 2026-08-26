@@ -45,7 +45,7 @@ accept_if_mentions = ["hole", "interior ring", "courtyard", "winding", "donut"]
 
 [provenance]
 source = """
-The ESRI shapefile specification encodes holes with ring winding order
+The shapefile specification encodes holes with ring winding order
 (outer rings clockwise, inner rings counter-clockwise) and no explicit
 structure, so a file whose rings are wound wrongly has no holes and raises
 nothing; GDAL documents the driver and its tolerances

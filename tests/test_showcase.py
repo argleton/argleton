@@ -281,3 +281,46 @@ def test_relative_links_resolve(page: Path):
         if not resolved.is_relative_to(ROOT):
             continue
         assert resolved.exists(), f"{page.name}: broken link {target}"
+
+
+# Vendor names this project does not write in public, at all: no note, no
+# provenance line, no comparison. A suite that measures systems has to be
+# careful here in a way a product does not: naming a vendor next to a silent
+# error reads as an accusation we have not made and cannot support, and the
+# provenance blocks in `probe.toml` are the place where one slips in as a
+# citation. Say what the documentation says without saying whose it is.
+VENDOR_SILENCE = re.compile(r"esri|arcgis|arcpy|arcmap", re.IGNORECASE)
+
+
+def _tracked_text_files() -> list[Path]:
+    import subprocess
+
+    out = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files"], capture_output=True, text=True, check=True
+    ).stdout.split("\n")
+    keep = {".md", ".py", ".html", ".yml", ".yaml", ".toml", ".json", ".cff", ".txt"}
+    return [
+        ROOT / name
+        for name in out
+        if name and (ROOT / name).suffix in keep and (ROOT / name).exists()
+    ]
+
+
+def test_no_vendor_is_named_in_public():
+    """Silence about a named vendor is a decision, so it needs a check.
+
+    Three mentions had already accumulated as citations in trap provenance,
+    where they look like diligence rather than like a comparison. Nothing else
+    in this suite looks at prose."""
+    offenders = {}
+    for page in _tracked_text_files():
+        if page.resolve() == Path(__file__).resolve():
+            continue  # this file names them in order to forbid them
+        text = page.read_text(encoding="utf-8", errors="replace")
+        found = sorted({m.group(0) for m in VENDOR_SILENCE.finditer(text)})
+        if found:
+            offenders[str(page.relative_to(ROOT)).replace("\\", "/")] = found
+    assert not offenders, (
+        f"these files name a vendor this project stays silent about: {offenders}. "
+        "State what the documentation requires without naming whose documentation it is."
+    )

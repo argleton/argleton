@@ -55,8 +55,8 @@ raster library reports that. rasterio's documentation recommends bilinear and
 cubic for *"continuous data"* and carries no warning anywhere about categorical
 data — reasonably, because **nothing in a GeoTIFF says which of the two it is
 holding**. The rule "use nearest or majority for discrete data" is in every
-vendor's manual (Esri's Resample tool, GDAL's `-r mode`) and is enforced by
-none of them.
+manual of every toolkit that offers the method (GDAL's `-r mode` among
+them) and is checked by none of them.
 
 The trap plants the case where the invented code is a class that *exists in the
 legend*, so the wrong answer is a plausible quantity rather than an obvious
