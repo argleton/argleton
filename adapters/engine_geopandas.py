@@ -123,41 +123,21 @@ class Adapter:
 
     def op_wgs84_latitude(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
-        from pyproj import CRS, Transformer
-        from pyproj.transformer import TransformerGroup
 
         frame = gpd.read_file(workdir / probe.arguments[0])
         if frame.crs is None:
             return Outcome(refusal="the layer declares no CRS, so it cannot be transformed")
-        point = frame.geometry.iloc[0]
-        # `to_crs` would be one line and would be wrong here, so this adapter
-        # does what a caller who has been bitten once does: pick the operation,
-        # then look at what was picked. PROJ reports a ballpark transformation
-        # with an accuracy of -1, and a ballpark means the datums were treated
-        # as equivalent -- no shift, no warning, the latitude returned unchanged.
-        chosen = Transformer.from_crs(frame.crs, CRS("EPSG:4326"), always_xy=True)
-        chosen.transform(point.x, point.y)
-        used = chosen.get_last_used_operation()
-        if used.accuracy is None or used.accuracy < 0:
-            group = TransformerGroup(frame.crs, CRS("EPSG:4326"), always_xy=True)
-            real = [
-                t for t in group.transformers
-                if t.accuracy is not None and t.accuracy >= 0
-            ]
-            if not real:
-                return Outcome(
-                    refusal="every available transformation to EPSG:4326 is a ballpark one, "
-                    "so no datum shift can be applied and the answer would be the input"
-                )
-            chosen = real[0]
-            out = chosen.transform(point.x, point.y)
-            return Outcome(
-                answer=float(out[1]),
-                warnings=[
-                    "the default transformation for this CRS is a ballpark one (accuracy -1, "
-                    "no datum shift): used a published operation with stated accuracy "
-                    f"{real[0].accuracy} m instead"
-                ],
-            )
-        out = chosen.transform(point.x, point.y)
-        return Outcome(answer=float(out[1]))
+        # `to_crs`, one line, which is what this adapter exists to measure. On
+        # this probe there is no gap between the careless composition and the
+        # ordinary one, because the ordinary one IS a single line -- and it hands
+        # the pair to pyproj's `Transformer.from_crs`, which on EPSG:4806 selects
+        # a ballpark transformation and applies no datum shift at all.
+        #
+        # An earlier version of this method inspected the chosen operation and
+        # picked a non-ballpark one instead. That passed, and it was the wrong
+        # thing to put here: this adapter is documented as measuring the ORDINARY
+        # composition, and a careful composition scored under a library's name
+        # tells a reader that the library handles the case. It does not. What it
+        # takes to pass is in `traps/021-ballpark-datum/README.md`, where it
+        # belongs -- as the specification of a fix, not as an engine's score.
+        return Outcome(answer=float(frame.to_crs("EPSG:4326").geometry.iloc[0].y))

@@ -76,16 +76,22 @@ operation first. The one-liner takes the other one.
 | system | answer | verdict |
 |---|---|---|
 | naive composition | 45.5 | **silent error**, and the predicted one |
-| GeoPandas + pyproj, composed carefully | 45.500669074 | correct, with the ballpark disclosed |
+| GeoPandas 1.1 + Shapely 2 (`to_crs`) | 45.5 | **silent error** |
 | MapSmith 0.2.2+ | 45.5 | **silent error** |
+
+Every system measured so far falls in, and they fall in at the same place: all
+three end up at `Transformer.from_crs`. On this probe there is no gap between
+the careless composition and the ordinary one, because the ordinary one is a
+single line.
 
 MapSmith fails this exactly as the naive composition does, and its manifest
 records a successful reprojection: `crs_matches` passes, because the output CRS
 *is* EPSG:4326. Seven green checks beside a number that is 74 m wrong — the same
 finding this suite made about MapSmith on 2026-08-23, on a different operation.
 
-The careful composition shows what it takes to pass, and it is worth being
-precise about it because it decides whether this trap is fair: read
+No system passes it yet, so what it takes to pass is stated here as a
+specification rather than reported as a score — and being precise about it is
+what decides whether the trap is fair: read
 `get_last_used_operation().accuracy`, and if it is negative, take the first
 operation from `TransformerGroup` that states one. Fourteen lines. **No manifest
 and no provenance format is required** — any engine can do it, which is why this
