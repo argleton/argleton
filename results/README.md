@@ -38,6 +38,45 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-27 — the datum shift MapSmith was not applying
+
+Published run: [`2026-08-27-datum-shift-fixed/`](2026-08-27-datum-shift-fixed/).
+Engine tier, `spec_commit` [`3e98cf6`](../../../commit/3e98cf6), nineteen families.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 21 | 0 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 34 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 7 | 28 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 38 |
+| naive composition | 0.9524 | 1.00 | 21 | 0 |
+
+**MapSmith is back at 0.00, and the run where it was not stays published above.**
+That is not tidiness: the interesting fact about a suite written next to a
+product is what happens on the days the product fails, and deleting yesterday's
+row would remove the only evidence that the metric ever moved.
+
+`reproject_layer` now picks the transformation and then looks at which one was
+picked. Where PROJ's default is a ballpark — no datum shift, coordinates carried
+across unchanged — it takes the first operation from the group that states an
+accuracy, and records the pipeline, the accuracy and `is_ballpark` in
+`crs_decisions.transformation`, plus a note saying in words that the library's
+own default applied no shift. Where every route is a ballpark it still runs,
+because sometimes the datums really are equivalent, and the record says so.
+
+**It is a computation, not a disclosure**, and that is what keeps the trap from
+being a benchmark for this product: `accuracy` and `TransformerGroup` are plain
+pyproj. The independent GeoPandas adapter answers the same probe with the same
+digits — 45.50072600332309, declaring 44 m and landing 6.33 m from the truth,
+honest inside its own stated bound.
+
+One measurement is worth repeating because it is counter-intuitive and it is in
+the code as a comment: handing PROJ the data's own extent as `area_of_interest`
+looks obviously right and makes the answer **worse**. On EPSG:4806 with the
+data's extent the group comes back holding only the ballpark — the 44 m
+operation disappears — so the better-looking call would fall back to no datum
+shift at all.
+
 ## 2026-08-26 (evening) — nineteen families, and MapSmith stops being 0.00
 
 Published run: [`2026-08-26-nineteen-families/`](2026-08-26-nineteen-families/).

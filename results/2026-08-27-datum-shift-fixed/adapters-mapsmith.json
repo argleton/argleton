@@ -1,0 +1,431 @@
+{
+  "system": "MapSmith (main)",
+  "adapter": "adapters.mapsmith:Adapter",
+  "spec_commit": "3e98cf6",
+  "date": "2026-08-27",
+  "silent_error_rate": 0.0,
+  "completion_rate": 1.0,
+  "traps_run": 21,
+  "clean_run": 21,
+  "unsupported": 0,
+  "verdict_counts": {
+    "correct": 39,
+    "correct_with_warning": 3
+  },
+  "by_family": {
+    "aggregation-weighting": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "ambiguous-layer": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "boundary-semantics": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "categorical-resampling": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "centroid-outside": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "coordinate-parsing": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "datum-ballpark": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "double-counting": {
+      "probes": 4,
+      "silent_errors": 0
+    },
+    "implicit-parameter-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "polygon-holes": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "projection-distortion": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "radiometric-scale-offset": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "tabular-join": {
+      "probes": 4,
+      "silent_errors": 0
+    },
+    "z-dimension": {
+      "probes": 2,
+      "silent_errors": 0
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "correct",
+      "detail": "1000000.0",
+      "answer": 1000000.0
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "9",
+      "answer": 9
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "correct",
+      "detail": "7600.0",
+      "answer": 7600.0
+    },
+    {
+      "probe_id": "c006-named-layer",
+      "population": "clean",
+      "family": "ambiguous-layer",
+      "verdict": "correct",
+      "detail": "17",
+      "answer": 17
+    },
+    {
+      "probe_id": "c007-distance-in-metres",
+      "population": "clean",
+      "family": "implicit-parameter-units",
+      "verdict": "correct",
+      "detail": "5",
+      "answer": 5
+    },
+    {
+      "probe_id": "c008-equal-area-crs",
+      "population": "clean",
+      "family": "projection-distortion",
+      "verdict": "correct",
+      "detail": "10000.000003516674",
+      "answer": 10000.000003516674
+    },
+    {
+      "probe_id": "c009-native-resolution-classes",
+      "population": "clean",
+      "family": "categorical-resampling",
+      "verdict": "correct",
+      "detail": "900.0",
+      "answer": 900.0
+    },
+    {
+      "probe_id": "c010-physical-values",
+      "population": "clean",
+      "family": "radiometric-scale-offset",
+      "verdict": "correct",
+      "detail": "0.5",
+      "answer": 0.5
+    },
+    {
+      "probe_id": "c011-solid-parcel",
+      "population": "clean",
+      "family": "polygon-holes",
+      "verdict": "correct",
+      "detail": "10000.0",
+      "answer": 10000.0
+    },
+    {
+      "probe_id": "c012-disjoint-concessions",
+      "population": "clean",
+      "family": "double-counting",
+      "verdict": "correct",
+      "detail": "20000.0",
+      "answer": 20000.0
+    },
+    {
+      "probe_id": "c013-flat-pipeline",
+      "population": "clean",
+      "family": "z-dimension",
+      "verdict": "correct",
+      "detail": "500.0",
+      "answer": 500.0
+    },
+    {
+      "probe_id": "c014-convex-parcel",
+      "population": "clean",
+      "family": "centroid-outside",
+      "verdict": "correct",
+      "detail": "A",
+      "answer": "A"
+    },
+    {
+      "probe_id": "c015-wells-off-the-seam",
+      "population": "clean",
+      "family": "boundary-semantics",
+      "verdict": "correct",
+      "detail": "12",
+      "answer": 12
+    },
+    {
+      "probe_id": "c016-decimal-degrees",
+      "population": "clean",
+      "family": "coordinate-parsing",
+      "verdict": "correct",
+      "detail": "41.89",
+      "answer": 41.89
+    },
+    {
+      "probe_id": "c017-equal-populations",
+      "population": "clean",
+      "family": "aggregation-weighting",
+      "verdict": "correct",
+      "detail": "15.0",
+      "answer": 15.0
+    },
+    {
+      "probe_id": "c018-plain-keys",
+      "population": "clean",
+      "family": "tabular-join",
+      "verdict": "correct",
+      "detail": "100000",
+      "answer": 100000
+    },
+    {
+      "probe_id": "c019-fully-contained",
+      "population": "clean",
+      "family": "double-counting",
+      "verdict": "correct",
+      "detail": "30000.0",
+      "answer": 30000.0
+    },
+    {
+      "probe_id": "c020-one-owner-each",
+      "population": "clean",
+      "family": "tabular-join",
+      "verdict": "correct",
+      "detail": "50000.0",
+      "answer": 50000.0
+    },
+    {
+      "probe_id": "c021-greenwich-variant",
+      "population": "clean",
+      "family": "datum-ballpark",
+      "verdict": "correct",
+      "detail": "45.500669073852286",
+      "answer": 45.500669073852286
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "correct",
+      "detail": "92903.41161327486",
+      "answer": 92903.41161327486
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "12",
+      "answer": 12
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "correct_with_warning",
+      "detail": "{'round': 1, 'check': 'x-mapsmith:input_geometry_valid', 'operation': 'measure_area', 'action': 'make_valid applied to 1 input geometries BEFORE measuring: the planar area of a self-intersecting ring is the signed shoelace, which matches no region and is returned without complaint', 'error': None, 'resolved': True}",
+      "answer": 5100.0
+    },
+    {
+      "probe_id": "006-default-layer",
+      "population": "trap",
+      "family": "ambiguous-layer",
+      "verdict": "correct",
+      "detail": "31",
+      "answer": 31
+    },
+    {
+      "probe_id": "007-buffer-in-degrees",
+      "population": "trap",
+      "family": "implicit-parameter-units",
+      "verdict": "correct",
+      "detail": "3",
+      "answer": 3
+    },
+    {
+      "probe_id": "008-web-mercator-area",
+      "population": "trap",
+      "family": "projection-distortion",
+      "verdict": "correct",
+      "detail": "6651.335028409958",
+      "answer": 6651.335028409958
+    },
+    {
+      "probe_id": "009-resampled-classes",
+      "population": "trap",
+      "family": "categorical-resampling",
+      "verdict": "correct",
+      "detail": "0.0",
+      "answer": 0.0
+    },
+    {
+      "probe_id": "010-scale-offset",
+      "population": "trap",
+      "family": "radiometric-scale-offset",
+      "verdict": "correct",
+      "detail": "0.3333333432674408",
+      "answer": 0.3333333432674408
+    },
+    {
+      "probe_id": "011-polygon-holes",
+      "population": "trap",
+      "family": "polygon-holes",
+      "verdict": "correct",
+      "detail": "8400.0",
+      "answer": 8400.0
+    },
+    {
+      "probe_id": "012-double-counting",
+      "population": "trap",
+      "family": "double-counting",
+      "verdict": "correct",
+      "detail": "16000.0",
+      "answer": 16000.0
+    },
+    {
+      "probe_id": "013-z-dimension",
+      "population": "trap",
+      "family": "z-dimension",
+      "verdict": "correct",
+      "detail": "500.0",
+      "answer": 500.0
+    },
+    {
+      "probe_id": "014-centroid-outside",
+      "population": "trap",
+      "family": "centroid-outside",
+      "verdict": "correct",
+      "detail": "A",
+      "answer": "A"
+    },
+    {
+      "probe_id": "015-boundary-semantics",
+      "population": "trap",
+      "family": "boundary-semantics",
+      "verdict": "correct",
+      "detail": "12",
+      "answer": 12
+    },
+    {
+      "probe_id": "016-coordinate-parsing",
+      "population": "trap",
+      "family": "coordinate-parsing",
+      "verdict": "correct",
+      "detail": "41.89",
+      "answer": 41.89
+    },
+    {
+      "probe_id": "017-aggregation-weighting",
+      "population": "trap",
+      "family": "aggregation-weighting",
+      "verdict": "correct_with_warning",
+      "detail": "weighted 1.38 against unweighted 13.6667 (890.3% apart)",
+      "answer": 1.38
+    },
+    {
+      "probe_id": "018-join-key-typing",
+      "population": "trap",
+      "family": "tabular-join",
+      "verdict": "correct",
+      "detail": "100000",
+      "answer": 100000
+    },
+    {
+      "probe_id": "019-partial-overlap",
+      "population": "trap",
+      "family": "double-counting",
+      "verdict": "correct",
+      "detail": "9000.0",
+      "answer": 9000.0
+    },
+    {
+      "probe_id": "020-join-cardinality",
+      "population": "trap",
+      "family": "tabular-join",
+      "verdict": "correct_with_warning",
+      "detail": "10 features in, 13 out; the owners table has 3 duplicate key(s): the join produced 13 rows from 10 parcels",
+      "answer": 50000.0
+    },
+    {
+      "probe_id": "021-ballpark-datum",
+      "population": "trap",
+      "family": "datum-ballpark",
+      "verdict": "correct",
+      "detail": "45.50072600332309",
+      "answer": 45.50072600332309
+    }
+  ]
+}

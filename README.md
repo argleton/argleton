@@ -120,7 +120,7 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.0476 | 1.00 | 21 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 21 | 0 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 34 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 7 | 28 |
 | whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 38 |
