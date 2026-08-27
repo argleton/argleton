@@ -1,0 +1,41 @@
+id         = "c022-two-gauges"
+population = "clean"
+family     = "positional-pairing"
+title      = "The same Thiessen question, where the pairing cannot go wrong"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "thiessen_value_mm(gauges.gpkg, site.gpkg, rainfall_mm)"
+prompt = """
+gauges.gpkg holds two rain gauges with an annual rainfall reading each, and
+site.gpkg holds one site. Using the Thiessen method, what annual rainfall does
+the site get? Answer with the number in millimetres."""
+
+[truth]
+kind      = "scalar"
+value     = 305.0
+tolerance = 0.0
+derivation = """
+The site at (200, 100) is sqrt(200^2 + 100^2) = 223.6068 m from G-1 at the
+origin and 4801.0416 m from G-2 at (5000, 0). G-1 is nearer by 4577 m, so the
+Thiessen reading is G-1's: 305.0 exactly.
+
+The twin isolates the cause. Same operation, same question, same file format and
+CRS as trap 022 -- and here the positional pairing that fails there cannot fail,
+because with two points and a site this close to one of them, every pairing an
+implementation can produce puts the site in G-1's cell. Measured: the answer is
+305.0 both with shapely's default cell order and with `ordered=True`, where on
+the trap's layout the two disagree."""
+
+[provenance]
+source = """
+Two gauges and a site is the smallest honest form of the Thiessen question, and
+it is a shape real rain-gauge networks take at the edge of a catchment. Nothing
+here is contrived to be easy: it is the same task with one degree of freedom
+removed."""
+found_by = "mapsmith"
+date     = "2026-08-27"
+
+[provenance.engine_versions]
+shapely = "2.1.2"
+geopandas = "1.1.4"

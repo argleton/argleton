@@ -94,7 +94,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Nineteen families of twenty-four, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Twenty families of twenty-five, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -119,10 +119,11 @@ rate means a system did not fail silently *on these probes*.
 | `coordinate-parsing` | 41.5324 instead of 41.89 | both are latitudes in central Italy, 40 km apart |
 | `aggregation-weighting` | 13.67% instead of 1.38% | averaging rates treats a village as equal to a city |
 | `tabular-join` | 62000 people instead of 100000 | a CSV reader turns "001" into 1 and four municipalities leave the join |
+| `positional-pairing` | 554 mm of rainfall instead of 268 | the Thiessen cells are all valid and tile the extent; only the row each one carries is wrong |
 
 ## Results
 
-Engine tier, nineteen families, `spec_commit` pinned — [every run, and what the
+Engine tier, twenty families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

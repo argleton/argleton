@@ -174,3 +174,36 @@ class Adapter:
             )
         out = chosen.transform(point.x, point.y)
         return Outcome(answer=float(out[1]))
+
+    def op_thiessen_value_mm(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # The Thiessen method IS nearest-neighbour assignment, so this asks that
+        # question directly instead of building polygons and then asking which
+        # one the site is in. Two lines, no ordering to get wrong, and correct
+        # for the reason the method is defined -- which is what makes trap 022
+        # fair: it is beaten by understanding the operation, not by a feature.
+        gauges = gpd.read_file(workdir / probe.arguments[0])
+        site = gpd.read_file(workdir / probe.arguments[1])
+        field = probe.arguments[2]
+        if gauges.crs is None or site.crs is None:
+            return Outcome(refusal="a layer declares no CRS, so distances are not distances")
+        if gauges.crs != site.crs:
+            site = site.to_crs(gauges.crs)
+        if gauges.crs.is_geographic:
+            return Outcome(
+                refusal="the layers are in a geographic CRS, where a nearest-neighbour "
+                "distance would be measured in degrees"
+            )
+        target = site.geometry.iloc[0]
+        distances = gauges.geometry.distance(target)
+        nearest = distances.idxmin()
+        # A tie would make the question ambiguous rather than hard, so say so
+        # instead of picking one.
+        second = distances.drop(index=nearest).min()
+        if abs(second - distances[nearest]) < 1e-9:
+            return Outcome(
+                refusal="two gauges are equidistant from the site, so the Thiessen "
+                "assignment is not unique"
+            )
+        return Outcome(answer=float(gauges.loc[nearest, field]))

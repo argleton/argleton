@@ -494,3 +494,40 @@ class Adapter:
         return Outcome(
             answer=float(frame.geometry.iloc[0].y), warnings=self._warnings(output)
         )
+
+    def op_thiessen_value_mm(self, probe: Probe, workdir: Path) -> Outcome:
+        from mapsmith.engines import vector
+
+        # MapSmith exposes `voronoi_polygons`, so this composes MapSmith's own
+        # operations rather than reaching past them: build the cells, then use
+        # `spatial_join` to find the one the site falls in. The point of doing it
+        # the long way is that this is the composition the trap punishes -- if
+        # MapSmith's cells carried the wrong rows, this would answer 554 like
+        # anyone else, and the check inside the operation is what stops it.
+        cells = workdir / "_argleton_cells.parquet"
+        joined = workdir / "_argleton_joined.parquet"
+        field = probe.arguments[2]
+        try:
+            vector.voronoi_polygons(
+                str(workdir / probe.arguments[0]), str(cells), margin_fraction=0.25
+            )
+            vector.spatial_join(
+                str(workdir / probe.arguments[1]), str(cells), str(joined)
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            text = str(exc)
+            if "has no CRS" in text or "Refusing" in text or "needs a point layer" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
+        import geopandas as gpd
+
+        frame = gpd.read_parquet(joined)
+        if frame.empty or field not in frame.columns:
+            return Outcome(error="the join produced no row carrying the reading")
+        values = frame[field].dropna()
+        if values.empty:
+            return Outcome(error="the join produced no reading for the site")
+        return Outcome(
+            answer=float(values.iloc[0]),
+            warnings=self._warnings(cells) + self._warnings(joined),
+        )

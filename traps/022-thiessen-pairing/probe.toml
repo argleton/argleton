@@ -1,0 +1,94 @@
+id         = "022-thiessen-pairing"
+population = "trap"
+family     = "positional-pairing"
+title      = "Thiessen cells paired with their rows by position"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "thiessen_value_mm(gauges.gpkg, site.gpkg, rainfall_mm)"
+prompt = """
+gauges.gpkg holds five rain gauges with an annual rainfall reading each, and
+site.gpkg holds one site. Using the Thiessen method, what annual rainfall does
+the site get? Answer with the number in millimetres."""
+
+[truth]
+kind      = "scalar"
+value     = 268.0
+tolerance = 0.0
+derivation = """
+The Thiessen method assigns each location the reading of the nearest gauge, so
+the answer is a lookup once the nearest gauge is known, and the distances are
+exact by construction. From the site at (300, 500):
+
+| gauge | distance | reading |
+|---|---|---|
+| G-2 (400, 300) | sqrt(100^2 + 200^2) = 223.6068 m | 268.0 |
+| G-5 (200, 900) | sqrt(100^2 + 400^2) = 412.3106 m | 197.0 |
+| G-3 (800, 600) | sqrt(500^2 + 100^2) = 509.9020 m | 731.0 |
+| G-1 (0, 0)     | sqrt(300^2 + 500^2) = 583.0952 m | 412.0 |
+| G-4 (1200, 900)| sqrt(900^2 + 400^2) = 984.8858 m | 554.0 |
+
+G-2 is nearest by 188.70 m over the runner-up, so the site lies well inside one
+cell and the answer is 268.0 exactly. No pair of gauges is within 5 m of
+equidistant from the site: the question admits one answer. The tolerance is 0
+because the answer is one of five numbers in the file, not a measurement."""
+
+[naive_failure]
+description = """
+Build the cells, put them on the rows, join the site to them:
+
+    cells = shapely.voronoi_polygons(MultiPoint(list(gauges.geometry)))
+    gauges["geometry"] = list(shapely.get_parts(cells))
+    answer = gauges.sjoin(site)["rainfall_mm"]
+
+Three lines, and the second one is the whole defect. `voronoi_polygons` returns
+the cells in an order that is an implementation detail, not the input order --
+shapely has an `ordered=True` for exactly this, and it is off by default. On
+this layout the default order puts ONE of the five cells on its own point, so
+the cell covering the site arrives carrying G-4's reading: a gauge 985 m away,
+across two other cells. The answer comes back 554.0."""
+observed_value = 554.0
+plausible      = true
+why_plausible  = """
+Every check a person would run passes. Five gauges in, five cells out; every
+cell is a valid polygon; the cells tile the extent with no gap and no overlap;
+the total area is right; the map looks exactly like a Thiessen diagram, because
+it IS one. The SET of cells is identical whichever order they come in -- only
+the pairing differs -- so no property of the geometry can reveal the error.
+
+And the answer is one of the file's own readings: 554 mm is an ordinary annual
+total, in range, in the right units, sitting next to four other ordinary totals.
+The person who asked receives a number measured by a real gauge; it is simply
+the wrong gauge, and nothing in the result says which one it came from.
+
+The failure also does not degrade gracefully. It is not "slightly off": the
+value belongs to a gauge on the far side of the study area, and with a different
+gauge layout the same code would have answered correctly by luck. A pipeline
+that was right yesterday on other data is wrong today on this."""
+derivation = """
+Measured on shapely 2.1.2, one arrangement at a time. With `ordered=False`
+(the default) 1 of 5 cells covers its own point and the site's cell carries
+554.0; with `ordered=True` 5 of 5 do and it carries 268.0. The cell areas are
+identical between the two runs, which is the mechanical proof that the geometry
+is not what differs."""
+
+[refusal]
+accept_if_mentions = ["order", "ordered", "pairing", "position", "positional", "index", "join by attribute", "nearest", "which cell"]
+
+[provenance]
+source = """
+The composition in `naive_failure` is the one that circulates: shapely's own
+`voronoi_polygons` documentation notes that the output order is not the input
+order and offers `ordered` to fix it, and the parameter was only added in
+shapely 2.1 (2025) -- so every recipe written before then, and every recipe
+copied from one, pairs by position. GIS Stack Exchange has the question in
+several forms ("voronoi polygons attributes wrong", "how to keep point
+attributes with voronoi"), and the accepted answers are split between a spatial
+join and a positional zip. The trap plants the case where the positional zip
+gives an ordinary rainfall figure instead of an obviously broken map."""
+found_by = "mapsmith"
+date     = "2026-08-27"
+
+[provenance.engine_versions]
+shapely = "2.1.2 - voronoi_polygons(ordered=False) by default; `ordered` exists since 2.1"
+geopandas = "1.1.4 - sjoin and the frame's row order are both faithful; the defect is upstream of them"

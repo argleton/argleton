@@ -218,3 +218,23 @@ class Adapter:
         # doing the right thing on the Greenwich variant of the same datum.
         frame = gpd.read_file(workdir / probe.arguments[0]).to_crs("EPSG:4326")
         return Outcome(answer=float(frame.geometry.iloc[0].y))
+
+    def op_thiessen_value_mm(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        import shapely
+        from shapely.geometry import MultiPoint
+
+        # Build the cells, put them on the rows, join the site to them. The
+        # middle line is the whole defect: `voronoi_polygons` returns the cells
+        # in an order that is an implementation detail, and pairing them with the
+        # rows by position is what every pre-2.1 recipe does, because `ordered`
+        # did not exist to be switched on.
+        gauges = gpd.read_file(workdir / probe.arguments[0])
+        site = gpd.read_file(workdir / probe.arguments[1])
+        field = probe.arguments[2]
+        cells = shapely.voronoi_polygons(MultiPoint(list(gauges.geometry)))
+        gauges = gauges.set_geometry(list(shapely.get_parts(cells)))
+        hit = gauges.sjoin(site, predicate="contains")
+        if hit.empty:
+            return Outcome(error="no Thiessen cell contains the site")
+        return Outcome(answer=float(hit[field].iloc[0]))
