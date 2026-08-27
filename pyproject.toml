@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "argleton"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Probes whose right answer is known by construction, and whose wrong answer looks fine"
 readme = "README.md"
 requires-python = ">=3.11"          # tomllib, so the runner needs nothing installed
@@ -42,6 +42,16 @@ Source = "https://github.com/argleton/argleton"
 
 [tool.hatch.build.targets.wheel]
 packages = ["argleton", "adapters"]
+
+# The probes ship WITH the runner. Without this the wheel holds a command-line
+# tool that finds nothing and exits 2 — a package that looks like it works and
+# does not, which is the failure mode this suite exists to measure. They go
+# under the package rather than at the top level so that installing does not put
+# `traps/` and `clean/` into site-packages.
+[tool.hatch.build.targets.wheel.force-include]
+"traps" = "argleton/probes/traps"
+"clean" = "argleton/probes/clean"
+"schema" = "argleton/probes/schema"
 
 [tool.ruff]
 line-length = 100

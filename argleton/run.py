@@ -21,7 +21,26 @@ from pathlib import Path
 from .model import Outcome, Probe, discover
 from .score import Verdict, judge, summarise
 
-ROOT = Path(__file__).resolve().parent.parent
+
+def _default_root() -> Path:
+    """Where the probes are: the repository if we are in it, the package if not.
+
+    Two layouts, and the difference is not cosmetic. Run from a checkout, the
+    probes are `traps/` and `clean/` beside the package and that is what a
+    contributor edits. Installed from PyPI, they are bundled inside the package,
+    because a wheel that ships the runner without the probes is a command that
+    finds nothing and exits 2 — and looks like it worked.
+    """
+    checkout = Path(__file__).resolve().parent.parent
+    if (checkout / "traps").is_dir():
+        return checkout
+    bundled = Path(__file__).resolve().parent / "probes"
+    if (bundled / "traps").is_dir():
+        return bundled
+    return checkout
+
+
+ROOT = _default_root()
 
 
 def build_fixtures(probe: Probe, workdir: Path) -> None:

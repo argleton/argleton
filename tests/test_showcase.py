@@ -324,3 +324,27 @@ def test_no_vendor_is_named_in_public():
         f"these files name a vendor this project stays silent about: {offenders}. "
         "State what the documentation requires without naming whose documentation it is."
     )
+
+def test_the_wheel_would_ship_the_probes():
+    """A runner without probes is a command that finds nothing and exits 2.
+
+    The first build of this package held 17 files and zero probes: `pip install
+    argleton` would have installed a tool that looks like it works and does not,
+    which is the failure mode this suite exists to measure. Checking the build
+    configuration rather than building a wheel keeps the test fast, and the thing
+    that would break is exactly a line disappearing from here.
+    """
+    import tomllib
+
+    config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    include = (
+        config["tool"]["hatch"]["build"]["targets"]["wheel"]
+        .get("force-include", {})
+    )
+    for source in ("traps", "clean", "schema"):
+        assert source in include, (
+            f"the wheel would not ship {source}/ — an installed argleton needs its probes"
+        )
+        assert include[source].startswith("argleton/"), (
+            f"{source}/ would land at the top level of site-packages, not inside the package"
+        )
