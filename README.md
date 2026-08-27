@@ -24,9 +24,16 @@ ordinary elevations. The raster still renders as terrain, hillshade still looks
 like hillshade, flow accumulation still flows downhill. Nothing anywhere says
 anything is wrong.
 
-Seeing it needs a checkout and one install — every fixture is rebuilt
-deterministically on your machine, so there is nothing to download and nothing
-to take on trust:
+Seeing it needs one install — every fixture is rebuilt deterministically on your
+machine, so there is nothing to download and nothing to take on trust:
+
+```
+pip install "argleton[fixtures]"
+```
+
+The probes ship with the runner, so that is the whole setup. To read them, change
+them, or add one, take the checkout instead — the probes are the point of the
+repository and `probe.toml` is meant to be read:
 
 ```
 git clone https://github.com/argleton/argleton
