@@ -1,17 +1,16 @@
 {
-  "system": "GeoPandas 1.1 + Shapely 2",
+  "system": "GeoPandas 1.1 + Shapely 2 (careful composition)",
   "adapter": "engine:geopandas",
-  "spec_commit": "547fc09",
-  "date": "2026-08-26",
-  "silent_error_rate": 0.1429,
+  "spec_commit": "5f86869",
+  "date": "2026-08-27",
+  "silent_error_rate": 0.0,
   "completion_rate": 1.0,
   "traps_run": 7,
   "clean_run": 7,
   "unsupported": 28,
   "verdict_counts": {
     "correct": 12,
-    "correct_with_warning": 1,
-    "silent_error": 1,
+    "correct_with_warning": 2,
     "unsupported": 28
   },
   "by_family": {
@@ -41,7 +40,7 @@
     },
     "datum-ballpark": {
       "probes": 2,
-      "silent_errors": 1
+      "silent_errors": 0
     },
     "double-counting": {
       "probes": 4,
@@ -425,9 +424,9 @@
       "probe_id": "021-ballpark-datum",
       "population": "trap",
       "family": "datum-ballpark",
-      "verdict": "silent_error",
-      "detail": "expected 45.500669074 \u00b1 9e-05, got 45.5 \u2014 this is the predicted naive failure",
-      "answer": 45.5
+      "verdict": "correct_with_warning",
+      "detail": "the default transformation for this CRS is a ballpark one (accuracy -1, no datum shift): used a published operation with stated accuracy 44.0 m instead",
+      "answer": 45.50072600332309
     }
   ]
 }

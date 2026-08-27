@@ -75,23 +75,25 @@ operation first. The one-liner takes the other one.
 
 | system | answer | verdict |
 |---|---|---|
-| naive composition | 45.5 | **silent error**, and the predicted one |
-| GeoPandas 1.1 + Shapely 2 (`to_crs`) | 45.5 | **silent error** |
+| naive composition (`to_crs`) | 45.5 | **silent error**, and the predicted one |
+| GeoPandas + Shapely, careful composition | 45.500669074 | correct, with the ballpark disclosed |
 | MapSmith 0.2.2+ | 45.5 | **silent error** |
 
-Every system measured so far falls in, and they fall in at the same place: all
-three end up at `Transformer.from_crs`. On this probe there is no gap between
-the careless composition and the ordinary one, because the ordinary one is a
-single line.
+The two failures are the same failure reached two ways: `to_crs` is one line and
+it hands the pair to `Transformer.from_crs`, which is also the line under
+MapSmith's `reproject_layer`.
+
+The row that passes is not a score for GeoPandas — the library does the ordinary
+thing by default, and the ordinary thing is the row above it. It is a score for
+composing the library with the fourteen lines below.
 
 MapSmith fails this exactly as the naive composition does, and its manifest
 records a successful reprojection: `crs_matches` passes, because the output CRS
 *is* EPSG:4326. Seven green checks beside a number that is 74 m wrong — the same
 finding this suite made about MapSmith on 2026-08-23, on a different operation.
 
-No system passes it yet, so what it takes to pass is stated here as a
-specification rather than reported as a score — and being precise about it is
-what decides whether the trap is fair: read
+What it takes to pass, stated precisely because it is what decides whether the
+trap is fair: read
 `get_last_used_operation().accuracy`, and if it is negative, take the first
 operation from `TransformerGroup` that states one. Fourteen lines. **No manifest
 and no provenance format is required** — any engine can do it, which is why this

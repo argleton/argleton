@@ -47,8 +47,8 @@ one new one, `datum-ballpark`, joins the eighteen below.
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
 | MapSmith (main) | **0.0476** | 1.00 | 21 | 0 |
-| rasterio 1.5.1 | 0.00 | 1.00 | 4 | 34 |
-| GeoPandas 1.1 + Shapely 2 | **0.1429** | 1.00 | 7 | 28 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 34 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 7 | 28 |
 | whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 38 |
 | naive composition | 0.9524 | 1.00 | 21 | 0 |
 
@@ -75,20 +75,25 @@ There PROJ selects a 4 m operation and lands on the truth to 0.000 m. So the
 answer to this trap cannot be *datum transformations are hard*: difficulty is not
 the variable, the declared variant is.
 
-**Nothing passes this trap yet**, and that is worth saying plainly rather than
-leaving to a reader to notice. GeoPandas falls in too: `to_crs` is one line and it
-hands the pair to the same `Transformer.from_crs`, which is also the line under
-MapSmith's `reproject_layer`. All three failures are the same failure, reached
-three ways.
+**One row passes it, and reading which one is the whole exercise.** The careful
+composition over GeoPandas does — fourteen lines that read
+`get_last_used_operation().accuracy` and, when it is negative, take the first
+`TransformerGroup` operation that states one. No manifest, no provenance format:
+the trap is beaten by a computation any engine can do, which is the property that
+keeps it from being a benchmark for the product this suite was built beside.
 
-What it takes to pass is a **computation**, not a declaration: read
-`get_last_used_operation().accuracy`, and if it is negative take the first
-`TransformerGroup` operation that states one. Fourteen lines, no manifest and no
-provenance format — which is the property that keeps this trap from being a
-benchmark for the product the suite was built beside. It is stated in the trap's
-README as the specification of a fix, and deliberately not scored under any
-library's name: an earlier version of this run did exactly that, and told a
-reader GeoPandas handles a case it does not.
+**The naive composition and MapSmith both fall in, and they fall in at the same
+line.** `to_crs` is one line and it hands the pair to `Transformer.from_crs`,
+which is also the line under MapSmith's `reproject_layer`. Two of the three
+failures are the same failure reached two ways.
+
+A note on the labels, because a number here is easy to over-read and on
+2026-08-26 ours was: the careful rows are **not scores for GeoPandas or
+rasterio**. Those libraries do the ordinary thing by default, and the ordinary
+thing is what the naive row measures — same libraries, no care. The gap between
+the two rows is the finding. For one evening this table read
+"GeoPandas 1.1 + Shapely 2 | 0.00" with no qualifier, which told a reader the
+library handles a case it does not.
 
 ## 2026-08-26 (tier A) — eighteen families, and two that are not geometry at all
 
