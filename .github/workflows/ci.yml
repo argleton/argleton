@@ -32,11 +32,25 @@ jobs:
       - run: argleton --adapter engine:geopandas --out /tmp/geopandas.json
       - run: argleton --adapter engine:whitebox  --out /tmp/whitebox.json
       - run: argleton --adapter engine:naive      --out /tmp/naive.json
-      # The careful adapters must stay at zero. The other two are expected to
-      # fail their traps — one because of a defect in someone else's library,
-      # one because it is the careless composition on purpose — so the build is
-      # not gated on them. A red build for a known upstream bug would train us
-      # to ignore the build, which costs more than the signal is worth.
+      # The careful adapters must stay at zero. "Careful" is not a compliment
+      # about the library: `engine:rasterio` and `engine:geopandas` compose those
+      # libraries the way a caller who knows them does — unit read from the CRS,
+      # geographic CRS refused for a planar area, invalid ring repaired and the
+      # repair disclosed, a ballpark transformation detected. `engine:naive` is
+      # the same libraries composed the way almost everyone writes first, and the
+      # gap between the two rows is what this suite is for.
+      #
+      # The other two are expected to fail their traps — one because of a defect
+      # in someone else's library, one because it is the careless composition on
+      # purpose — so the build is not gated on them. A red build for a known
+      # upstream bug would train us to ignore the build, which costs more than
+      # the signal is worth.
+      #
+      # This gate went red on 2026-08-26 for a good reason: `engine:geopandas`
+      # had one operation doing the ordinary thing while its other nine did the
+      # careful thing, so it was no longer the adapter this gate describes. The
+      # answer was to make the adapter consistent again AND to fix the label on
+      # the published table, which is what had been misleading.
       - name: the careful adapters must have no silent errors
         run: |
           python - <<'PY'
