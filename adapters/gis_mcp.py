@@ -190,3 +190,31 @@ class Adapter:
         if not isinstance(result, dict) or "geometry" not in result:
             return Outcome(error=f"project_geometry returned {result!r}")
         return Outcome(answer=float(shapely_wkt.loads(result["geometry"]).y))
+
+    def op_thiessen_value_mm(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # The charitable composition again, and here the charity is load-bearing:
+        # gis-mcp ships BOTH routes. `shapely_functions.voronoi` builds the cells
+        # and is the one that walks into the trap; `sjoin_nearest_gpd` is the
+        # right instrument for a Thiessen assignment, since the method IS
+        # nearest-neighbour, and a careful client would reach for it. The rule
+        # recorded in the internal register applies: where they have the right
+        # tool, we use it. This is the harder criterion for us, not the softer
+        # one -- MapSmith's own adapter takes the polygon route and only passes
+        # because its operation verifies the pairing.
+        from gis_mcp.geopandas_functions import sjoin_nearest_gpd
+
+        field = probe.arguments[2]
+        output = workdir / "_gis_mcp_nearest.gpkg"
+        result = sjoin_nearest_gpd.fn(
+            left_path=str(workdir / probe.arguments[1]),
+            right_path=str(workdir / probe.arguments[0]),
+            output_path=str(output),
+        )
+        if result.get("status") != "success":
+            return Outcome(error=str(result.get("message", result)))
+        frame = gpd.read_file(output)
+        if frame.empty or field not in frame.columns:
+            return Outcome(error="the nearest join carried no reading for the site")
+        return Outcome(answer=float(frame[field].iloc[0]))
