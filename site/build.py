@@ -67,6 +67,30 @@ def planned_families() -> int:
     return len(set(re.findall(r"^\|\s*(\d+)\s*\|", text, re.MULTILINE)))
 
 
+ORDINALS = {
+    1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth", 6: "sixth",
+    7: "seventh", 8: "eighth", 9: "ninth", 10: "tenth", 11: "eleventh",
+    12: "twelfth", 13: "thirteenth", 14: "fourteenth", 15: "fifteenth",
+    16: "sixteenth", 17: "seventeenth", 18: "eighteenth", 19: "nineteenth",
+    20: "twentieth", 21: "twenty-first", 22: "twenty-second",
+    23: "twenty-third", 24: "twenty-fourth", 25: "twenty-fifth",
+    26: "twenty-sixth", 27: "twenty-seventh", 28: "twenty-eighth",
+}
+
+
+def next_ordinal() -> str:
+    """The word for the family after the last one named, spelled out.
+
+    This exists because the sentence "bring a thirteenth" survived seven family
+    additions on the published page, two lines under generated text reading
+    "20 families of 25". `planned_families()` was written after the same mistake
+    in the sentence above it, and the fix landed on one line and not the other.
+    An ordinal is a count; a count on this site is computed.
+    """
+    following = planned_families() + 1
+    return ORDINALS.get(following, f"{following}th")
+
+
 def probes() -> list[dict]:
     sys.path.insert(0, str(ROOT))
     from argleton.model import discover
@@ -189,6 +213,7 @@ def main(destination: Path) -> int:
         "{{TRAPS}}": str(len(traps)),
         "{{FAMILIES}}": str(len({p["family"] for p in traps})),
         "{{FAMILIES_PLANNED}}": str(planned_families()),
+        "{{NEXT_ORDINAL}}": next_ordinal(),
         "{{FAMILIES_REMAINING}}": str(planned_families() - len({p["family"] for p in traps})),
         "{{PROBES}}": str(len(probe_list)),
         "{{SYSTEMS}}": str(len(data)),

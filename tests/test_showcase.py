@@ -189,6 +189,24 @@ def test_the_site_template_has_no_hand_typed_count_and_no_orphan_placeholder():
     for word in ("nine more", "seven more", "eight more"):
         assert word not in template.lower(), f"hand-typed count {word!r} in the template"
 
+    # And ordinals, which this test did not look for. "bring a thirteenth"
+    # survived seven family additions on the published page, two lines under
+    # generated text reading "20 families of 25" — on a suite whose pitch is
+    # numbers you can check. An ordinal is a count; the build computes it now.
+    ORDINAL = (
+        r"(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"
+        r"eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|"
+        r"seventeenth|eighteenth|nineteenth|twentieth|twenty-[a-z]+)"
+    )
+    counted = re.findall(rf"bring a ({ORDINAL})|({ORDINAL}) famil", template.lower())
+    flat = [word for pair in counted for word in pair if word]
+    assert not flat, (
+        f"hand-typed ordinal(s) {sorted(set(flat))} counting families in the "
+        "template. Add a placeholder and let build.py count — `next_ordinal()` "
+        "is there. 'first' and 'second' as ordinary prose are fine; an ordinal that "
+        "names a position in the family list is a count."
+    )
+
 
 def test_every_live_family_count_in_public_markdown_is_current():
     """The stale-caveat defect, one directory over. `results/README.md` carried
@@ -347,4 +365,34 @@ def test_the_wheel_would_ship_the_probes():
         )
         assert include[source].startswith("argleton/"), (
             f"{source}/ would land at the top level of site-packages, not inside the package"
+        )
+
+
+def test_the_naive_breakdown_in_prose_matches_its_own_score():
+    """"Falls into N of the M traps" is a number, and it aged like every other.
+
+    The README carried "twenty of the twenty-one" while the published score was
+    0.9545 — which is 21 of 22. `test_the_naive_score_quoted_in_prose_is_current`
+    checked the rate and not the sentence explaining it, so the explanation drifted
+    away from the number it explains, in the paragraph that makes the whole point
+    about careless code being right until it is not.
+    """
+    _, systems = latest_run()
+    naive = next(r for name, r in systems.items() if "naive" in name)
+    traps = naive["traps_run"]
+    fell = round(naive["silent_error_rate"] * traps)
+
+    prose = (ROOT / "README.md").read_text(encoding="utf-8")
+    found = re.findall(r"falls into ([a-z-]+) of the ([a-z-]+) traps", prose)
+    assert found, (
+        "the README no longer says how many traps the naive adapter falls into, "
+        "which is the sentence that makes 0.9545 mean something"
+    )
+    for stated, out_of in found:
+        assert NUMBER_WORDS[stated] == fell, (
+            f"the README says the naive adapter falls into {stated} traps; its "
+            f"score of {naive['silent_error_rate']} over {traps} says {fell}"
+        )
+        assert NUMBER_WORDS[out_of] == traps, (
+            f"the README says {out_of} traps, the run has {traps}"
         )

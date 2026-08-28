@@ -206,6 +206,30 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
     shaped unusually. <a href="https://github.com/argleton/argleton/tree/main/results">Full results →</a>
   </p>
 
+  <h3 style="margin-top:2.25rem">What these numbers do not say</h3>
+  <p>
+    Nearer the top than the bottom on purpose, and it grows with the suite. The full list travels
+    with the run, in
+    <a href="https://github.com/argleton/argleton/blob/main/results/README.md">results/README.md</a>.
+  </p>
+  <ul>
+    <li><strong>A 0.00 means a system did not fail silently <em>on these probes</em>.</strong> Not
+    that it is correct, not that it is safe, and not that it would survive the families that are
+    named and not yet built — nor the thirty further mechanisms a survey of the literature turned
+    up while this run was being made.</li>
+    <li><strong>Read “not applicable” before the rate.</strong> A rate over two traps and a rate
+    over {{TRAPS}} are different claims. An adapter that can only be asked two questions must not
+    be able to look better than one that faced all of them.</li>
+    <li><strong>One family can move any of these rates a long way</strong>, because most carry one
+    trap each. Treat a difference of one probe as one probe.</li>
+    <li><strong>Engine tier only.</strong> Every number here comes from an adapter calling a
+    library directly. Nothing on this page measures an agent, and an agent wrapping a careful
+    library can still produce a careless answer.</li>
+    <li><strong>A pass can be inherited.</strong> Some of them are: an adapter can be right because
+    the library underneath happened to undo the problem, which is not the same as the adapter
+    knowing about it. The run separates the two where we can tell.</li>
+  </ul>
+
   <div class="finding">
     <p><strong>The finding that matters is about us.</strong> MapSmith scores 0, and its verification
     had nothing to do with it. On the first trap it wrote a provenance manifest with seven checks,
@@ -264,7 +288,7 @@ feature_count_exact  expected 1, got 1</pre>
   <p class="caption">
     {{FAMILIES_REMAINING}} more are named, with their gaps kept under their original numbers, in
     <a href="https://github.com/argleton/argleton/blob/main/docs/FAMILIES.md">FAMILIES.md</a>.
-    The fastest way to improve this suite is to bring a thirteenth.
+    The fastest way to improve this suite is to bring a {{NEXT_ORDINAL}}.
   </p>
 </div></section>
 

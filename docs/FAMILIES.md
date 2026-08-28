@@ -93,8 +93,8 @@ See [ADDING-A-TRAP.md](ADDING-A-TRAP.md).
 
 ## What this list does not claim
 
-That these twenty-four are the complete set. They are the families we can currently
-argue for, each with a source. A twenty-fifth that meets the four conditions
+That these twenty-five are the complete set. They are the families we can currently
+argue for, each with a source. A twenty-sixth that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this
 list has entries, and being able to say which ones failed the conditions is

@@ -70,7 +70,7 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
 report it — and it is the most useful one here. It scores **0.9545 / 1.0**: it
-answers every clean probe correctly, falls into twenty of the twenty-one traps, and
+answers every clean probe correctly, falls into twenty-one of the twenty-two traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to

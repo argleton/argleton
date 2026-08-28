@@ -21,11 +21,10 @@ the suite. Twenty families of twenty-five are implemented
   mechanisms a survey of the literature turned up while this run was being
   made.
 - **Read "not applicable" before the rate.** A rate over two traps and a rate
-  over twenty are different claims. An adapter that can only be asked two
+  over twenty-two are different claims. An adapter that can only be asked two
   questions must not be able to look better than one that faced all of them.
 - **One family can still move any of these rates a long way**, because most of
-  them carry one trap each — treat a difference of one probe as one probe. Treat a difference of one probe as one
-  probe.
+  them carry one trap each — treat a difference of one probe as one probe.
 - **Engine tier only.** Every number here comes from an adapter calling a
   library directly. Nothing on this page measures an agent, and the agent tier
   will be reported with its variance rather than as a single run.
