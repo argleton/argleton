@@ -118,10 +118,53 @@ earlier experiment in which the interesting-looking effect was inside the noise.
   families.
 - **Whether it picks the right tools.** That is trajectory scoring, which other
   benchmarks do; this one starts after the tools were picked.
-- **Performance, cost, or usability.**
+- **Performance.** Every result now carries a wall clock per probe, and it is
+  reported precisely so that it cannot pass for a benchmark — see section 9b.
+- **Cost or usability.**
 - **Anything about families not represented here.** The families are listed in
   `docs/FAMILIES.md` with their current coverage. A family with one probe is one
   probe, and the per-family breakdown in every result says so.
+
+## 9b. Wall clock, and why it is not a benchmark
+
+Each result records how long each adapter call took. It is there because a
+difference of a factor of ten is worth seeing, and because a system that answers
+correctly in four minutes and one that answers correctly in four milliseconds are
+not interchangeable even though this suite scores them the same.
+
+It is **one observation per probe, on one machine**. No repetition, no warm-up
+control, no isolation from whatever else that machine was doing, no pinned
+hardware. Four things follow, and each is enforced in the shape of the record
+rather than left to the reader's good faith.
+
+**The denominator is the probes actually attempted.** An `unsupported` returns in
+microseconds because nothing ran. On an adapter that skips 36 of 44 probes, a
+median over all of them is 0 ms — precisely true, and worthless. So skipped
+probes are excluded and `probes` travels with the numbers, exactly as
+`traps_run` travels with the silent-error rate.
+
+**The median, not the mean.** One probe pays a library's first import and can be
+twenty times the others. A mean carries that one-off into every comparison as if
+it recurred; `first_probe_ms` is reported separately so it can be subtracted
+instead of hidden.
+
+**Two adapters that ran different subsets did different work.** The families do
+not cost the same — a trap over a 24x24 elevation model and a trap over one
+polygon are not comparable — so a total from an adapter that answered 22 probes
+and a total from one that answered 11 are not two measurements of the same thing.
+
+**A stopwatch outside the call cannot tell the product's cost from ours.** This
+is the one that changes conclusions. An adapter that has to spawn a separate
+interpreter for each probe, where importing the library alone takes about six
+seconds, spends most of its wall clock on the harness: attributing that to the
+product would be measuring how we reach it. Adapters may therefore report a
+breakdown of their own time in `timings`, and the parts must sum to the
+measurement the runner took — a total is never reported beside its own parts,
+because a number that gets counted twice in a comparison is worse than no number.
+
+The honest use of these figures is *what is slow and why*, which is why the
+slowest probe is named rather than merely counted. The dishonest use is a
+ranking, and nothing in a single unrepeated run supports one.
 
 ## 10. Related work
 

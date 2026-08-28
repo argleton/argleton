@@ -14,7 +14,8 @@ import json
 import subprocess
 import sys
 import tempfile
-from dataclasses import asdict
+import time
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -77,12 +78,24 @@ def run_probe(adapter, probe: Probe, keep: Path | None = None) -> tuple[Outcome,
     with tempfile.TemporaryDirectory(prefix=f"argleton-{probe.id}-") as tmp:
         workdir = Path(keep / probe.id) if keep else Path(tmp)
         workdir.mkdir(parents=True, exist_ok=True)
+        # Fixtures are built OUTSIDE the stopwatch. They are our cost, they
+        # are identical for every system, and charging them to the system under
+        # test would measure the suite rather than the thing it is pointed at.
+        build_fixtures(probe, workdir)
+        started = time.perf_counter()
         try:
-            build_fixtures(probe, workdir)
             outcome = adapter.run(probe, workdir)
         except Exception as exc:  # noqa: BLE001 — an adapter that raises has errored, not crashed us
             outcome = Outcome(error=f"{type(exc).__name__}: {exc}")
-    return outcome, judge(probe, outcome)
+        elapsed = (time.perf_counter() - started) * 1000.0
+    # `replace` and not assignment: Verdict is frozen, and it should stay that
+    # way -- a judgement that can be edited after the fact is not a judgement.
+    verdict = replace(
+        judge(probe, outcome),
+        duration_ms=round(elapsed, 1),
+        timings=dict(outcome.timings) or None,
+    )
+    return outcome, verdict
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -121,7 +134,8 @@ def main(argv: list[str] | None = None) -> int:
         details.append(asdict(verdict))
         mark = {True: "ok  ", False: "FAIL", None: "skip"}[verdict.success]
         print(f"{mark} {probe.population:5} {probe.id:28} "
-              f"{verdict.verdict:22} {verdict.detail[:70]}")
+              f"{verdict.duration_ms:8.0f}ms  "
+              f"{verdict.verdict:22} {verdict.detail[:52]}")
 
     summary = summarise(verdicts)
     result = {
@@ -137,6 +151,20 @@ def main(argv: list[str] | None = None) -> int:
         f"over {summary['traps_run']} traps  |  "
         f"completion_rate {summary['completion_rate']} over {summary['clean_run']} clean"
     )
+    tempo = summary.get("timing")
+    if tempo:
+        riga = (
+            f"time: {tempo['total_ms'] / 1000:.1f}s total  |  "
+            f"{tempo['median_ms']:.0f}ms median over {tempo['probes']} probes  |  "
+            f"first {tempo['first_probe_ms'] / 1000:.1f}s  |  "
+            f"slowest {tempo['slowest']['probe_id']} {tempo['slowest']['ms'] / 1000:.1f}s"
+        )
+        print(riga)
+        if tempo.get("adapter_breakdown_ms"):
+            parti = ", ".join(
+                f"{k} {v / 1000:.1f}s" for k, v in sorted(tempo["adapter_breakdown_ms"].items())
+            )
+            print(f"      of which, reported by the adapter: {parti}")
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

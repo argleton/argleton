@@ -29,6 +29,15 @@ the suite. Twenty families of twenty-five are implemented
 - **Engine tier only.** Every number here comes from an adapter calling a
   library directly. Nothing on this page measures an agent, and the agent tier
   will be reported with its variance rather than as a single run.
+- **The wall clock in every result is not a benchmark.** One observation per
+  probe, one machine, no repetition and no warm-up control. Read it for gross
+  differences — a factor of ten — and never as a ranking. Two systems that ran
+  different subsets of the suite did different work, so `probes` travels with
+  the timing; and where an adapter reports a breakdown, most of its wall clock
+  may belong to our harness rather than to the product: the one that spawns a
+  fresh interpreter per probe spends about six seconds per probe importing its
+  library before any geoprocessing happens. `METHOD.md` §9b is the full
+  statement.
 - **These are not verdicts on libraries.** whitebox-workflows fails one trap
   because of [one open upstream defect](https://github.com/jblindsay/whitebox_next_gen/issues/32)
   we reported; everything else here is a library behaving exactly as documented.

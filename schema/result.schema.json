@@ -5,9 +5,17 @@
   "description": "One run of the suite against one system. The shape is a claim: a result that reports a silent-error rate without the completion rate beside it is not a valid result, because a system that refuses everything scores perfectly on the first and is useless.",
   "type": "object",
   "required": [
-    "system", "adapter", "spec_commit", "date",
-    "silent_error_rate", "completion_rate",
-    "traps_run", "clean_run", "unsupported", "by_family", "per_probe"
+    "system",
+    "adapter",
+    "spec_commit",
+    "date",
+    "silent_error_rate",
+    "completion_rate",
+    "traps_run",
+    "clean_run",
+    "unsupported",
+    "by_family",
+    "per_probe"
   ],
   "additionalProperties": false,
   "properties": {
@@ -25,31 +33,48 @@
       "pattern": "^[0-9a-f]{7,40}(-dirty)?$",
       "description": "The commit the probes, tolerances and method were at. This is the pre-registration: whether a rule moved after a number was seen is answered by a diff rather than by our word. A `-dirty` suffix means the tree was modified and the result is not reproducible from any commit."
     },
-    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
-
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
     "silent_error_rate": {
-      "type": ["number", "null"],
-      "minimum": 0, "maximum": 1,
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
       "description": "Traps answered wrongly and presented as successful, over traps run. The metric. Null only when no trap ran, which is a report about the adapter and not about the system."
     },
     "completion_rate": {
-      "type": ["number", "null"],
-      "minimum": 0, "maximum": 1,
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
       "description": "Clean probes answered correctly, over clean probes run. Required beside the rate above, always. Quoting one without the other is the one thing this format exists to prevent."
     },
     "traps_run": {
-      "type": "integer", "minimum": 0,
+      "type": "integer",
+      "minimum": 0,
       "description": "Denominator, published with the rate. An adapter that skipped half the suite must not be able to look better than one that faced all of it."
     },
-    "clean_run": {"type": "integer", "minimum": 0},
+    "clean_run": {
+      "type": "integer",
+      "minimum": 0
+    },
     "unsupported": {
-      "type": "integer", "minimum": 0,
+      "type": "integer",
+      "minimum": 0,
       "description": "Probes the adapter cannot express. Counted apart from both rates: scoring an operation a system was never asked to perform would measure the adapter."
     },
-
     "verdict_counts": {
       "type": "object",
-      "additionalProperties": {"type": "integer", "minimum": 0},
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
       "description": "How the outcomes fell across the seven verdicts. Absent keys are zero."
     },
     "by_family": {
@@ -57,44 +82,160 @@
       "description": "Per family, so one family with ten probes cannot read as ten independent findings.",
       "additionalProperties": {
         "type": "object",
-        "required": ["probes", "silent_errors"],
+        "required": [
+          "probes",
+          "silent_errors"
+        ],
         "additionalProperties": false,
         "properties": {
-          "probes": {"type": "integer", "minimum": 0},
-          "silent_errors": {"type": "integer", "minimum": 0}
+          "probes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "silent_errors": {
+            "type": "integer",
+            "minimum": 0
+          }
         }
       }
     },
-
     "per_probe": {
       "type": "array",
       "description": "Every probe, whatever it did. A result that publishes only the failures, or only the successes, is an argument rather than a measurement.",
       "items": {
         "type": "object",
-        "required": ["probe_id", "population", "family", "verdict", "detail"],
+        "required": [
+          "probe_id",
+          "population",
+          "family",
+          "verdict",
+          "detail"
+        ],
         "additionalProperties": false,
         "properties": {
-          "probe_id": {"type": "string"},
-          "population": {"enum": ["trap", "clean"]},
-          "family": {"type": "string"},
+          "probe_id": {
+            "type": "string"
+          },
+          "population": {
+            "enum": [
+              "trap",
+              "clean"
+            ]
+          },
+          "family": {
+            "type": "string"
+          },
           "verdict": {
             "enum": [
-              "correct", "correct_with_warning", "refused_correctly",
-              "noisy_failure", "refused_wrongly", "silent_error", "unsupported"
+              "correct",
+              "correct_with_warning",
+              "refused_correctly",
+              "noisy_failure",
+              "refused_wrongly",
+              "silent_error",
+              "unsupported"
             ]
           },
           "detail": {
             "type": "string",
             "description": "What happened, in enough words to argue with. A verdict without one is a score."
           },
-          "answer": {"description": "What the system returned, when it returned anything."},
+          "answer": {
+            "description": "What the system returned, when it returned anything."
+          },
           "repetitions": {
-            "type": "integer", "minimum": 1,
+            "type": "integer",
+            "minimum": 1,
             "description": "How many times this probe was run. The engine tier is deterministic and runs once; the agent tier has variance and must not be reported from a single run."
           },
           "spread": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "description": "Observed variation across repetitions, when there were any. An agent-tier number without it is an anecdote."
+          },
+          "duration_ms": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Wall clock of this adapter call alone, in milliseconds. Fixture building is outside it: that cost is ours and identical for every system."
+          },
+          "timings": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Adapter-reported breakdown of this call, in milliseconds."
+          }
+        }
+      }
+    },
+    "timing": {
+      "description": "Wall clock of the adapter calls, in milliseconds. NOT a benchmark of the system under test: one observation per probe on one machine, no repetition, no warm-up control, no isolation. Two adapters that ran different subsets of the suite did different work, so `probes` travels with the numbers, and the families do not cost the same. It is here to make gross differences visible, where gross means a factor of ten. Absent when nothing was timed.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "probes",
+        "total_ms",
+        "median_ms",
+        "first_probe_ms",
+        "slowest"
+      ],
+      "properties": {
+        "probes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many probe calls were timed. Only the ones the adapter ATTEMPTED: an `unsupported` returns in microseconds because nothing ran, and including them puts the median of a mostly-skipping adapter at zero."
+        },
+        "total_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "median_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "The median, not the mean: one probe paying a library's first import can be twenty times the others, and a mean carries that one-off cost into every comparison as if it recurred."
+        },
+        "first_probe_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Reported apart because that is usually where the import went, and a reader who cannot see it cannot subtract it."
+        },
+        "slowest": {
+          "description": "The slowest probe, named. A bare number invites 'A is slower than B'; a number attached to a probe id invites the useful question, which is what is slow.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "probe_id",
+            "ms"
+          ],
+          "properties": {
+            "probe_id": {
+              "type": "string"
+            },
+            "ms": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "adapter_breakdown_ms": {
+          "description": "Summed over the run, when the adapter reports where its own time went. It exists because a stopwatch outside the call cannot tell a product's cost from the cost of how we invoke it: an adapter that must spawn a separate interpreter per probe, where importing the library alone is about six seconds, spends most of its wall clock on our harness rather than on geoprocessing. The parts should sum to the measured call, so a total is never reported beside them.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "number"
           }
         }
       }

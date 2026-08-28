@@ -189,6 +189,17 @@ class Outcome:
     unsupported: bool = False
     warnings: list[str] = field(default_factory=list)
     transcript: str | None = None
+    # Optional breakdown of where the time went inside the adapter, in
+    # milliseconds. The runner always measures the WHOLE call; this is for an
+    # adapter that knows something the stopwatch cannot see. The case that
+    # forced it: an adapter that has to spawn a separate interpreter for every
+    # probe, where importing the library alone costs about six seconds -- a
+    # property of how we reach the product, not of the product's geoprocessing,
+    # and invisible from outside the call. Whatever an adapter reports here
+    # should sum to the runner's own measurement, so a total is never repeated
+    # beside its parts. An adapter that stays silent is reporting a single
+    # number, and that is honest too.
+    timings: dict[str, float] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         declared = sum(

@@ -8,6 +8,7 @@ why it is never published alone.
 
 from __future__ import annotations
 
+import statistics
 from dataclasses import dataclass
 from typing import Any
 
@@ -33,6 +34,12 @@ class Verdict:
     verdict: str
     detail: str
     answer: Any = None
+    # Wall clock of the adapter call alone, in milliseconds. Building the
+    # fixtures is outside it: that cost is ours and identical for every system,
+    # so charging it to the system under test would flatter the fast ones and
+    # slander nobody usefully.
+    duration_ms: float | None = None
+    timings: dict[str, float] | None = None
 
     @property
     def success(self) -> bool | None:
@@ -141,10 +148,64 @@ def summarise(verdicts: list[Verdict]) -> dict[str, Any]:
         "traps_run": len(traps),
         "clean_run": len(clean),
         "unsupported": sum(v.verdict == "unsupported" for v in verdicts),
+        "timing": _timing(verdicts),
         "verdict_counts": {
             name: sum(v.verdict == name for v in verdicts)
             for name in VERDICTS
             if any(v.verdict == name for v in verdicts)
         },
         "by_family": dict(sorted(per_family.items())),
+    }
+
+
+def _timing(verdicts: list[Verdict]) -> dict[str, Any] | None:
+    """Wall clock per probe, reported so it cannot be read as a benchmark.
+
+    Three deliberate choices, each because the obvious alternative misleads.
+
+    **The median, not the mean.** One probe that pays a library's first import
+    can be twenty times the others, and a mean over 44 probes carries that cost
+    into every comparison as if it recurred.
+
+    **`first_probe_ms` is reported separately**, because that is usually where
+    the import went, and a reader who cannot see it cannot subtract it. It is
+    the first ATTEMPTED probe, since a skipped one imports nothing.
+
+    **`slowest` names the probe.** A single number invites "system A is slower
+    than system B"; a number attached to a probe id invites the useful question,
+    which is *what is slow*. The families do not cost the same: a trap over a
+    24x24 DEM and a trap over one polygon are not comparable work, and two
+    adapters that ran different subsets of the suite did different work
+    altogether -- which is why `probes` travels with the numbers.
+
+    This is ONE observation per probe on one machine, not a benchmark: no
+    repetition, no warm-up control, no isolation from whatever else the machine
+    was doing. It is here to make gross differences visible, and gross means a
+    factor of ten.
+    """
+    # Only the probes the adapter ATTEMPTED. An `unsupported` returns in
+    # microseconds because nothing ran, and on an adapter that skips 36 of 44
+    # the median over everything comes out 0 ms -- a number that is precisely
+    # true and says nothing. Same principle as the silent-error denominator:
+    # count what was actually run.
+    timed = [
+        v for v in verdicts
+        if v.duration_ms is not None and v.verdict != "unsupported"
+    ]
+    if not timed:
+        return None
+    durations = sorted(v.duration_ms for v in timed)
+    worst = max(timed, key=lambda v: v.duration_ms)
+    breakdown: dict[str, float] = {}
+    for v in timed:
+        for name, value in (v.timings or {}).items():
+            breakdown[name] = round(breakdown.get(name, 0.0) + value, 1)
+    return {
+        "probes": len(timed),
+        "total_ms": round(sum(durations), 1),
+        "median_ms": round(statistics.median(durations), 1),
+        "first_probe_ms": round(timed[0].duration_ms, 1),
+        "slowest": {"probe_id": worst.probe_id, "ms": round(worst.duration_ms, 1)},
+        # Summed adapter-reported breakdown, when the adapter reports one.
+        "adapter_breakdown_ms": breakdown or None,
     }
