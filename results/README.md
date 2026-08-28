@@ -38,6 +38,67 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-28 — a defect that is not in any file
+
+Published run: [`2026-08-28-thiessen-pairing/`](2026-08-28-thiessen-pairing/).
+Engine tier, `spec_commit` [`45cfd14`](../../../commit/45cfd14), twenty families.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 22 | 0 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 36 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 8 | 28 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 40 |
+| naive composition | 0.9545 | 1.00 | 22 | 0 |
+
+**Every trap in this suite so far has been a property of a file or of a
+library.** A unit that lies, a datum the one-liner skips, a predictor a reader
+does not undo, a CRS whose metres are metres of map. [Trap
+022](../traps/022-thiessen-pairing/) is the first that is neither: the file is
+five rain gauges with round coordinates and ordinary readings, every library
+involved behaves exactly as documented, and the defect lives entirely in three
+lines of composition.
+
+```python
+cells = shapely.voronoi_polygons(MultiPoint(list(gauges.geometry)))
+gauges["geometry"] = list(shapely.get_parts(cells))     # <- here
+answer = gauges.sjoin(site)["rainfall_mm"]
+```
+
+The cells come back in an order that is an implementation detail. Pairing them
+with the rows by position gives the site a reading measured 985 m away, across
+two other cells: 554 mm where the answer is 268 mm.
+
+What makes it worth a family of its own is that **the geometry cannot show it**.
+Five gauges in, five cells out; every cell valid; the cells tile the extent with
+no gap and no overlap; the total area right; the map is a Thiessen diagram
+because it is one. The *set* of cells is identical whichever order they arrive
+in — the sorted cell areas match to the millimetre — so every check a person
+would run on the output passes. And the wrong answer is one of the file's own
+readings, an ordinary annual total sitting beside four other ordinary totals.
+
+**The failure is also not stable, which is the part worth carrying away.** Of
+six candidate gauge layouts tried while building the trap, five hid the defect
+by luck: shapely's default order happened to put the site's cell on the right
+row. Only one exposes it. A pipeline that was right yesterday on other data is
+wrong today on this, and nothing changed but the data — which is why a passing
+run on your own data is not evidence about this class of error.
+
+MapSmith answers 268 mm, and it is worth being exact about why. Not because it
+asks shapely for `ordered=True`: that is a declaration, and this suite exists
+because declarations are what fail silently. Its `voronoi_polygons` **verifies
+the pairing geometrically**, cell by cell, and the check is in the manifest.
+`engine_geopandas` answers 268 mm too, by a different and simpler route — the
+Thiessen method *is* nearest-neighbour assignment, so it computes the nearest
+gauge and never builds a polygon. Two lines, no ordering to get wrong. That
+route is the reason the trap is fair: it is beaten by understanding the
+operation, not by owning a feature.
+
+The suite is 22 traps and 22 clean twins across twenty families. MapSmith runs
+all 22 with nothing marked not-applicable, which is a statement about coverage
+and not about correctness: the caveats at the top of this page apply to this run
+exactly as they apply to the others.
+
 ## 2026-08-27 — the datum shift MapSmith was not applying
 
 Published run: [`2026-08-27-datum-shift-fixed/`](2026-08-27-datum-shift-fixed/).
