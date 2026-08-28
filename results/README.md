@@ -47,6 +47,48 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-28 (later) — the same run, now with a stopwatch
+
+Published run: [`2026-08-28-timings/`](2026-08-28-timings/).
+Engine tier, `spec_commit` [`4a6dbac`](../../../commit/4a6dbac), twenty families.
+Same verdicts as the run above; what is new is the last three columns.
+
+| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median | first probe |
+|---|---|---|---|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 22 | 0 | 44 | 6.3 s | 103 ms | 1.9 s |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 36 | 8 | 0.6 s | 6 ms | 0.6 s |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 8 | 28 | 16 | 1.0 s | 16 ms | 0.6 s |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 40 | 4 | 0.2 s | 16 ms | 0.2 s |
+| naive composition | 0.9545 | 1.00 | 22 | 0 | 44 | 1.2 s | 11 ms | 0.2 s |
+
+**Read the "probes timed" column before the times.** Four of these five adapters
+answered a fraction of the suite: rasterio attempted 8 probes of 44 and MapSmith
+attempted all 44, so their totals are not two measurements of the same thing.
+The median is the comparable figure, and even that compares different work,
+because a probe over a 24×24 elevation model and a probe over one polygon are
+not the same task.
+
+**MapSmith is the slowest per probe, and that is the honest headline.** 103 ms
+against 11 ms for the careless composition — about nine times. The difference is
+not mysterious: on every write MapSmith hashes its inputs, records the CRS
+decision, runs the deterministic checks and writes a manifest beside the output.
+The naive composition reads the file, takes the statistic and returns. It is
+buying nothing, so of course it is cheaper, and 0.9545 of its answers on these
+traps are silently wrong.
+
+Whether ninety milliseconds is worth a manifest is a question for whoever is
+paying, and this page is not going to answer it. What the page can do is stop
+the number being invisible. It is also the number to watch: if provenance ever
+costs a second instead of a tenth of one, that is a regression whatever the
+verdicts say.
+
+**What these times are not** is in [`METHOD.md` §9b](../docs/METHOD.md): one
+observation per probe on one machine, no repetition, no warm-up control. They
+are here to make a factor of ten visible, not to rank anything. Fixture building
+is outside the stopwatch, and skipped probes are excluded — an `unsupported`
+returns in microseconds because nothing ran, and including those put rasterio's
+median at 0 ms in the first version of this measurement.
+
 ## 2026-08-28 — a defect that is not in any file
 
 Published run: [`2026-08-28-thiessen-pairing/`](2026-08-28-thiessen-pairing/).
