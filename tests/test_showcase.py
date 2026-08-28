@@ -396,3 +396,58 @@ def test_the_naive_breakdown_in_prose_matches_its_own_score():
         assert NUMBER_WORDS[out_of] == traps, (
             f"the README says {out_of} traps, the run has {traps}"
         )
+
+
+def test_the_citation_and_the_package_agree_on_the_version():
+    """A citation without a version points at a moving target.
+
+    This project's whole argument is that a number is only checkable if you can
+    say which code produced it — every run pins its `spec_commit` for exactly
+    that reason. A CITATION.cff that names the repository and not the release
+    asks a reader to cite whatever happens to be on main the day they look.
+    """
+    citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    shipped = re.search(r'^version = "([^"]+)"', pyproject, re.MULTILINE)
+    assert shipped, "pyproject.toml has no version"
+    cited = re.search(r'^version: "?([^"\n]+)"?', citation, re.MULTILINE)
+    assert cited, (
+        "CITATION.cff carries no version, so it cites whatever is on main today"
+    )
+    assert cited.group(1) == shipped.group(1), (
+        f"CITATION.cff cites {cited.group(1)} and the package is "
+        f"{shipped.group(1)}"
+    )
+
+
+def test_the_readme_names_the_release_that_reproduces_the_results():
+    """The install line and the results table have to describe the same artifact.
+
+    On 2026-08-28 they did not: `pip install "argleton[fixtures]"` fetched 0.1.0
+    with 21 traps while the table three screens down reported 22, so a reader who
+    followed the first screen could not reproduce the first table. That is the
+    failure this suite exists to name in other people's work — a number that
+    looks checkable and is not.
+    """
+    prose = (ROOT / "README.md").read_text(encoding="utf-8")
+    shipped = re.search(
+        r'^version = "([^"]+)"',
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        re.MULTILINE,
+    ).group(1)
+    traps = len([p for p in discover(ROOT) if p.population == "trap"])
+
+    stated = re.search(r"release ([0-9.]+) carries the\s+(\d+) traps", prose)
+    assert stated, (
+        "the README no longer says which release reproduces the results table. "
+        "Without it the install line and the numbers can describe different "
+        "artifacts, which they did once."
+    )
+    assert stated.group(1) == shipped, (
+        f"the README says release {stated.group(1)} reproduces the table; the "
+        f"package in this tree is {shipped}"
+    )
+    assert int(stated.group(2)) == traps, (
+        f"the README says that release carries {stated.group(2)} traps; this tree "
+        f"has {traps}"
+    )

@@ -31,8 +31,12 @@ machine, so there is nothing to download and nothing to take on trust:
 pip install "argleton[fixtures]"
 ```
 
-The probes ship with the runner, so that is the whole setup. To read them, change
-them, or add one, take the checkout instead — the probes are the point of the
+The probes ship with the runner, so that is the whole setup — release 0.2.0 carries the
+22 traps and 25 families the results below were produced from. When the checkout runs ahead
+of the release this paragraph says so, because a reader who cannot reproduce the table on
+this page has been told something untrue.
+
+To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
 
 ```

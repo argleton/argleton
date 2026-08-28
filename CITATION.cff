@@ -7,6 +7,8 @@ authors:
 repository-code: "https://github.com/argleton/argleton"
 url: "https://argleton.org"
 license: Apache-2.0
+version: "0.2.0"
+date-released: "2026-08-29"
 abstract: >-
   Probes whose right answer is known by construction — derived on paper, never
   measured from a reference implementation — and whose typical wrong answer
