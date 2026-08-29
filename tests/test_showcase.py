@@ -27,7 +27,7 @@ NUMBER_WORDS = {
     "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
     "twenty-one": 21, "twenty-two": 22, "twenty-three": 23,
     "twenty-four": 24, "twenty-five": 25, "twenty-six": 26,
-    "twenty-seven": 27, "twenty-eight": 28,
+    "twenty-seven": 27, "twenty-eight": 28, "twenty-nine": 29,
 }
 
 

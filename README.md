@@ -47,47 +47,56 @@ pip install -e ".[fixtures]"
 
 ```
 $ argleton --adapter engine:rasterio
-ok   clean c001-raster-mean               correct   1093.0
-ok   clean c003-raster-mean-nodata        correct   1000.0
-ok   clean c009-native-resolution-classes correct   900.0
-ok   clean c010-physical-values           correct   0.5
-ok   clean c024-pixel-is-area             correct   412105.0
-ok   trap  001-tiff-predictor             correct   1093.0
-ok   trap  003-nodata-in-statistics       correct   1000.0
-ok   trap  009-resampled-classes          correct   0.0
-ok   trap  010-scale-offset               correct   0.3333333333333334
-ok   trap  024-pixel-is-point             correct   412090.0
-silent_error_rate 0.0 over 5 traps  |  completion_rate 1.0 over 5 clean
+ok   clean c001-raster-mean               correct        1093.0
+ok   clean c003-raster-mean-nodata        correct        1000.0
+ok   clean c009-native-resolution-classes correct        900.0
+ok   clean c010-physical-values           correct        0.5000000093132254
+ok   clean c024-pixel-is-area             correct        412105.0
+ok   clean c026-north-up-grid             correct        5.710593137499643
+ok   trap  001-tiff-predictor             correct        1093.0
+ok   trap  003-nodata-in-statistics       correct        1000.0
+ok   trap  009-resampled-classes          correct        0.0
+ok   trap  010-scale-offset               correct        0.3333333333333334
+ok   trap  024-pixel-is-point             correct        412090.0
+ok   trap  026-south-up-grid              correct        5.710593137499643
+silent_error_rate 0.0 over 6 traps  |  completion_rate 1.0 over 6 clean
 
 $ argleton --adapter engine:whitebox
-ok   clean c001-raster-mean          correct        1093.0
-ok   clean c003-raster-mean-nodata   correct        1000.0
-ok   clean c024-pixel-is-area        correct        412105.0
-FAIL trap  001-tiff-predictor        silent_error   expected 1093.0 ± 0.001, got 36.09375
-ok   trap  003-nodata-in-statistics  correct        1000.0
-FAIL trap  024-pixel-is-point        silent_error   expected 412090.0 ± 1.0, got 412120.0
-silent_error_rate 0.6667 over 3 traps  |  completion_rate 1.0 over 3 clean
+ok   clean c001-raster-mean               correct        1093.0
+ok   clean c003-raster-mean-nodata        correct        1000.0
+ok   clean c024-pixel-is-area             correct        412105.0
+ok   clean c026-north-up-grid             correct        5.56521959900856
+FAIL trap  001-tiff-predictor             silent_error   expected 1093.0 Â± 0.001, got 36.09375 â€” this is the
+ok   trap  003-nodata-in-statistics       correct        1000.0
+FAIL trap  024-pixel-is-point             silent_error   expected 412090.0 Â± 1.0, got 412120.0
+FAIL trap  026-south-up-grid              silent_error   expected 5.64 Â± 0.2, got 43.99398475646973 â€” this is
+silent_error_rate 0.75 over 4 traps  |  completion_rate 1.0 over 4 clean
 ```
 
 (`skip … unsupported` lines trimmed: the vector probes are outside what these
 two raster engines can be asked, and skipping them is not a failure.)
 
 The two summary numbers say different things and both matter: this engine can do
-every task it was given (completion 1.0) *and* gets two of those files silently
-wrong (the 0.6667).
+every task it was given (completion 1.0) *and* gets three of those files
+silently wrong (the 0.75).
 
-The last probe is worth reading twice, because the two engines part company on
-it. The file declares that its values sit at grid nodes rather than filling
-cells. The careful rasterio composition reads that declaration and answers
-correctly; whitebox reacts to it in the direction that lands a whole cell out,
-at 412120 where the truth is 412090. Both get the clean twin — same surface,
-same tie point, one different tag — right.
+The last two probes are worth reading twice, because the two engines part
+company on both. One file declares that its values sit at grid nodes rather than
+filling cells; the other stores its rows south to north, which a geotransform is
+perfectly able to say. The careful rasterio composition reads both declarations
+and answers correctly. whitebox reacts to the first in the direction that lands
+a whole cell out — 412120 where the truth is 412090 — and cannot express the
+second at all, discarding the georeferencing and reading the grid as metre cells
+at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
+clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.96 / 1.0**: it
-answers every clean probe correctly, falls into twenty-four of the twenty-five traps, and
-**passes the remaining one**, because rasterio undoes the predictor on its
-behalf. Careless code is not uniformly wrong. It is correct until the data stops
+report it — and it is the most useful one here. It scores **0.931 / 1.0**: it
+answers every clean probe correctly, falls into twenty-seven of the twenty-nine traps, and
+**passes the other two**. 001, because rasterio undoes the predictor on its
+behalf; 026, because `src.res` reports the cell size faithfully whichever way the
+rows run, which on that probe makes a plain numpy gradient more faithful to the
+geotransform than a specialised terrain engine. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
 see.
 
@@ -150,11 +159,11 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 25 | 0 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 10 | 30 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 40 |
-| whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 44 |
-| naive composition | 0.96 | 1.00 | 25 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 29 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 32 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 6 | 46 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 50 |
+| naive composition | 0.931 | 1.00 | 29 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question

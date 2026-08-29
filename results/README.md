@@ -46,6 +46,66 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-30 (final) — twenty-seven families of twenty-seven
+
+Published run: [`2026-08-30-all-families/`](2026-08-30-all-families/).
+Engine tier, `spec_commit` [`089a34d`](../../../commit/089a34d), twenty-seven families.
+
+| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+|---|---|---|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 29 | 0 | 58 | 11.2 s | 131 ms |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 32 | 26 | 1.1 s | 13 ms |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 6 | 46 | 12 | 0.4 s | 4 ms |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 50 | 8 | 0.8 s | 16 ms |
+| naive composition | 0.931 | 1.00 | 29 | 0 | 58 | 1.5 s | 10 ms |
+
+**The list of families is closed.** Twelve were planned at the start, fifteen
+were added from reproductions and from a survey of what the archives and the
+libraries warn about, and as of today all twenty-seven have a probe pair.
+
+The last four — `raster-affine`, `mixed-geometry`, `geographic-crs`,
+`empty-result` — were all from the original twelve, and what they cost is the
+transferable part. Three had been postponed for the same reason: **every obvious
+formulation was loud.** A metric operation on degrees usually returns something
+absurd. An empty intersection is usually an empty intersection. A flipped raster
+is usually noticed the moment anybody looks at it. A probe whose typical failure
+is absurd belongs in an ordinary test suite, because something already catches
+it — so finding the quiet version of each took longer than building it did.
+
+The quiet versions turned out to share a shape. In all four the wrong answer is
+an ordinary quantity of the right kind — 12.7 hectares, 3 kilometres of pipe,
+45 degrees of slope, nought hectares — and in three of them **every individual
+row of the data is still correct.** What is wrong is which rows were added up,
+or what a unit meant, or which of two arguments came first. A spot check of the
+data confirms the data.
+
+**Two of the four caught MapSmith, and both are fixed.** The south-up grid was
+the worse one: whitebox discards the georeferencing of a raster whose rows run
+south to north, so MapSmith answered 45 degrees of slope where the ground is
+5.71, wrote the output raster at the origin with metre cells, and passed all
+five of its own checks — `crs_matches` among them, because the CRS survived and
+the geotransform did not. It now rewrites such a file north-up before handing it
+over, the way it already did for the TIFF predictor, and refuses outright if the
+engine's grid ever disagrees with GDAL's for any other reason. The mixed layer
+was quieter: `measure_length` added a treatment plant's perimeter into a pipe
+total with nothing in the manifest to say a second kind of feature had been
+measured. It now says so, as a non-critical check with the remedy in it, and the
+adapter here acts on that check — which is the same shape as picking a layer out
+of `describe_routed` after trap 006.
+
+**rasterio and GeoPandas are both back at 0.00**, over six and thirteen traps
+respectively, and the denominators are the reason those two numbers mean less
+than MapSmith's twenty-nine. The careful-composition adapters answer the probes
+their libraries can be asked and skip the rest, which is not a failure and is
+counted as `not applicable`.
+
+**The naive composition holds at 0.931, and two traps now pass rather than one.**
+001, where rasterio undoes the TIFF predictor on its behalf, and 026, where
+`src.res` reports the cell size faithfully whichever way the rows run — so on
+that probe a plain numpy gradient is more faithful to the geotransform than a
+specialised terrain engine. Careless code is not uniformly wrong; it is correct
+until the data stops having the shape it usually has.
+
 ## 2026-08-30 (later) — the famous one, and why it took twenty-five traps
 
 Published run: [`2026-08-30-antimeridian/`](2026-08-30-antimeridian/).
