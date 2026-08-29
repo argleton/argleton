@@ -46,6 +46,61 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-30 — half a cell, and the engine that half-honours the convention
+
+Published run: [`2026-08-30-grid-registration/`](2026-08-30-grid-registration/).
+Engine tier, `spec_commit` [`b73aeb6`](../../../commit/b73aeb6), twenty-two families.
+
+| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+|---|---|---|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 23 | 2 | 46 | 5.9 s | 103 ms |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 | 18 | 0.9 s | 17 ms |
+| rasterio 1.5.1 (careful composition) | 0.2 | 1.00 | 5 | 38 | 10 | 0.4 s | 5 ms |
+| whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 42 | 6 | 0.1 s | 9 ms |
+| naive composition | 0.9583 | 1.00 | 24 | 0 | 48 | 1.4 s | 11 ms |
+
+One family is new — [`grid-registration`](../traps/024-pixel-is-point/) — and it
+is the one where the answer is written in the file and thrown away in the last
+line. GeoTIFF has two raster types: under `RasterPixelIsArea` a value describes
+the cell it fills, under `RasterPixelIsPoint` it is a sample at a grid node, and
+they differ by half a pixel in each axis. USGS elevation products are the second
+kind. `hollow.tif` declares it.
+
+Asked where the lowest cell of an 8×8 DEM at 30 m spacing is, the correct
+easting is **412090**. rasterio and the naive composition both answer **412105**,
+half a cell east. Whitebox answers **412120** — a whole cell.
+
+**Whitebox is the finding.** It reacts to the tag: its reported grid origin
+shifts on this file where it does not on the area-registered twin. But it shifts
+in the direction that makes a caller who then adds the usual half cell for a
+centre land one full cell out. An engine that half-honours a convention is worse
+than one that ignores it, because the correction that fixes the second breaks on
+the first — and rasterio's is the honest failure of the two, since `src.xy()` has
+never claimed to read the tag while `src.tags()` hands it to you from the same
+object.
+
+**rasterio moves off 0.00 for the first time**, from 0.00 over four traps to 0.20
+over five. Nothing about rasterio changed; a fifth trap now applies to it. That
+is what a rate over a small denominator does, and it is why the denominator is in
+the table.
+
+**MapSmith reports `unsupported` twice, and stays 0.00 over the twenty-three it
+can attempt.** It has no operation that says *where* a cell is — it reads
+rasters, summarises them, samples them and derives vectors from them, and every
+one of those turns an index into a coordinate the same way rasterio does, so the
+convention question has never been asked in that codebase. The gap is left
+visible rather than filled with an adjacent answer: two `unsupported` verdicts
+say "we cannot attempt this", which is a smaller claim than 0.00 and a true one.
+
+The trap was found while writing a contour operation for MapSmith. The engine
+placed every contour half a cell from where the elevation it named actually
+occurred, and it was caught by checking the output against the input — sample the
+DEM where the line says it is, and the elevation has to match — rather than by
+reading any documentation. That check now ships with the operation, which is the
+only reason the shipped product does not have this defect on area-registered
+DEMs. On point-registered ones it refuses to produce contours at all, loudly,
+which is the correct behaviour available today and not the one we want.
+
 ## 2026-08-29 — the two columns in the order a human says them
 
 Published run: [`2026-08-29-axis-order/`](2026-08-29-axis-order/).

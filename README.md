@@ -51,30 +51,41 @@ ok   clean c001-raster-mean               correct   1093.0
 ok   clean c003-raster-mean-nodata        correct   1000.0
 ok   clean c009-native-resolution-classes correct   900.0
 ok   clean c010-physical-values           correct   0.5
+ok   clean c024-pixel-is-area             correct   412105.0
 ok   trap  001-tiff-predictor             correct   1093.0
 ok   trap  003-nodata-in-statistics       correct   1000.0
 ok   trap  009-resampled-classes          correct   0.0
 ok   trap  010-scale-offset               correct   0.3333333333333334
-silent_error_rate 0.0 over 4 traps  |  completion_rate 1.0 over 4 clean
+FAIL trap  024-pixel-is-point             silent_error   expected 412090.0 ± 1.0, got 412105.0
+silent_error_rate 0.2 over 5 traps  |  completion_rate 1.0 over 5 clean
 
 $ argleton --adapter engine:whitebox
 ok   clean c001-raster-mean          correct        1093.0
 ok   clean c003-raster-mean-nodata   correct        1000.0
+ok   clean c024-pixel-is-area        correct        412105.0
 FAIL trap  001-tiff-predictor        silent_error   expected 1093.0 ± 0.001, got 36.09375
 ok   trap  003-nodata-in-statistics  correct        1000.0
-silent_error_rate 0.5 over 2 traps  |  completion_rate 1.0 over 2 clean
+FAIL trap  024-pixel-is-point        silent_error   expected 412090.0 ± 1.0, got 412120.0
+silent_error_rate 0.6667 over 3 traps  |  completion_rate 1.0 over 3 clean
 ```
 
 (`skip … unsupported` lines trimmed: the vector probes are outside what these
 two raster engines can be asked, and skipping them is not a failure.)
 
 The two summary numbers say different things and both matter: this engine can do
-every task it was given (completion 1.0) *and* gets this file silently wrong
-(the 0.5).
+every task it was given (completion 1.0) *and* gets two of those files silently
+wrong (the 0.6667).
+
+The last probe is worth reading twice. Both engines answer it, both answer it
+differently, and both are wrong: the file declares that its values sit at grid
+nodes rather than filling cells, rasterio's coordinate helper ignores that and
+lands half a cell out, and whitebox lands a whole cell out by half-honouring the
+same convention. The clean twin above — same surface, same tie point, one
+different tag — they both get right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.9565 / 1.0**: it
-answers every clean probe correctly, falls into twenty-two of the twenty-three traps, and
+report it — and it is the most useful one here. It scores **0.9583 / 1.0**: it
+answers every clean probe correctly, falls into twenty-three of the twenty-four traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -134,11 +145,11 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 23 | 0 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 38 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 28 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 42 |
-| naive composition | 0.9565 | 1.00 | 23 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 23 | 2 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 |
+| rasterio 1.5.1 (careful composition) | 0.2 | 1.00 | 5 | 38 |
+| whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 42 |
+| naive composition | 0.9583 | 1.00 | 24 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question

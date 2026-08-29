@@ -112,8 +112,8 @@ value is reported and the caller decides. rasterio inherits that behaviour, so
 dataset object.
 
 This is not a legacy corner. USGS elevation products — the 3DEP/NED lineage — are
-pixel-is-point, and so are many national DEMs; the ESRI ASCII grid format is
-area-registered by convention and GMT grids can be either. Reprojecting or
+pixel-is-point, and so are many national DEMs; some widely used ASCII grid
+formats are area-registered by convention and GMT grids can be either. Reprojecting or
 resampling one into the other without accounting for the half cell is a standard
 way to acquire a fifteen-metre systematic shift on a 30 m grid.
 
