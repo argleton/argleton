@@ -50,10 +50,11 @@ the layer's type as GEOMETRY when they differ, and every reader accepts that
 without a word. The defect is that the question said pipe and the code said
 every feature.
 
-This is a shapefile-shaped hole. Shapefiles cannot hold mixed geometry, so for
-thirty years the format enforced the filter that the code now has to. A
-conversion out of shapefiles into a GeoPackage merges what the old format had
-kept apart, which is exactly when a layer like this appears."""
+This is a shapefile-shaped hole. The shapefile specification allows one geometry
+type per file and enforces it, so for thirty years the format did the filtering
+that the code now has to. A conversion out of shapefiles into a GeoPackage merges
+what the old format had kept apart, which is exactly when a layer like this
+appears."""
 observed_value = 3000.0
 plausible      = true
 why_plausible  = """
@@ -84,7 +85,7 @@ source = """
 The OGC GeoPackage specification allows a features table to declare its geometry
 type as GEOMETRY, meaning any type, and readers honour that: GDAL reports the
 layer's type as Unknown/Geometry and returns the rows as they are. GeoJSON
-places no restriction on a FeatureCollection either. The ESRI shapefile
+places no restriction on a FeatureCollection either. The shapefile
 specification does the opposite — one geometry type per file, enforced — which
 is why data that has lived in shapefiles arrives split by type and data that has
 been converted out of them often does not.

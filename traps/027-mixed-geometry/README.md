@@ -15,7 +15,7 @@ meaning any type, and readers honour it — GDAL reports the layer as Unknown an
 hands back the rows. GeoJSON places no restriction on a FeatureCollection
 either.
 
-The ESRI shapefile does the opposite: one geometry type per file, enforced. For
+The shapefile specification does the opposite: one type per file, enforced. For
 thirty years that format did the filtering that code now has to do, which is why
 a layer like this appears exactly when data is converted *out* of shapefiles and
 the split the old format imposed is merged away.

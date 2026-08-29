@@ -23,9 +23,10 @@ The wrong order is easy to reach for because of how the question is phrased.
 *How much of the concession lies outside the reserve* puts the reserve in the
 prominent position, and `reserve.difference(concession)` reads like the English
 sentence. Every API takes two positional arguments of the same type: OGC Simple
-Features `Difference(a, b)`, PostGIS `ST_Difference`, ArcGIS's Erase with Input
-Features and Erase Features, QGIS with Input layer and Overlay layer. None of
-them complains, because the wrong order is a valid question.
+Features `Difference(a, b)`, PostGIS `ST_Difference`, and the desktop erase tools
+that name the two roles — input features and erase features — which helps only if
+the reader knows which role the question puts first. None of them complains,
+because the wrong order is a valid question.
 
 ## Why zero is the most dangerous answer
 

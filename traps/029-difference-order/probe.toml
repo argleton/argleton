@@ -44,9 +44,9 @@ answer here is nothing at all, because the reserve is entirely inside.
 The wrong order is easy to reach for because of how the question is phrased.
 "How much of the concession lies outside the reserve" puts *the reserve* in the
 prominent position, and `reserve.difference(concession)` reads like the English
-sentence. ArcGIS names the two roles Input Features and Erase Features, PostGIS
-takes `ST_Difference(geomA, geomB)`, and in every one of them the two arguments
-are the same type and neither call complains.
+sentence. The desktop erase tools name the two roles rather than numbering them,
+PostGIS takes `ST_Difference(geomA, geomB)`, and in every one of them the two
+arguments are the same type and neither call complains.
 
 What comes back is an empty layer. Not an error, not a null, not a warning: zero
 rows, and summing an empty column gives 0.0."""
@@ -87,9 +87,10 @@ Set difference is not commutative, and every geospatial API exposes it with two
 positional arguments of the same type. OGC Simple Features defines
 `Difference(a, b)` as the points of a not in b; PostGIS follows with
 `ST_Difference(geomA, geomB)`; GeoPandas has `overlay(df1, df2,
-how="difference")` and the elementwise `df1.difference(df2)`; ArcGIS calls the
-two roles Input Features and Erase Features in the Erase tool, and QGIS uses
-Input layer and Overlay layer. In none of them does the wrong order raise
+how="difference")` and the elementwise `df1.difference(df2)`; the desktop erase
+tools name the two roles rather than numbering them — input features and erase
+features, input layer and overlay layer — which helps only if the reader knows
+which role the question puts first. In none of them does the wrong order raise
 anything, because the wrong order is a valid question.
 
 The empty result is the part with a literature. "An empty spatial result is a
