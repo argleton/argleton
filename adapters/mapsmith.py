@@ -59,6 +59,91 @@ class Adapter:
         found = raster.locate_extreme_cell(str(workdir / probe.arguments[0]), "min")
         return Outcome(answer=float(found["x"]))
 
+
+    def op_mean_slope_degrees(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+        from mapsmith.engines import whitebox_engine
+
+        out = workdir / "_argleton_slope.tif"
+        try:
+            whitebox_engine.slope(str(workdir / probe.arguments[0]), str(out))
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        with rasterio.open(out) as ds:
+            values = ds.read(1, masked=True)
+        return Outcome(answer=float(np.ma.mean(values)), warnings=self._warnings(out))
+
+
+    def op_pipe_length_total_m(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # `measure_length` writes the per-feature length into a column and the
+        # adapter adds it up, which is the composition the operation invites.
+        # It measures every feature it is given, polygons included — that is
+        # documented and deliberate, a perimeter being a real quantity — so
+        # whether this is right depends entirely on what the layer holds.
+        out = workdir / "_argleton_lengths.parquet"
+        try:
+            vector.measure_length(
+                str(workdir / probe.arguments[0]), str(out), method="planar"
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        measured = gpd.read_parquet(out)
+        column = "length_m" if "length_m" in measured.columns else measured.columns[-2]
+        return Outcome(
+            answer=float(measured[column].sum()), warnings=self._warnings(out)
+        )
+
+
+    def op_field_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # `measure_area` reads the unit from the CRS and measures on the
+        # ellipsoid when there is not one, which is the whole reason it exists:
+        # the caller does not supply a factor and cannot supply the wrong one.
+        out = workdir / "_argleton_area.parquet"
+        try:
+            vector.measure_area(str(workdir / probe.arguments[0]), str(out))
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        measured = gpd.read_parquet(out)
+        column = next(
+            (c for c in ("area_m2", "area") if c in measured.columns),
+            measured.columns[-2],
+        )
+        return Outcome(
+            answer=float(measured[column].sum()), warnings=self._warnings(out)
+        )
+
+
+    def op_workable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        # `overlay_layers` names its arguments input and overlay, and documents
+        # that the first layer's CRS wins — so the first is the layer being cut
+        # and the question decides which that is.
+        out = workdir / "_argleton_outside.parquet"
+        try:
+            vector.overlay(
+                str(workdir / probe.arguments[0]),
+                str(workdir / probe.arguments[1]),
+                str(out),
+                how="difference",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        remaining = gpd.read_parquet(out)
+        if remaining.empty:
+            return Outcome(answer=0.0, warnings=self._warnings(out))
+        return Outcome(
+            answer=float(remaining.area.sum()), warnings=self._warnings(out)
+        )
+
     def op_buildable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         # measure_area on a polygon with a hole: the courtyard is part of the
         # geometry's definition, so nothing here has to know it exists.

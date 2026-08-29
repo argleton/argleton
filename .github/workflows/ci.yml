@@ -76,14 +76,17 @@ jobs:
           # point — a trap that stops catching its own naive adapter, or one
           # that starts catching a case it should not, has changed what it
           # measures, and that must be a decision rather than a surprise.
-          # 0.96 = 24 of 25 traps caught, 001 passed. Moved from 0.9583 on
-          # 2026-08-30 with trap 025 (antimeridian), from 0.9565 the same day
-          # with trap 024 (pixel-is-point), and from 0.9545 on 2026-08-29 with
-          # trap 023: each time the denominator changed, the numerator changed
-          # with it, and 001 is still the one the careless composition gets
-          # right. This pin failing on such a commit is the
+          # 0.931 = 27 of 29 traps caught. TWO now pass, which is new: 001,
+          # where rasterio undoes the predictor on the naive adapter's behalf,
+          # and 026, where `src.res` reports the cell size faithfully whichever
+          # way the rows run — so a plain numpy gradient is more faithful to the
+          # geotransform than a specialised terrain engine is. Moved from 0.96
+          # on 2026-08-30 when traps 026 to 029 closed the family list; before
+          # that 0.9583, 0.9565 and 0.9545 as traps 025, 024 and 023 landed.
+          # Each time the denominator changed and the numerator changed with
+          # it. This pin failing on such a commit is the
           # mechanism working — the number moved because a trap was added, which
           # is a decision, and it has to be written down here rather than
           # discovered in a published table.
-          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.96, 1.0) else 1)
+          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.931, 1.0) else 1)
           PY

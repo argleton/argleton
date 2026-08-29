@@ -1,0 +1,122 @@
+id         = "028-degrees-as-metres"
+population = "trap"
+family     = "geographic-crs"
+title      = "Square degrees converted with the one factor everybody knows"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "field_area_m2(field.geojson)"
+prompt = """
+field.geojson holds one agricultural parcel in WGS 84. How large is it on the
+ground, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 89864.0
+tolerance = 40.0
+derivation = """
+The parcel is an axis-aligned rectangle in degrees: 0.0038 of longitude by
+0.0027 of latitude, its south-west corner at 9.0000E, 45.0000N.
+
+The area between two parallels over a longitude span has a closed form on an
+ellipsoid. With Z(phi) the zone integral
+
+  Z(phi) = a^2 (1 - e^2) / 2 * [ sin(phi) / (1 - e^2 sin^2 phi)
+                                 + 1/(2e) * ln((1 + e sin phi)/(1 - e sin phi)) ]
+
+the area is dlambda * (Z(phi2) - Z(phi1)) with dlambda in radians. On WGS 84
+(a = 6378137, 1/f = 298.257223563) between 45.0000 and 45.0027 over 0.0038 deg
+of longitude that is 89900.021 m2. On the ground the parcel is 299 m east-west
+and 300 m north-south: an ordinary 9 ha field.
+
+Two correct routes, and the tolerance spans both. The closed form above and
+pyproj's geodesic area of the same ring agree to the milli-square-metre at
+89900.021; a UTM 32N planar measurement gives 89828.115, which is 0.08% lower
+and is the zone's scale factor rather than an error. The band 89824 to 89904
+admits both, and the failure below misses it by 931 tolerances."""
+
+[naive_failure]
+description = """
+Shapely computes area in the coordinates' own units, by design, because nothing
+else can know what they are. On this file that is square degrees:
+
+    gpd.read_file("field.geojson").area          # 1.026e-05
+
+so it has to be converted, and the conversion everyone reaches for is one
+factor:
+
+    area * 111320 ** 2                           # 127143.381
+
+111320 m is one degree at the equator. It is close enough for latitude
+everywhere, and right for longitude only on the equator: a degree of longitude
+shrinks with the cosine of the latitude, and at 45 degrees it has shrunk to
+0.7071 of its equatorial length. The area comes back 1.4142 times too large —
+the square root of two, exactly, because the error is one cosine.
+
+**GeoPandas does warn here**, and the warning is part of the trap rather than a
+defence against it:
+
+    UserWarning: Geometry is in a geographic CRS. Results from 'area' are
+    likely incorrect. Use 'GeoSeries.to_crs()' to re-project geometries to a
+    projected CRS before this operation.
+
+It says the number is likely incorrect, which is true, and it does not say by
+how much or in which direction. It fires on every area call over a geographic
+CRS, including the ones where the caller is about to convert correctly, so it
+is routinely filtered out as noise. And a caller who reads it and acts on it
+has been told to fix the units — which is exactly what multiplying by 111320
+squared is an attempt to do."""
+observed_value = 127143.381
+plausible      = true
+why_plausible  = """
+12.7 hectares instead of 8.99. Both are ordinary fields. The parcel is a
+rectangle either way, its shape is unchanged, its position is unchanged, and
+there is no second figure beside it: an area arrives alone.
+
+Forty-one per cent is the dangerous size. It is far too small to be absurd — two
+surveys of the same field can differ by more than a percent, and nobody has a
+prior tight enough to reject 12.7 ha for a parcel they have not walked. It is
+far too large to be ignorable in anything the figure is used for: a subsidy paid
+per hectare, a yield per hectare that now looks 30% worse, a nitrogen
+application rate, a lease. Every one of those is a multiplication.
+
+And the error is a smooth function of latitude, so it is invisible across a
+dataset. Every parcel in the same region is wrong by the same 1.41; totals stay
+consistent, ratios between parcels are exactly right, and the only thing that
+would show it is a measurement from outside the data."""
+derivation = """
+0.0038 * 0.0027 * 111320^2 = 1.026e-05 * 1.239214e10 = 127143.381 m2.
+
+The ratio to the truth is 1.4143, and 1 / cos(45 deg) = 1.41421. The whole error
+is one cosine: the factor is right for a degree of latitude and right for a
+degree of longitude only at the equator."""
+
+[refusal]
+accept_if_mentions = ["geographic", "degrees", "square degrees", "projected", "to_crs", "reproject", "cosine", "latitude", "geodesic", "111320"]
+
+[provenance]
+source = """
+GeoJSON is defined on WGS 84 — RFC 7946 section 4 fixes the coordinate reference
+system and removes the ability to name another — so the great majority of open
+vector data, web APIs and hand-drawn polygons arrive in degrees. Shapely
+computes planar area in whatever units the coordinates carry, which is
+documented and is the only thing it can do; GeoPandas raises a UserWarning for
+`area` and `length` on a geographic CRS, added in 0.7; PostGIS answers the same
+question in square degrees for `geometry` and in square metres for `geography`,
+which is the same distinction moved into the type system.
+
+The 111320 figure is the length of a degree at the equator, and the most copied
+number in this field. It is correct for a degree of latitude to within 1%
+anywhere, and for a degree of longitude only on the equator, because the
+meridians converge: a degree of longitude is 111320*cos(phi) metres.
+
+Measured for this probe on 2026-08-30: geopandas 1.1 / shapely 2.1.2 report the
+area as 1.026e-05 square degrees with the warning above, pyproj 3.7.2 gives the
+geodesic area as 89900.021 m2, and a UTM 32N reprojection gives 89828.115."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"
+pyproj = "3.7.2/PROJ 9.5.1"

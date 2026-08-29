@@ -1,0 +1,49 @@
+id         = "c029-coincident-boundaries"
+population = "clean"
+family     = "empty-result"
+title      = "A reserve gazetted over exactly the licence boundary"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "workable_area_m2(concession.gpkg, reserve.gpkg)"
+prompt = """
+concession.gpkg is a mining licence area and reserve.gpkg is a nature reserve.
+How many square metres of the concession lie outside the reserve? Answer with
+the number."""
+
+[truth]
+kind      = "scalar"
+value     = 0.0
+tolerance = 0.01
+derivation = """
+The same concession as 029-difference-order, and a reserve declared over exactly
+its footprint: the two rings are identical, 500000..500600 E by 4500000..4500400
+N. A protected area gazetted to match a licence boundary is digitised from the
+same survey, so this is a real arrangement rather than a contrivance.
+
+None of the concession lies outside the reserve, because the two are the same
+ground. The answer is zero, and it is the truth rather than a symptom.
+
+**This is the half of the pair where zero is right**, and it is here for two
+reasons. A system that answers 0 to everything passes it and fails the trap. A
+system that treats an empty result as a failure — that raises, refuses, or
+returns no answer rather than reporting nothing — fails this one, and being
+unable to report a legitimate zero is its own defect: it is what teaches a
+caller to distrust the zeroes that matter."""
+
+[provenance]
+source = """
+Clean twin of 029-difference-order. Same concession, same question, same units,
+and the reserve moved so that the true answer is the same zero the trap produces
+by accident.
+
+That is the whole design of the family. An empty spatial result is a finding
+rather than an error, and telling the two apart is not something a rate over
+traps alone can measure: a system that never returns zero would score perfectly
+on the trap and be useless. Both halves are needed to say anything at all."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"

@@ -2,7 +2,7 @@
 
 Twenty-seven families are on the list — twelve planned at the start, fifteen added
 from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty-three are implemented.** This page exists so that
+themselves warn about. **Twenty-seven are implemented.** That is all of them, as of 2026-08-30. This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -37,6 +37,10 @@ cannot read as ten independent findings.
 | 23 | `tabular-join` | [018](../traps/018-join-key-typing/) + [c018](../clean/c018-plain-keys/), [020](../traps/020-join-cardinality/) + [c020](../clean/c020-one-owner-each/) | 62000 people instead of 100000; 65000 m² of land instead of 50000 | A CSV reader turns "001" into 1 and four municipalities leave the join silently; a one-to-many join multiplies the land and the sum counts it twice |
 
 | 9 | `antimeridian` | [025](../traps/025-antimeridian-zone/) + [c025](../clean/c025-single-hemisphere-zone/) | 9 vessels in the zone instead of 5 | The zone is split at 180 exactly as RFC 7946 3.1.9 says to split it, so its bounds are (-180, ..., 180, ...) — a band round the planet — and the standard's own inverted-bbox convention has no representation in any planar geometry library. A count arrives with no unit and no magnitude to check |
+| 2 | `geographic-crs` | [028](../traps/028-degrees-as-metres/) + [c028](../clean/c028-projected-field/) | 12.7 ha instead of 8.99 | GeoJSON is defined on WGS 84, so area comes back in square degrees and has to be converted — and the factor everybody knows, 111320, is right for latitude and right for longitude only at the equator. The library's own warning points at the conversion that is the trap |
+| 5 | `empty-result` | [029](../traps/029-difference-order/) + [c029](../clean/c029-coincident-boundaries/) | 0 m² workable instead of 160000 | Difference is not commutative and both orders are valid questions. An empty result reads as a finding rather than a failure — *no part of the licence lies outside the reserve* is a sentence a board acts on |
+| 8 | `mixed-geometry` | [027](../traps/027-mixed-geometry/) + [c027](../clean/c027-lines-only/) | 3000 m of pipe instead of 2000 | A GeoPackage layer may hold more than one geometry type, and `length` on a polygon is its perimeter. Every individual asset is still correct, so a spot check of the data confirms the data |
+| 10 | `raster-affine` | [026](../traps/026-south-up-grid/) + [c026](../clean/c026-north-up-grid/) | 45° of slope instead of 5.7° | The fifth number of a geotransform may be positive, and an engine that cannot express that discards the georeferencing — cells of 1 m at the origin. A slope is a rise over a run, and every cell is wrong by the same factor, so the map has the right shape and the wrong legend |
 | 27 | `grid-registration` | [024](../traps/024-pixel-is-point/) + [c024](../clean/c024-pixel-is-area/) | easting 412105 instead of 412090 — and 412120 from a second engine | The file says `AREA_OR_POINT=Point` and the library hands you the tag from the same object whose coordinate helper ignores it. Half a cell is 15 m on a 30 m DEM: smaller than the GPS a crew walks in with, larger than every tolerance afterwards, and systematic, so the whole analysis stays internally consistent |
 
 Families 13 to 23 were not in the original design. 13 came from building family
@@ -112,9 +116,24 @@ matter because they are wrong on the asset class everyone is adopting:
 
 See [ADDING-A-TRAP.md](ADDING-A-TRAP.md).
 
+Families 2, 5, 8 and 10 were the last four of the original twelve, built on
+2026-08-30, and what they cost is worth recording. Three of them had been
+postponed for the same reason: every obvious formulation was LOUD. A metric
+operation on degrees usually returns something absurd; an empty intersection is
+usually an empty intersection; a flipped raster is usually noticed the moment
+anybody looks at it. A probe whose typical failure is absurd belongs in an
+ordinary test suite, because something already catches it, and finding the quiet
+version of each took longer than building it.
+
+The quiet versions turned out to share a shape. In all four the wrong answer is
+a perfectly ordinary quantity of the right kind — 12.7 hectares, 3 kilometres of
+pipe, 45 degrees of slope, nought hectares — and in three of them every
+individual row of the data is still correct. What is wrong is which rows were
+added up, or what a unit meant, or which of two arguments came first.
+
 ## What this list does not claim
 
-That these twenty-seven are the complete set. They are the families we can currently
+That these twenty-seven are all of them. They are the families we can currently
 argue for, each with a source. A twenty-eighth that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this

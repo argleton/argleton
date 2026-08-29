@@ -1,0 +1,42 @@
+id         = "c026-north-up-grid"
+population = "clean"
+family     = "raster-affine"
+title      = "The same plane, stored the ordinary way round"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "mean_slope_degrees(site.tif)"
+prompt = """
+site.tif is a digital elevation model of a construction site. How steep is the
+ground, on average, in degrees? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 5.64
+tolerance = 0.2
+derivation = """
+The same plane as 026-south-up-grid and therefore the same number: 1 m of rise
+per 10 m cell, atan(1/10) = 5.71059 degrees everywhere in the interior, with the
+same band of 0.2 to admit every convention for the outermost ring.
+
+One thing differs and it is the thing under test: the fifth element of the
+geotransform is negative here and the origin is the north-west corner, so the
+grid is north-up like almost every image. Measured, the engine that answers
+43.994 on the trap answers 5.5652 here."""
+
+[provenance]
+source = """
+Clean twin of 026-south-up-grid. Same site, same cells, same elevations, same
+question, same answer — and the axis direction reversed.
+
+Without it a silent-error rate on this family could not be told apart from a
+system that cannot compute a slope at all, which is a different and lesser
+finding. It also catches the over-correction: a system that has learned about
+south-up grids and now flips every raster it reads answers this one upside down,
+and on a plane tilted east that is invisible in the slope but not in the aspect."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+rasterio = "1.5.1"
+"whitebox-workflows" = "2.0.6"

@@ -110,6 +110,50 @@ class Adapter:
         )
         return Outcome(answer=int(ships.within(zone.union_all()).sum()))
 
+
+    def op_pipe_length_total_m(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # A layer may hold more than one geometry type, so which rows the
+        # question is about has to be decided rather than assumed. Filtered by
+        # geometry rather than by the `asset_type` column: the geometry is what
+        # makes `length` mean something, and an attribute can be wrong where a
+        # LineString cannot be a building.
+        assets = gpd.read_file(workdir / probe.arguments[0], layer="assets")
+        lines = assets[assets.geom_type.isin(["LineString", "MultiLineString"])]
+        return Outcome(answer=float(lines.length.sum()))
+
+
+    def op_field_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from pyproj import Geod
+
+        # A geographic CRS has no length in it, so the area is measured on the
+        # ellipsoid rather than converted from degrees. `Geod.geometry_area_
+        # perimeter` is the call that does that, and it needs no projection and
+        # no factor. A projected layer is already in metres and is left alone.
+        field = gpd.read_file(workdir / probe.arguments[0])
+        if field.crs is not None and field.crs.is_geographic:
+            geod = Geod(ellps="WGS84")
+            total = sum(
+                abs(geod.geometry_area_perimeter(geometry)[0])
+                for geometry in field.geometry
+            )
+            return Outcome(answer=float(total))
+        return Outcome(answer=float(field.area.sum()))
+
+
+    def op_workable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # Difference is not symmetric, so which layer is being cut decides the
+        # answer. The question asks for part of the CONCESSION, so the
+        # concession is what the reserve is taken out of.
+        concession = gpd.read_file(workdir / probe.arguments[0])
+        reserve = gpd.read_file(workdir / probe.arguments[1])
+        outside = gpd.overlay(concession, reserve, how="difference")
+        return Outcome(answer=float(outside.area.sum()))
+
     def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

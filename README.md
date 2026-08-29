@@ -32,7 +32,7 @@ pip install "argleton[fixtures]"
 ```
 
 The probes ship with the runner, so that is the whole setup — release 0.3.0 carries the
-25 traps and 27 families the results below were produced from. When the checkout runs ahead
+29 traps and 27 families the results below were produced from. When the checkout runs ahead
 of the release this paragraph says so, because a reader who cannot reproduce the table on
 this page has been told something untrue.
 
@@ -109,7 +109,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Twenty-three families of twenty-seven, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Twenty-seven families of twenty-seven, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -137,11 +137,15 @@ rate means a system did not fail silently *on these probes*.
 | `positional-pairing` | 554 mm of rainfall instead of 268 | the Thiessen cells are all valid and tile the extent; only the row each one carries is wrong |
 | `axis-order` | 16261 m² instead of 14042 | EPSG:4326 declares latitude first and every geometry library expects longitude first; both readings of a corner schedule stay in range |
 | `antimeridian` | 9 vessels in the zone instead of 5 | a zone split at 180 as the standard prescribes has bounds that span the planet, so filtering by the study area's bounding box admits every vessel at that latitude |
+| `raster-affine` | 45° of slope instead of 5.7° | a positive fifth number in the geotransform means the rows run south to north; an engine that cannot express it discards the georeferencing and reads the cells as 1 m |
+| `mixed-geometry` | 3000 m of pipe instead of 2000 | one GeoPackage layer holds the pipes and the treatment plant, and the length of a polygon is its perimeter |
+| `geographic-crs` | 12.7 ha instead of 8.99 | area in square degrees converted with 111320², which is right for latitude and right for longitude only at the equator |
+| `empty-result` | 0 m² workable instead of 160000 | difference is not commutative, and an empty result reads as a finding rather than a failure |
 | `grid-registration` | easting 412105 instead of 412090 | the file declares `AREA_OR_POINT=Point` and the library reports the tag from the same object whose coordinate helper ignores it; half a cell on a 30 m DEM is 15 m, systematic, and inside the GPS error of anyone sent to check |
 
 ## Results
 
-Engine tier, twenty-three families, `spec_commit` pinned — [every run, and what the
+Engine tier, twenty-seven families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

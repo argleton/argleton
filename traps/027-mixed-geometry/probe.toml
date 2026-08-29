@@ -1,0 +1,106 @@
+id         = "027-mixed-geometry"
+population = "trap"
+family     = "mixed-geometry"
+title      = "The treatment plant counted as pipe, at its perimeter"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "pipe_length_total_m(network.gpkg)"
+prompt = """
+network.gpkg holds a water utility's assets in a layer called `assets`. How many
+metres of pipe are there in total? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 2000.0
+tolerance = 0.01
+derivation = """
+Five pipe runs, all straight and axis-aligned, so their lengths are exact
+differences of coordinates:
+
+  P-01  (500000, 4500000) -> (500600, 4500000)   600
+  P-02  (500600, 4500000) -> (500600, 4500400)   400
+  P-03  (500600, 4500400) -> (500850, 4500400)   250
+  P-04  (500000, 4500000) -> (500000, 4500250)   250
+  P-05  (500000, 4500250) -> (500500, 4500250)   500
+                                                ----
+                                                2000
+
+The sixth feature is not pipe. It is WTP-1, the treatment plant, a 300 by 200 m
+rectangle with `asset_type = 'treatment_plant'`. A plant has no length, and the
+question is about pipe.
+
+The coordinates are in EPSG:32633, whose unit is the metre, so the planar
+lengths are ground lengths. The tolerance of 0.01 is for float arithmetic and
+nothing else."""
+
+[naive_failure]
+description = """
+Read the layer, take the length of everything, add it up:
+
+    gpd.read_file("network.gpkg", layer="assets").length.sum()   # 3000.0
+
+`length` on a polygon is its perimeter — the length of a closed ring is a real
+quantity and shapely is right to give it. The plant is 300 by 200, so it
+contributes 1000 m of "pipe" that is actually a fence line.
+
+Nothing raises, because nothing is wrong. The layer is valid, the geometries are
+valid, GeoPackage permits more than one geometry type in a layer and declares
+the layer's type as GEOMETRY when they differ, and every reader accepts that
+without a word. The defect is that the question said pipe and the code said
+every feature.
+
+This is a shapefile-shaped hole. Shapefiles cannot hold mixed geometry, so for
+thirty years the format enforced the filter that the code now has to. A
+conversion out of shapefiles into a GeoPackage merges what the old format had
+kept apart, which is exactly when a layer like this appears."""
+observed_value = 3000.0
+plausible      = true
+why_plausible  = """
+Three kilometres of pipe instead of two. Both are ordinary figures for a works
+site, and 3000 is if anything the more ordinary-looking of the two: it is round,
+it has no decimal, and it sits comfortably in the range a reader expects.
+
+Every individual asset is still correct, which is what defeats the usual check.
+Open the attribute table and P-01 is 600 m, P-02 is 400 m, and each one is right
+— the error is not in any row, it is in which rows were added up. A spot check
+of the data confirms the data.
+
+And the size of the error is set by the shape of the plant, not by anything
+about the pipes, so it does not scale with the network and cannot be spotted as
+a percentage. A bigger site with the same plant is out by the same 1000 m, which
+looks like less; a compact site with a sprawling plant is out by more. There is
+no ratio to notice."""
+derivation = """
+2000 m of pipe plus the plant's perimeter, 2 x (300 + 200) = 1000 m, is 3000 m.
+Exactly, because every coordinate is a whole number of metres and both figures
+are sums of axis-aligned differences."""
+
+[refusal]
+accept_if_mentions = ["geometry type", "mixed", "polygon", "perimeter", "asset_type", "filter", "line", "linestring", "not pipe"]
+
+[provenance]
+source = """
+The OGC GeoPackage specification allows a features table to declare its geometry
+type as GEOMETRY, meaning any type, and readers honour that: GDAL reports the
+layer's type as Unknown/Geometry and returns the rows as they are. GeoJSON
+places no restriction on a FeatureCollection either. The ESRI shapefile
+specification does the opposite — one geometry type per file, enforced — which
+is why data that has lived in shapefiles arrives split by type and data that has
+been converted out of them often does not.
+
+Shapely's `length` on a polygon returns the perimeter of its exterior ring plus
+its interiors, which is documented and correct; PostGIS `ST_Length` returns 0
+for a polygon instead, and `ST_Perimeter` is the separate function. Two
+defensible conventions for the same call, and the one that returns a number is
+the one that adds silently into a sum.
+
+Measured for this probe on 2026-08-30: geopandas 1.1 / shapely 2.1.2 answer
+3000.0 for `length.sum()` over this layer and 2000.0 over the same layer
+filtered to LineString."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"

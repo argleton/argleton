@@ -45,6 +45,29 @@ class Adapter:
         easting = meta.west + (position[1] + 0.5) * meta.resolution_x
         return Outcome(answer=float(easting))
 
+
+    def op_mean_slope_degrees(self, probe: Probe, workdir: Path) -> Outcome:
+        import whitebox_workflows as wbw
+
+        # The engine's own slope tool on the engine's own raster model, which is
+        # the whole point: nothing here is a misuse. `read_raster` accepts the
+        # file, reports the coordinate system correctly, and builds a grid whose
+        # cells it has decided are 1 by 1.
+        wbe = wbw.WbEnvironment()
+        wbe.verbose = False
+        dem = wbe.read_raster(str(workdir / probe.arguments[0]))
+        slope = wbe.terrain.slope(input=dem)
+        meta = dem.metadata()
+        total = 0.0
+        count = 0
+        for row in range(meta.rows):
+            for column in range(meta.columns):
+                value = slope[row, column]
+                if value != slope.metadata().nodata:
+                    total += value
+                    count += 1
+        return Outcome(answer=total / count if count else 0.0)
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import whitebox_workflows as wbw
 

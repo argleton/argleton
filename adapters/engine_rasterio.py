@@ -47,6 +47,22 @@ class Adapter:
                 easting -= ds.transform.a / 2.0
         return Outcome(answer=float(easting))
 
+
+    def op_mean_slope_degrees(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            elevation = ds.read(1).astype("float64")
+            width, height = ds.res
+        # `res` is the size of a cell and is positive whichever way the rows
+        # run: the direction lives in the sign of the transform, not here. So
+        # this is right on both halves of the pair without knowing there is a
+        # pair — which is the finding, not a virtue of the code.
+        along_rows, along_columns = np.gradient(elevation, height, width)
+        slope = np.degrees(np.arctan(np.hypot(along_columns, along_rows)))
+        return Outcome(answer=float(slope.mean()))
+
     def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio

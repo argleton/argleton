@@ -1,0 +1,111 @@
+id         = "029-difference-order"
+population = "trap"
+family     = "empty-result"
+title      = "Nothing outside the reserve, because the subtraction ran the other way"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "workable_area_m2(concession.gpkg, reserve.gpkg)"
+prompt = """
+concession.gpkg is a mining licence area and reserve.gpkg is a nature reserve.
+How many square metres of the concession lie outside the reserve? Answer with
+the number."""
+
+[truth]
+kind      = "scalar"
+value     = 160000.0
+tolerance = 0.01
+derivation = """
+Two axis-aligned rectangles in EPSG:32633, whose unit is the metre:
+
+  concession   500000..500600 E, 4500000..4500400 N   600 x 400 = 240000 m2
+  reserve      500100..500500 E, 4500100..4500300 N   400 x 200 =  80000 m2
+
+The reserve is wholly inside the concession — every one of its corners is
+strictly within the licence — so the part of the concession outside it is the
+one minus the other:
+
+  240000 - 80000 = 160000 m2
+
+Whole-metre corners and a containment, so the subtraction is exact and the
+tolerance of 0.01 is for float arithmetic alone."""
+
+[naive_failure]
+description = """
+`difference` is not symmetric, and both orders are valid calls:
+
+    overlay(concession, reserve, how="difference")   # 160000.0, one feature
+    overlay(reserve, concession, how="difference")   #      0.0, no features
+
+The second is the trap. It is not an error and it is not a malformed question —
+the reserve minus the concession is a perfectly good thing to ask, and its
+answer here is nothing at all, because the reserve is entirely inside.
+
+The wrong order is easy to reach for because of how the question is phrased.
+"How much of the concession lies outside the reserve" puts *the reserve* in the
+prominent position, and `reserve.difference(concession)` reads like the English
+sentence. ArcGIS names the two roles Input Features and Erase Features, PostGIS
+takes `ST_Difference(geomA, geomB)`, and in every one of them the two arguments
+are the same type and neither call complains.
+
+What comes back is an empty layer. Not an error, not a null, not a warning: zero
+rows, and summing an empty column gives 0.0."""
+observed_value = 0.0
+plausible      = true
+why_plausible  = """
+Zero is the most dangerous answer a spatial operation can return, because it
+reads as a finding rather than as a failure. *No part of the concession lies
+outside the reserve* is a sentence a board would act on: the whole licence is
+protected, the application is withdrawn, the asset is written down. Nobody
+reruns a query that told them something clear.
+
+An empty result also survives every check that a wrong number would trip. There
+is no magnitude to be suspicious of, no unit to be wrong, no geometry to look
+misshapen, no coordinate to plot in the wrong hemisphere. The layer is valid.
+The CRS is right. The operation succeeded.
+
+And it is silent in the strict sense: no library raises here. Both layers are in
+the same projected CRS, both geometries are valid, and the two rectangles really
+do have an empty difference in that order. Everything is correct except which
+one was subtracted from which.
+
+Containment is what hides it. Two rectangles that only partly overlapped would
+return something in either order and the two numbers would differ visibly; here
+one order returns 160000 and the other returns nothing."""
+derivation = """
+The reserve is a subset of the concession, so reserve minus concession is the
+empty set and its area is 0. Exactly zero, not a small number: the difference of
+a set with a superset of itself has no interior, and shapely returns an empty
+geometry rather than a sliver."""
+
+[refusal]
+accept_if_mentions = ["difference", "order", "argument", "which way", "erase", "subtract", "empty", "reversed", "swapped"]
+
+[provenance]
+source = """
+Set difference is not commutative, and every geospatial API exposes it with two
+positional arguments of the same type. OGC Simple Features defines
+`Difference(a, b)` as the points of a not in b; PostGIS follows with
+`ST_Difference(geomA, geomB)`; GeoPandas has `overlay(df1, df2,
+how="difference")` and the elementwise `df1.difference(df2)`; ArcGIS calls the
+two roles Input Features and Erase Features in the Erase tool, and QGIS uses
+Input layer and Overlay layer. In none of them does the wrong order raise
+anything, because the wrong order is a valid question.
+
+The empty result is the part with a literature. "An empty spatial result is a
+finding, not an error" is why this suite has a whole family for it: a zero reads
+as good news and stops the enquiry. It is the same shape as the mismatched-CRS
+join in family 4, where a count of zero reads as "no wells inside the zone", and
+the two are separated here on purpose — that one is caused by the data not
+lining up, this one by the operation being asked backwards while the data is
+perfect.
+
+Measured for this probe on 2026-08-30: geopandas 1.1 / shapely 2.1.2 return one
+feature of 160000.0 m2 for the concession minus the reserve, and zero features
+for the reserve minus the concession, with no warning in either direction."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"

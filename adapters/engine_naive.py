@@ -207,6 +207,58 @@ class Adapter:
             easting, _ = ds.xy(int(row), int(column))
         return Outcome(answer=float(easting))
 
+
+    def op_mean_slope_degrees(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            elevation = ds.read(1).astype("float64")
+            width, height = ds.res
+        # `res` is the size of a cell and is positive whichever way the rows
+        # run: the direction lives in the sign of the transform, not here. So
+        # this is right on both halves of the pair without knowing there is a
+        # pair — which is the finding, not a virtue of the code.
+        along_rows, along_columns = np.gradient(elevation, height, width)
+        slope = np.degrees(np.arctan(np.hypot(along_columns, along_rows)))
+        return Outcome(answer=float(slope.mean()))
+
+
+    def op_pipe_length_total_m(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # Read the layer, take the length, add it up. Three lines, and for
+        # thirty years the shapefile format made the missing filter unnecessary:
+        # one geometry type per file meant a layer of pipes was a layer of pipes.
+        assets = gpd.read_file(workdir / probe.arguments[0], layer="assets")
+        return Outcome(answer=float(assets.length.sum()))
+
+
+    def op_field_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # Shapely gives the area in the coordinates' own units, so on a
+        # geographic layer it has to be converted, and this is the conversion:
+        # one factor, the length of a degree at the equator, squared. It is the
+        # most copied number in the field.
+        field = gpd.read_file(workdir / probe.arguments[0])
+        area = float(field.area.sum())
+        if field.crs is not None and field.crs.is_geographic:
+            area *= 111320.0 ** 2
+        return Outcome(answer=area)
+
+
+    def op_workable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # "How much of the concession lies outside the reserve." The reserve is
+        # the thing the sentence is about, so it goes first — which is the
+        # difference the other way round, and a perfectly valid call.
+        concession = gpd.read_file(workdir / probe.arguments[0])
+        reserve = gpd.read_file(workdir / probe.arguments[1])
+        outside = gpd.overlay(reserve, concession, how="difference")
+        return Outcome(answer=float(outside.area.sum()))
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import rasterio
 

@@ -1,0 +1,44 @@
+id         = "c027-lines-only"
+population = "clean"
+family     = "mixed-geometry"
+title      = "The same network in a layer of pipes only"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "pipe_length_total_m(network.gpkg)"
+prompt = """
+network.gpkg holds a water utility's assets in a layer called `assets`. How many
+metres of pipe are there in total? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 2000.0
+tolerance = 0.01
+derivation = """
+The same five pipe runs as 027-mixed-geometry and therefore the same 2000 m. One
+thing differs and it is the thing under test: this `assets` layer holds only the
+pipe runs, so every geometry in it is a LineString and the plant is delivered
+separately.
+
+That is the arrangement thirty years of shapefiles enforced, and there summing
+the length of every geometry in the layer is exactly right. The composition that
+answers 3000 on the trap answers 2000 here."""
+
+[provenance]
+source = """
+Clean twin of 027-mixed-geometry. Same coordinates, same lengths, same question,
+same answer — and one layer in each half, so the pair isolates the geometry
+types and nothing else. A second layer in the twin would have dragged in the
+ambiguous-container question, which is real and is a different family.
+
+Without it a silent-error rate on this family could not be told apart from a
+system that cannot measure a line. It also catches the over-correction: a system
+that has learned to filter by geometry type and now discards anything that is
+not a LineString still has to read a layer that is all LineStrings, and one that
+starts refusing multi-type layers outright would fail every real GeoPackage."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"

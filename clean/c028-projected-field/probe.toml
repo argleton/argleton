@@ -1,0 +1,48 @@
+id         = "c028-projected-field"
+population = "clean"
+family     = "geographic-crs"
+title      = "The same field delivered in metres"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "field_area_m2(field.gpkg)"
+prompt = """
+field.gpkg holds one agricultural parcel in the layer `parcels`. How large is it
+on the ground, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 89864.0
+tolerance = 40.0
+derivation = """
+The same parcel as 028-degrees-as-metres — the same four corners, converted once
+when the file was built — and therefore the same area: 89900.021 m2 by the zone
+integral and by pyproj's geodesic area, 89828.115 in the UTM 32N plane, with the
+band of 40 around 89864 admitting both.
+
+One thing differs and it is the thing under test: the file is in EPSG:32632,
+whose unit is the metre, so the coordinates are already a length and there is
+nothing to convert. The composition that answers 127143 on the trap answers
+89828.115 here, and is right to."""
+
+[provenance]
+source = """
+Clean twin of 028-degrees-as-metres. Same parcel, same question, same answer,
+and the coordinate reference system projected rather than geographic.
+
+Written as a GeoPackage rather than GeoJSON on purpose: GeoJSON is defined on
+WGS 84, and a projected GeoJSON would be the wrong kind of unusual. The pair has
+to differ in the CRS of the data, not in whether a file bends its own format.
+
+Without the twin, a silent-error rate on this family could not be told apart
+from a system that cannot measure an area. It also catches the over-correction:
+a system that has learned to distrust degrees and now applies a cosine
+correction everywhere would divide this parcel by 0.7071 and be wrong by the
+same 41% in the other direction."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"
+pyproj = "3.7.2/PROJ 9.5.1"

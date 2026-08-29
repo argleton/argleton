@@ -1,0 +1,129 @@
+id         = "026-south-up-grid"
+population = "trap"
+family     = "raster-affine"
+title      = "A grid whose rows run south to north, and the cell size that goes with it"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "mean_slope_degrees(site.tif)"
+prompt = """
+site.tif is a digital elevation model of a construction site. How steep is the
+ground, on average, in degrees? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 5.64
+tolerance = 0.2
+derivation = """
+The surface is a plane. Elevation rises by exactly 1 m per cell towards the
+east, and the cells are 10 m, so the ground slopes at
+
+  atan(1 / 10) = 5.71059 degrees
+
+everywhere on it. No neighbourhood, no algorithm and no sampling enters that:
+every method that computes a gradient — Horn, Zevenbergen-Thorne, a plain
+central difference — returns the plane's own slope in the interior of a plane,
+because a plane has one.
+
+Which way the rows are stored does not enter it either. The grid is written
+south-up, so its first row is its southern edge, and a plane tilted eastwards is
+tilted eastwards whichever end you start reading from. The slope is a property
+of the ground.
+
+The tolerance of 0.2 around 5.64 exists for one reason, and it is the edge of
+the grid. A 3x3 gradient has no complete neighbourhood on the outermost ring, so
+every implementation adopts a convention there — nodata, replication,
+extrapolation — and each gives a different mean over the whole 40 x 40 grid.
+Measured: the plane's exact interior value is 5.7106 and every interior cell has
+it; whitebox-workflows extrapolates at the border and its mean over the whole
+grid is 5.5652; a plain numpy gradient with the same cell size answers 5.7106.
+The band 5.44 to 5.84 admits all of them, and the failure below misses it by
+192 tolerances."""
+
+[naive_failure]
+description = """
+An engine that builds its own grid model from the geotransform and cannot
+express a positive fifth number has to do something with the file. Measured on
+whitebox-workflows 2.0.6: it discards the georeferencing entirely and reads the
+grid as 40 by 40 cells of 1 by 1 at the origin.
+
+    read_raster("site.tif").metadata()
+    #   north-up file:  west=500000.0  resolution_x=10.0
+    #   this file:      west=0.0       resolution_x=1.0
+
+Nothing is raised, nothing is logged, and the elevations are untouched. What is
+gone is the size of a cell — and a slope is a rise over a run, so a run ten
+times too short makes the ground ten times steeper in tangent:
+
+    atan(1 / 1) = 45.0 degrees
+
+The mean over the grid is 43.994 and the median is exactly 45.
+
+The coordinate system survives, which is the part worth pausing on. The file
+still reports EPSG:32633 through the same engine, so a check that the output CRS
+is the requested one passes, and any product written from this DEM carries a
+correct-looking CRS on top of a geotransform placed at the origin with metre
+cells — 4500 km from the site, at a tenth of its size."""
+observed_value = 43.994
+plausible      = true
+why_plausible  = """
+45 degrees is a slope. It is steep — a one-in-one bank, the angle of a scree
+slope or a quarry face — and it is entirely ordinary for a DEM to contain some.
+The answer arrives as a single number with no second figure beside it, and the
+grid it came from is a real site with real elevations in it.
+
+What makes it dangerous rather than merely wrong is the direction. Slope
+thresholds are one-sided: buildable under 15 degrees, machinery under 20,
+landslide susceptibility above 30, and every one of those is a decision that
+gets made once. A site that is genuinely 5.7 degrees and reports 45 does not
+produce a wrong map, it produces a *refusal* — the ground is rejected as
+unbuildable, the excavation is priced for rock, the hazard layer lights up. Each
+of those is expensive and none of them prompts anybody to recheck a DEM, because
+the answer agreed with the fear.
+
+And it is uniform. Every cell is wrong by the same factor, so the slope map has
+the right shape, the right pattern, the right relative highs and lows. It is the
+correct picture of the site with the wrong number on the legend, which is
+exactly the kind of output nobody audits."""
+derivation = """
+The elevations are unchanged, so the rise between adjacent cells is still 1 m.
+With the run read as 1 m rather than 10 m the ratio is 1 instead of 0.1:
+
+  atan(1 / 1) = 45.0 degrees
+
+exactly, in the interior. The mean over the whole grid, with the same
+border extrapolation the engine applies to the north-up twin, is 43.994. The
+ratio to the truth is not 10 — slope is an arctangent, not a proportion — which
+is worth stating, because an error of "ten times" would be looked for and an
+error of "eight times" would not."""
+
+[refusal]
+accept_if_mentions = ["south-up", "south up", "north-up", "north up", "affine", "geotransform", "row order", "flipped", "axis direction", "negative pixel", "positive pixel", "cell size", "resolution"]
+
+[provenance]
+source = """
+The GeoTIFF geotransform's fifth element is the north-south pixel size and is
+negative for a north-up image. A positive value is valid and means the rows run
+the other way; GDAL documents the geotransform without requiring either sign,
+and reads both.
+
+Datasets in that form are ordinary rather than exotic. NetCDF, GRIB and HDF
+products index latitude in increasing order because that is how a coordinate
+axis is written, so a direct conversion to GeoTIFF yields a south-up grid — the
+reason `gdal_translate` users meet the `-a_ullr` and `-tr` flags, and the reason
+the GDAL FAQ has an entry about images that come out upside down. Surfer's GRD
+and several GMT exports do the same.
+
+Measured for this probe on 2026-08-30. rasterio 1.5.1 reports the transform
+faithfully, including that `bounds.top` (4500000) is SOUTH of `bounds.bottom`
+(4500400) on this file, and a numpy gradient using `src.res` answers 5.7106.
+whitebox-workflows 2.0.6 reports the grid as `west=0.0, resolution=1.0` and
+answers 43.994 — and writes any derived product with that geotransform, so the
+slope raster produced from this DEM lands off the coast of West Africa at a
+tenth of the site's size, carrying EPSG:32633."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+rasterio = "1.5.1"
+"whitebox-workflows" = "2.0.6"
