@@ -56,15 +56,21 @@ caller and is discarded in the last line.
 |---|---|---|
 | truth | 412090 | — |
 | naive composition | 412105 | half a cell east |
-| rasterio, carefully | 412105 | half a cell east |
+| rasterio, carefully | **412090** | correct |
 | whitebox-workflows | 412120 | a *whole* cell east |
 
-Whitebox is the interesting one. It reacts to the tag — its reported grid origin
-shifts by half a cell on this file where it does not on the area-registered twin
-— and the shift is in the direction that makes a caller who adds the usual half
-cell for a centre land one full cell out. An engine that half-honours a
-convention is worse than one that ignores it, because the correction that fixes
-the second breaks on the first.
+**The careful rasterio adapter passes**, and that row is the point of the
+family. Four lines — read the tag, subtract half a cell when it says `Point` —
+and both this probe and its clean twin come out right. The information is
+available, acting on it is cheap, and the failure is that nothing prompts you
+to. That is what makes this the caller's error and not the library's.
+
+Whitebox is the other case, and it is worse. It reacts to the tag — its reported
+grid origin shifts on this file where it does not on the twin — but in the
+direction that makes a caller who then adds the usual half cell for a centre
+land one full cell out. An engine that half-honours a convention is harder to be
+careful with than one that ignores it, because the correction that fixes the
+second breaks on the first.
 
 ## Why fifteen metres is the dangerous amount
 

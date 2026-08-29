@@ -62,10 +62,18 @@ the geotransform for it. So the information survives all the way to the caller
 and is discarded in the last line, by a helper whose name gives no hint that it
 has taken a side.
 
-Whitebox 2.0.6 lands in the same place by a different route, and its contours on
-this file come back on the node line rather than the cell line — which means a
-correction calibrated on an AREA-registered DEM turns a right answer into one
-that is a whole cell out. Two engines, two conventions, no error either time."""
+That is what makes this the caller's error rather than the library's, and the
+suite shows it: the careful rasterio adapter reads the tag, subtracts the half
+cell, and answers both this probe and its clean twin correctly. Four lines. The
+information is there and acting on it is cheap — the failure is that nothing
+prompts you to.
+
+Whitebox 2.0.6 is the other case, and it is worse. It reacts to the tag — its
+reported grid origin shifts on this file where it does not on the twin — but in
+the direction that makes a caller who then adds the usual half cell for a centre
+land a WHOLE cell out, at 412120. An engine that half-honours a convention is
+harder to be careful with than one that ignores it, because the correction that
+fixes the second breaks on the first."""
 observed_value = 412105.0
 plausible      = true
 why_plausible  = """

@@ -30,17 +30,21 @@ class Adapter:
         import numpy as np
         import rasterio
 
-        # Careful rasterio, and careful is not enough here. The masked read, the
-        # explicit dtype, the index unpacked properly — and then `xy`, because
-        # `xy` is what rasterio offers for turning an index into a position and
-        # there is no argument on it that mentions registration.
+        # `ds.xy` returns the centre of the cell under the pixel-is-AREA
+        # reading, always, and there is no argument on it that mentions
+        # registration. The correction is not obscure and it is not a
+        # workaround: the file says which convention it uses and rasterio hands
+        # that over on the same open dataset.
         #
-        # The tag is one call away on the same object. Nothing in the API
-        # suggests it belongs in this line, which is the finding.
+        # Under pixel-is-POINT the value is a sample AT the node, so the tie
+        # point IS the position of pixel (0, 0) and every cell centre `xy`
+        # computes is half a cell too far east and south.
         with rasterio.open(workdir / probe.arguments[0]) as ds:
             values = ds.read(1, masked=True)
             row, column = np.unravel_index(np.argmin(values), values.shape)
             easting, _ = ds.xy(int(row), int(column))
+            if ds.tags().get("AREA_OR_POINT") == "Point":
+                easting -= ds.transform.a / 2.0
         return Outcome(answer=float(easting))
 
     def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
