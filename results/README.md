@@ -46,6 +46,49 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-29 — the two columns in the order a human says them
+
+Published run: [`2026-08-29-axis-order/`](2026-08-29-axis-order/).
+Engine tier, `spec_commit` [`243f912`](../../../commit/243f912), twenty-one families.
+
+| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+|---|---|---|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 23 | 0 | 46 | 8.1 s | 104 ms |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 38 | 46 | 0.5 s | 7 ms |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 28 | 46 | 1.0 s | 14 ms |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 42 | 46 | 0.1 s | 20 ms |
+| naive composition | 0.9565 | 1.00 | 23 | 0 | 46 | 1.4 s | 13 ms |
+
+One family is new — [`axis-order`](../traps/023-axis-order/) — and it is the one
+where the file is not wrong. EPSG:4326 declares latitude first; every Python
+geometry library expects longitude first; INSPIRE and WFS 1.1 mandate the
+authority order on the wire. Both conventions are current and both are declared,
+so a corner schedule can be written either way round and the header is the only
+thing that says which.
+
+The naive composition reads the two coordinate columns in the order it finds
+them and reports **16261.6 m² instead of 14042.3** — 1.63 hectares against 1.40.
+Nothing raises: 23.73 is a valid latitude and 37.98 a valid longitude, so no
+range check fires, and the swapped parcel lands in the Egyptian desert, which
+nobody sees because the question asked for an area.
+
+**The careful compositions and MapSmith all answer 14042.345991909504**, which is
+the closed-form ellipsoidal area to the milli-square-metre. That agreement is
+worth more than the verdict: the truth for this probe was derived on paper from
+the zone integral before any adapter ran, and three independent routes landed on
+it.
+
+MapSmith's pass is not luck, and it is the kind of thing this suite exists to
+distinguish. `parse_coordinates` has no positional path — `latitude_columns` and
+`longitude_columns` are both required, with no default — because it was written
+for the DMS trap under the rule *the caller says which, because the file cannot*.
+The same rule closes this trap. A design that refuses to guess refuses to guess
+about more than the thing it was designed for.
+
+Two adapters report `unsupported`: rasterio and whitebox are raster engines and a
+corner schedule is not a raster. That is the honest verdict and it is why the
+"not applicable" column is published beside the rate.
+
 ## 2026-08-28 (later) — the same run, now with a stopwatch
 
 Published run: [`2026-08-28-timings/`](2026-08-28-timings/).

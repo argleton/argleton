@@ -1,0 +1,574 @@
+{
+  "system": "naive composition",
+  "adapter": "engine:naive",
+  "spec_commit": "243f912",
+  "date": "2026-08-29",
+  "silent_error_rate": 0.9565,
+  "completion_rate": 1.0,
+  "traps_run": 23,
+  "clean_run": 23,
+  "unsupported": 0,
+  "timing": {
+    "probes": 46,
+    "total_ms": 1379.2,
+    "median_ms": 13.4,
+    "first_probe_ms": 308.0,
+    "slowest": {
+      "probe_id": "c002-projected-area",
+      "ms": 504.4
+    },
+    "adapter_breakdown_ms": null
+  },
+  "verdict_counts": {
+    "correct": 24,
+    "silent_error": 22
+  },
+  "by_family": {
+    "aggregation-weighting": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "ambiguous-layer": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "axis-order": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "boundary-semantics": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "categorical-resampling": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "centroid-outside": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "coordinate-parsing": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "datum-ballpark": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "double-counting": {
+      "probes": 4,
+      "silent_errors": 2
+    },
+    "implicit-parameter-units": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "polygon-holes": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "positional-pairing": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "projection-distortion": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "radiometric-scale-offset": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "tabular-join": {
+      "probes": 4,
+      "silent_errors": 2
+    },
+    "z-dimension": {
+      "probes": 2,
+      "silent_errors": 1
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0,
+      "duration_ms": 308.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "correct",
+      "detail": "1000000.0",
+      "answer": 1000000.0,
+      "duration_ms": 504.4,
+      "timings": null
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0,
+      "duration_ms": 30.1,
+      "timings": null
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "correct",
+      "detail": "9",
+      "answer": 9,
+      "duration_ms": 16.8,
+      "timings": null
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "correct",
+      "detail": "7600.0",
+      "answer": 7600.0,
+      "duration_ms": 13.6,
+      "timings": null
+    },
+    {
+      "probe_id": "c006-named-layer",
+      "population": "clean",
+      "family": "ambiguous-layer",
+      "verdict": "correct",
+      "detail": "17",
+      "answer": 17,
+      "duration_ms": 12.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c007-distance-in-metres",
+      "population": "clean",
+      "family": "implicit-parameter-units",
+      "verdict": "correct",
+      "detail": "5",
+      "answer": 5,
+      "duration_ms": 9.8,
+      "timings": null
+    },
+    {
+      "probe_id": "c008-equal-area-crs",
+      "population": "clean",
+      "family": "projection-distortion",
+      "verdict": "correct",
+      "detail": "10000.0",
+      "answer": 10000.0,
+      "duration_ms": 14.9,
+      "timings": null
+    },
+    {
+      "probe_id": "c009-native-resolution-classes",
+      "population": "clean",
+      "family": "categorical-resampling",
+      "verdict": "correct",
+      "detail": "900.0",
+      "answer": 900.0,
+      "duration_ms": 4.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c010-physical-values",
+      "population": "clean",
+      "family": "radiometric-scale-offset",
+      "verdict": "correct",
+      "detail": "0.5000000093132254",
+      "answer": 0.5000000093132254,
+      "duration_ms": 4.3,
+      "timings": null
+    },
+    {
+      "probe_id": "c011-solid-parcel",
+      "population": "clean",
+      "family": "polygon-holes",
+      "verdict": "correct",
+      "detail": "10000.0",
+      "answer": 10000.0,
+      "duration_ms": 8.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c012-disjoint-concessions",
+      "population": "clean",
+      "family": "double-counting",
+      "verdict": "correct",
+      "detail": "20000.0",
+      "answer": 20000.0,
+      "duration_ms": 13.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c013-flat-pipeline",
+      "population": "clean",
+      "family": "z-dimension",
+      "verdict": "correct",
+      "detail": "500.0",
+      "answer": 500.0,
+      "duration_ms": 8.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c014-convex-parcel",
+      "population": "clean",
+      "family": "centroid-outside",
+      "verdict": "correct",
+      "detail": "A",
+      "answer": "A",
+      "duration_ms": 12.7,
+      "timings": null
+    },
+    {
+      "probe_id": "c015-wells-off-the-seam",
+      "population": "clean",
+      "family": "boundary-semantics",
+      "verdict": "correct",
+      "detail": "12",
+      "answer": 12,
+      "duration_ms": 17.6,
+      "timings": null
+    },
+    {
+      "probe_id": "c016-decimal-degrees",
+      "population": "clean",
+      "family": "coordinate-parsing",
+      "verdict": "correct",
+      "detail": "41.89",
+      "answer": 41.89,
+      "duration_ms": 6.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c017-equal-populations",
+      "population": "clean",
+      "family": "aggregation-weighting",
+      "verdict": "correct",
+      "detail": "15.0",
+      "answer": 15.0,
+      "duration_ms": 6.7,
+      "timings": null
+    },
+    {
+      "probe_id": "c018-plain-keys",
+      "population": "clean",
+      "family": "tabular-join",
+      "verdict": "correct",
+      "detail": "100000",
+      "answer": 100000,
+      "duration_ms": 20.3,
+      "timings": null
+    },
+    {
+      "probe_id": "c019-fully-contained",
+      "population": "clean",
+      "family": "double-counting",
+      "verdict": "correct",
+      "detail": "30000.0",
+      "answer": 30000.0,
+      "duration_ms": 22.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c020-one-owner-each",
+      "population": "clean",
+      "family": "tabular-join",
+      "verdict": "correct",
+      "detail": "50000.0",
+      "answer": 50000.0,
+      "duration_ms": 16.3,
+      "timings": null
+    },
+    {
+      "probe_id": "c021-greenwich-variant",
+      "population": "clean",
+      "family": "datum-ballpark",
+      "verdict": "correct",
+      "detail": "45.500669073852286",
+      "answer": 45.500669073852286,
+      "duration_ms": 25.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c022-two-gauges",
+      "population": "clean",
+      "family": "positional-pairing",
+      "verdict": "correct",
+      "detail": "305.0",
+      "answer": 305.0,
+      "duration_ms": 19.9,
+      "timings": null
+    },
+    {
+      "probe_id": "c023-longitude-first",
+      "population": "clean",
+      "family": "axis-order",
+      "verdict": "correct",
+      "detail": "14042.345991909504",
+      "answer": 14042.345991909504,
+      "duration_ms": 1.4,
+      "timings": null
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0,
+      "duration_ms": 3.1,
+      "timings": null
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "silent_error",
+      "detail": "expected 92903.41 \u00b1 0.5, got 1000000.0 \u2014 this is the predicted naive failure",
+      "answer": 1000000.0,
+      "duration_ms": 7.5,
+      "timings": null
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "silent_error",
+      "detail": "expected 1000.0 \u00b1 0.001, got 945.005 \u2014 this is the predicted naive failure",
+      "answer": 945.005,
+      "duration_ms": 21.0,
+      "timings": null
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "silent_error",
+      "detail": "expected 12 \u00b1 0.0, got 0 \u2014 this is the predicted naive failure",
+      "answer": 0,
+      "duration_ms": 20.5,
+      "timings": null
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "silent_error",
+      "detail": "expected 5100.0 \u00b1 0.01, got 2400.0 \u2014 this is the predicted naive failure",
+      "answer": 2400.0,
+      "duration_ms": 16.8,
+      "timings": null
+    },
+    {
+      "probe_id": "006-default-layer",
+      "population": "trap",
+      "family": "ambiguous-layer",
+      "verdict": "silent_error",
+      "detail": "expected 31 \u00b1 0.0, got 4 \u2014 this is the predicted naive failure",
+      "answer": 4,
+      "duration_ms": 6.8,
+      "timings": null
+    },
+    {
+      "probe_id": "007-buffer-in-degrees",
+      "population": "trap",
+      "family": "implicit-parameter-units",
+      "verdict": "silent_error",
+      "detail": "expected 3 \u00b1 0.0, got 24 \u2014 this is the predicted naive failure",
+      "answer": 24,
+      "duration_ms": 8.9,
+      "timings": null
+    },
+    {
+      "probe_id": "008-web-mercator-area",
+      "population": "trap",
+      "family": "projection-distortion",
+      "verdict": "silent_error",
+      "detail": "expected 6654.0 \u00b1 8.0, got 12000.0 \u2014 this is the predicted naive failure",
+      "answer": 12000.0,
+      "duration_ms": 7.9,
+      "timings": null
+    },
+    {
+      "probe_id": "009-resampled-classes",
+      "population": "trap",
+      "family": "categorical-resampling",
+      "verdict": "silent_error",
+      "detail": "expected 0.0 \u00b1 0.0, got 900.0 \u2014 this is the predicted naive failure",
+      "answer": 900.0,
+      "duration_ms": 5.0,
+      "timings": null
+    },
+    {
+      "probe_id": "010-scale-offset",
+      "population": "trap",
+      "family": "radiometric-scale-offset",
+      "verdict": "silent_error",
+      "detail": "expected 0.3333333333 \u00b1 0.0001, got 0.25 \u2014 this is the predicted naive failure",
+      "answer": 0.25,
+      "duration_ms": 3.6,
+      "timings": null
+    },
+    {
+      "probe_id": "011-polygon-holes",
+      "population": "trap",
+      "family": "polygon-holes",
+      "verdict": "silent_error",
+      "detail": "expected 8400.0 \u00b1 0.01, got 11600.0 \u2014 this is the predicted naive failure",
+      "answer": 11600.0,
+      "duration_ms": 13.7,
+      "timings": null
+    },
+    {
+      "probe_id": "012-double-counting",
+      "population": "trap",
+      "family": "double-counting",
+      "verdict": "silent_error",
+      "detail": "expected 16000.0 \u00b1 0.01, got 20000.0 \u2014 this is the predicted naive failure",
+      "answer": 20000.0,
+      "duration_ms": 7.1,
+      "timings": null
+    },
+    {
+      "probe_id": "013-z-dimension",
+      "population": "trap",
+      "family": "z-dimension",
+      "verdict": "silent_error",
+      "detail": "expected 500.0 \u00b1 0.01, got 400.0 \u2014 this is the predicted naive failure",
+      "answer": 400.0,
+      "duration_ms": 6.9,
+      "timings": null
+    },
+    {
+      "probe_id": "014-centroid-outside",
+      "population": "trap",
+      "family": "centroid-outside",
+      "verdict": "silent_error",
+      "detail": "expected A \u00b1 0.0, got B \u2014 this is the predicted naive failure",
+      "answer": "B",
+      "duration_ms": 13.6,
+      "timings": null
+    },
+    {
+      "probe_id": "015-boundary-semantics",
+      "population": "trap",
+      "family": "boundary-semantics",
+      "verdict": "silent_error",
+      "detail": "expected 12 \u00b1 0.0, got 8 \u2014 this is the predicted naive failure",
+      "answer": 8,
+      "duration_ms": 25.3,
+      "timings": null
+    },
+    {
+      "probe_id": "016-coordinate-parsing",
+      "population": "trap",
+      "family": "coordinate-parsing",
+      "verdict": "silent_error",
+      "detail": "expected 41.89 \u00b1 0.0001, got 41.5324 \u2014 this is the predicted naive failure",
+      "answer": 41.5324,
+      "duration_ms": 5.4,
+      "timings": null
+    },
+    {
+      "probe_id": "017-aggregation-weighting",
+      "population": "trap",
+      "family": "aggregation-weighting",
+      "verdict": "silent_error",
+      "detail": "expected 1.38 \u00b1 0.005, got 13.666666666666666 \u2014 this is the predicted naive failure",
+      "answer": 13.666666666666666,
+      "duration_ms": 8.1,
+      "timings": null
+    },
+    {
+      "probe_id": "018-join-key-typing",
+      "population": "trap",
+      "family": "tabular-join",
+      "verdict": "silent_error",
+      "detail": "expected 100000 \u00b1 0.0, got 62000 \u2014 this is the predicted naive failure",
+      "answer": 62000,
+      "duration_ms": 26.0,
+      "timings": null
+    },
+    {
+      "probe_id": "019-partial-overlap",
+      "population": "trap",
+      "family": "double-counting",
+      "verdict": "silent_error",
+      "detail": "expected 9000.0 \u00b1 0.01, got 30000.0 \u2014 this is the predicted naive failure",
+      "answer": 30000.0,
+      "duration_ms": 20.2,
+      "timings": null
+    },
+    {
+      "probe_id": "020-join-cardinality",
+      "population": "trap",
+      "family": "tabular-join",
+      "verdict": "silent_error",
+      "detail": "expected 50000.0 \u00b1 0.01, got 65000.0 \u2014 this is the predicted naive failure",
+      "answer": 65000.0,
+      "duration_ms": 14.3,
+      "timings": null
+    },
+    {
+      "probe_id": "021-ballpark-datum",
+      "population": "trap",
+      "family": "datum-ballpark",
+      "verdict": "silent_error",
+      "detail": "expected 45.500669074 \u00b1 9e-05, got 45.5 \u2014 this is the predicted naive failure",
+      "answer": 45.5,
+      "duration_ms": 16.7,
+      "timings": null
+    },
+    {
+      "probe_id": "022-thiessen-pairing",
+      "population": "trap",
+      "family": "positional-pairing",
+      "verdict": "silent_error",
+      "detail": "expected 268.0 \u00b1 0.0, got 554.0 \u2014 this is the predicted naive failure",
+      "answer": 554.0,
+      "duration_ms": 23.5,
+      "timings": null
+    },
+    {
+      "probe_id": "023-axis-order",
+      "population": "trap",
+      "family": "axis-order",
+      "verdict": "silent_error",
+      "detail": "expected 14047.0 \u00b1 8.0, got 16261.612811923027 \u2014 this is the predicted naive failure",
+      "answer": 16261.612811923027,
+      "duration_ms": 1.5,
+      "timings": null
+    }
+  ]
+}

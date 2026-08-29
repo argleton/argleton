@@ -73,8 +73,8 @@ every task it was given (completion 1.0) *and* gets this file silently wrong
 (the 0.5).
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.9545 / 1.0**: it
-answers every clean probe correctly, falls into twenty-one of the twenty-two traps, and
+report it — and it is the most useful one here. It scores **0.9565 / 1.0**: it
+answers every clean probe correctly, falls into twenty-two of the twenty-three traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -128,16 +128,16 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-Engine tier, twenty families, `spec_commit` pinned — [every run, and what the
+Engine tier, twenty-one families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 22 | 0 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 36 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 8 | 28 |
-| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 40 |
-| naive composition | 0.9545 | 1.00 | 22 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 23 | 0 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 38 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 28 |
+| whitebox-workflows 2.0.6 | 0.50 | 1.00 | 2 | 42 |
+| naive composition | 0.9565 | 1.00 | 23 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question
