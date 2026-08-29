@@ -115,6 +115,37 @@ class Adapter:
             return Outcome(answer="")
         return Outcome(answer=str(frame["district"].iloc[0]), warnings=self._warnings(joined))
 
+
+    def op_ships_in_zone(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        import pandas as pd
+        from mapsmith.engines import vector
+
+        # The vessel list is a CSV of coordinates, so it becomes a layer first —
+        # MapSmith reads datasets, not columns. Then `spatial_join` with
+        # `within`, which is the operation the question describes.
+        rows = pd.read_csv(workdir / probe.arguments[1])
+        ships = workdir / "_argleton_ships.parquet"
+        gpd.GeoDataFrame(
+            rows,
+            geometry=gpd.points_from_xy(rows["longitude"], rows["latitude"]),
+            crs="EPSG:4326",
+        ).to_parquet(ships)
+
+        joined = workdir / "_argleton_in_zone.parquet"
+        try:
+            vector.spatial_join(
+                str(ships),
+                str(workdir / probe.arguments[0]),
+                str(joined),
+                predicate="within",
+            )
+        except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
+            return self._refusal_or_error(exc)
+        return Outcome(
+            answer=len(gpd.read_parquet(joined)), warnings=self._warnings(joined)
+        )
+
     def op_wells_in_districts(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
         from mapsmith.engines import vector

@@ -92,6 +92,24 @@ class Adapter:
         total = sum(abs(geod.geometry_area_perimeter(g)[0]) for g in geoms)
         return Outcome(answer=float(total), warnings=warns)
 
+
+    def op_ships_in_zone(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        import pandas as pd
+
+        # Containment against the geometry itself, with no bounding box in the
+        # way. Careful here is not cleverness about the antimeridian: it is
+        # declining the optimisation, because the box of a geometry split at the
+        # line is the whole planet and the filter is the failure.
+        zone = gpd.read_file(workdir / probe.arguments[0])
+        rows = pd.read_csv(workdir / probe.arguments[1])
+        ships = gpd.GeoDataFrame(
+            rows,
+            geometry=gpd.points_from_xy(rows["longitude"], rows["latitude"]),
+            crs="EPSG:4326",
+        )
+        return Outcome(answer=int(ships.within(zone.union_all()).sum()))
+
     def op_feature_count(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

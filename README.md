@@ -32,7 +32,7 @@ pip install "argleton[fixtures]"
 ```
 
 The probes ship with the runner, so that is the whole setup — release 0.3.0 carries the
-24 traps and 26 families the results below were produced from. When the checkout runs ahead
+25 traps and 27 families the results below were produced from. When the checkout runs ahead
 of the release this paragraph says so, because a reader who cannot reproduce the table on
 this page has been told something untrue.
 
@@ -109,7 +109,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Twenty-two families of twenty-seven, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Twenty-three families of twenty-seven, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -136,11 +136,12 @@ rate means a system did not fail silently *on these probes*.
 | `tabular-join` | 62000 people instead of 100000 | a CSV reader turns "001" into 1 and four municipalities leave the join |
 | `positional-pairing` | 554 mm of rainfall instead of 268 | the Thiessen cells are all valid and tile the extent; only the row each one carries is wrong |
 | `axis-order` | 16261 m² instead of 14042 | EPSG:4326 declares latitude first and every geometry library expects longitude first; both readings of a corner schedule stay in range |
+| `antimeridian` | 9 vessels in the zone instead of 5 | a zone split at 180 as the standard prescribes has bounds that span the planet, so filtering by the study area's bounding box admits every vessel at that latitude |
 | `grid-registration` | easting 412105 instead of 412090 | the file declares `AREA_OR_POINT=Point` and the library reports the tag from the same object whose coordinate helper ignores it; half a cell on a 30 m DEM is 15 m, systematic, and inside the GPS error of anyone sent to check |
 
 ## Results
 
-Engine tier, twenty-two families, `spec_commit` pinned — [every run, and what the
+Engine tier, twenty-three families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

@@ -1,0 +1,134 @@
+id         = "025-antimeridian-zone"
+population = "trap"
+family     = "antimeridian"
+title      = "A zone split at the 180th meridian exactly as the standard says to split it"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "ships_in_zone(zone.geojson, ships.csv)"
+prompt = """
+zone.geojson is a survey zone and ships.csv is a list of vessel positions in WGS
+84, one row per vessel with longitude and latitude. How many vessels are inside
+the zone? Answer with the number."""
+
+[truth]
+kind      = "count"
+value     = 5
+tolerance = 0
+derivation = """
+The zone is 179E to 179W and 17.5S to 16.5S: two degrees of longitude, one of
+latitude, centred on the antimeridian in Fijian waters. Twelve vessels, and
+which of them are inside is a comparison of two numbers per vessel, done here on
+paper:
+
+  inside the zone (5)
+    Vatoa        179.30E  17.00S
+    Ono-i-Lau    179.80E  16.80S
+    Tuvana       179.90W  17.20S
+    Ceva-i-Ra    179.20W  16.90S
+    Nukusemanu   179.95E  17.40S
+
+  in the latitude band, elsewhere on the planet (4)
+    Bandanaira   100.00E  17.00S      Banda Sea
+    Santa Helena   0.00    16.70S     South Atlantic
+    Iquique       80.00W   17.30S     off Chile
+    Cairns Reef  150.00E  16.60S      Coral Sea
+
+  near the line, outside the latitude band (3)
+    Kadavu South 179.50E  20.00S
+    Wallis       179.50W  10.00S
+    Minerva      179.00E  30.00S
+
+Five. No projection, no distance, no interpolation: the answer is a count of
+points inside two rectangles, and every part of it can be checked by reading the
+file. The tolerance is zero because a count has no measurement error.
+
+The last three vessels are what makes the failure a number rather than a shape.
+Without them the wrong answer would be "every vessel", which somebody might
+notice."""
+
+[naive_failure]
+description = """
+Filter by the bounding box of the area of interest, then count:
+
+    zone = gpd.read_file("zone.geojson")
+    minx, miny, maxx, maxy = zone.total_bounds
+    inside = ships.cx[minx:maxx, miny:maxy]
+
+`cx` is the coordinate-slice idiom out of the GeoPandas documentation, and
+filtering to the bounds of the study area before doing anything expensive is
+ordinary practice — it is how a tile is requested, how a `WHERE` clause on
+min/max columns is written, and how a raster is windowed.
+
+The zone is a MultiPolygon of two parts, one ending at 180 and one beginning at
+-180, which is exactly what RFC 7946 3.1.9 says to produce. Its bounds are
+
+    (-180.0, -17.5, 180.0, -16.5)
+
+a band right around the planet. The four vessels in the latitude band pass the
+filter from the Banda Sea, the South Atlantic, the Coral Sea and the coast of
+Chile, and the answer is nine.
+
+Nothing raises. The file is standard-conformant, every coordinate is inside the
+range the standard requires, the geometry is valid, the bounds are the true
+bounds of that geometry, and the filter did precisely what it says it does."""
+observed_value = 9
+plausible      = true
+why_plausible  = """
+Nine vessels instead of five. Both are ordinary numbers for a survey zone, there
+is no second figure to compare against, and a count arrives without a unit or a
+magnitude to sanity-check.
+
+A count is the worst kind of answer to be wrong about, because the usual defence
+does not apply. An area that is 16% high can be checked against a plan; a
+coordinate can be plotted. Nine is just nine — and if the next step is a rate,
+a density, a fee per vessel or a decision about capacity, the error propagates
+as a clean multiplication by 1.8 with nothing anywhere carrying the units of
+doubt.
+
+The four extra vessels are also not obviously extra. They are real positions at
+the right latitude; a listing of them shows four names and four plausible
+coordinates. Only plotting them, or reading their longitudes carefully, shows
+that one is in the Atlantic."""
+derivation = """
+The bounding box of the MultiPolygon is (-180.0, -17.5, 180.0, -16.5), so the
+filter admits every vessel with latitude between 17.5S and 16.5S: the five
+inside plus Bandanaira, Santa Helena, Iquique and Cairns Reef. Nine. The three
+vessels outside the latitude band are excluded by the box, correctly, which is
+why the wrong answer is nine rather than twelve."""
+
+[refusal]
+accept_if_mentions = ["antimeridian", "180th meridian", "date line", "dateline", "bounding box", "bbox", "wraps", "wrap", "crosses 180", "longitude range"]
+
+[provenance]
+source = """
+RFC 7946 (The GeoJSON Format, IETF, 2016) devotes section 3.1.9 to this: a
+geometry crossing the antimeridian SHOULD be split into two parts, one on each
+side, and every coordinate must stay within [-180, 180]. Section 5.2 then
+defines a bounding box whose western value exceeds its eastern one as the one
+that crosses the antimeridian — an explicit signal that the ordinary
+(west, south, east, north) reading is wrong there.
+
+The two rules do not compose. A geometry split correctly per 3.1.9 has parts
+that reach -180 and +180, so the bounds *computed* from its coordinates are
+(-180, ..., 180, ...) rather than the 5.2 form, and nothing in a general-purpose
+geometry library computes anything else: shapely, GEOS and PostGIS all work in a
+plane where longitude is an ordinary number, and the standard's inverted-bbox
+convention has no representation there.
+
+The consequences are documented across the ecosystem — PostGIS `ST_Extent`
+notes, GDAL's `-wrapdateline` option for `ogr2ogr`, the Cloud-Optimized GeoTIFF
+and STAC guidance on antimeridian-crossing items, and the well-known problems of
+Fiji, Kiribati, the Aleutians, the Chukchi Sea and Chatham Islands. The 2011
+change that moved Samoa across the line, and Kiribati's 1995 realignment, are
+the reason several of these datasets exist in both readings at once.
+
+Measured for this probe on 2026-08-30: geopandas 1.1 / shapely 2.1.2 report the
+MultiPolygon's bounds as (-180.0, -17.5, 180.0, -16.5), and its centroid — worth
+knowing for anyone reaching for one — as POINT (0 -17), in the Gulf of Guinea."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"

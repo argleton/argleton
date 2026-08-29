@@ -1,0 +1,46 @@
+id         = "c025-single-hemisphere-zone"
+population = "clean"
+family     = "antimeridian"
+title      = "The same count on a zone ten degrees west of the line"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "ships_in_zone(zone.geojson, ships.csv)"
+prompt = """
+zone.geojson is a survey zone and ships.csv is a list of vessel positions in WGS
+84, one row per vessel with longitude and latitude. How many vessels are inside
+the zone? Answer with the number."""
+
+[truth]
+kind      = "count"
+value     = 5
+tolerance = 0
+derivation = """
+The same question as 025-antimeridian-zone with the zone moved ten degrees west:
+169E to 171E, 17.5S to 16.5S. The same twelve vessels in the same arrangement —
+five inside, four in the latitude band scattered across the planet, three near
+the zone but outside the band — so the answer is the same five.
+
+What is different is that the zone is now an ordinary rectangle, so its bounding
+box IS the zone. The bounding-box filter that answers nine on the trap answers
+five here, and it is right to."""
+
+[provenance]
+source = """
+Clean twin of 025-antimeridian-zone. The same file structure — a MultiPolygon,
+so the pair differs in coordinates rather than in geometry type — the same
+vessel list, the same counts, the same phrasing. One thing differs and it is the
+thing under test: whether the zone touches 180.
+
+The twin does two jobs. Without it a silent-error rate on this family could not
+be told apart from a system that cannot count points in a polygon at all, which
+is a different and lesser finding. And it catches the over-correction: a system
+that has learned to distrust bounding boxes near the antimeridian, or that
+splits and rejoins every geometry defensively, has to still answer an ordinary
+rectangle correctly."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+geopandas = "1.1"
+shapely = "2.1.2"

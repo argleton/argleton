@@ -84,6 +84,26 @@ class Adapter:
                 return Outcome(answer=str(row["district"]))
         return Outcome(answer="")
 
+
+    def op_ships_in_zone(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        import pandas as pd
+
+        # Filter to the bounding box of the area of interest, then count. `cx`
+        # is the coordinate-slice idiom out of the GeoPandas documentation, and
+        # narrowing to the study area before doing anything expensive is what
+        # everybody does — it is how a tile is requested and how a WHERE clause
+        # on min/max columns is written.
+        zone = gpd.read_file(workdir / probe.arguments[0])
+        rows = pd.read_csv(workdir / probe.arguments[1])
+        ships = gpd.GeoDataFrame(
+            rows,
+            geometry=gpd.points_from_xy(rows["longitude"], rows["latitude"]),
+            crs="EPSG:4326",
+        )
+        minx, miny, maxx, maxy = zone.total_bounds
+        return Outcome(answer=len(ships.cx[minx:maxx, miny:maxy]))
+
     def op_wells_in_districts(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

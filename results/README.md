@@ -12,7 +12,7 @@ family with several probes cannot read as several independent findings.
 ## What these numbers do not say
 
 This section is at the top rather than the bottom on purpose, and it grows with
-the suite. Twenty-two families of twenty-seven are implemented
+the suite. Twenty-three families of twenty-seven are implemented
 ([FAMILIES.md](../docs/FAMILIES.md)).
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
