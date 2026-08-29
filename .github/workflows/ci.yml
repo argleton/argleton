@@ -76,6 +76,12 @@ jobs:
           # point — a trap that stops catching its own naive adapter, or one
           # that starts catching a case it should not, has changed what it
           # measures, and that must be a decision rather than a surprise.
-          # 0.9545 = traps 002 through 022 caught, 001 passed, out of 22.
-          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.9545, 1.0) else 1)
+          # 0.9565 = 22 of 23 traps caught, 001 passed. Moved from 0.9545 on
+          # 2026-08-29 when trap 023 (axis-order) was added: the denominator
+          # changed, the numerator changed with it, and 001 is still the one the
+          # careless composition gets right. This pin failing on that commit is
+          # the mechanism working — the number moved because a trap was added,
+          # which is a decision, and it had to be written down here rather than
+          # discovered in a published table.
+          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.9565, 1.0) else 1)
           PY
