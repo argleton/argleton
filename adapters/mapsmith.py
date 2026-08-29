@@ -46,16 +46,18 @@ class Adapter:
 
 
     def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
-        # MapSmith has no operation that reports WHERE a cell is. It reads
-        # rasters, summarises them, samples them and derives vectors from them,
-        # and every one of those turns a cell index into a coordinate the same
-        # way rasterio does — so the capability is missing and the convention
-        # question has never been asked in this codebase.
+        # `unsupported` here until 2026-08-30, and the gap was the finding: no
+        # operation reported WHERE a cell is, and no line of MapSmith read the
+        # raster-type tag. Both were the same absence — nothing had ever needed
+        # to ask the question, so nothing had asked it.
         #
-        # Reported as unsupported rather than answered with something adjacent.
-        # The gap is the finding; an approximation would hide it, and the run
-        # notes are where it belongs.
-        return Outcome(unsupported=True)
+        # `locate_extreme_cell` takes the position from `mapsmith.grid`, which
+        # is the one place that decides whether a value sits at a cell centre or
+        # at a node.
+        from mapsmith.engines import raster
+
+        found = raster.locate_extreme_cell(str(workdir / probe.arguments[0]), "min")
+        return Outcome(answer=float(found["x"]))
 
     def op_buildable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         # measure_area on a polygon with a hole: the courtyard is part of the
