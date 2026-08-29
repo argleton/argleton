@@ -84,8 +84,8 @@ at 412120 where the truth is 412090. Both get the clean twin — same surface,
 same tie point, one different tag — right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.9583 / 1.0**: it
-answers every clean probe correctly, falls into twenty-three of the twenty-four traps, and
+report it — and it is the most useful one here. It scores **0.96 / 1.0**: it
+answers every clean probe correctly, falls into twenty-four of the twenty-five traps, and
 **passes the remaining one**, because rasterio undoes the predictor on its
 behalf. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
@@ -146,11 +146,11 @@ numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 24 | 0 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 38 |
-| whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 42 |
-| naive composition | 0.9583 | 1.00 | 24 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 25 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 10 | 30 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 40 |
+| whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 44 |
+| naive composition | 0.96 | 1.00 | 25 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question

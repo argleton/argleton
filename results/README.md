@@ -46,6 +46,54 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-08-30 (later) — the famous one, and why it took twenty-five traps
+
+Published run: [`2026-08-30-antimeridian/`](2026-08-30-antimeridian/).
+Engine tier, `spec_commit` [`74a620f`](../../../commit/74a620f), twenty-three families.
+
+| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+|---|---|---|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 25 | 0 | 50 | 6.7 s | 112 ms |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 10 | 30 | 20 | 0.9 s | 14 ms |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 40 | 10 | 0.4 s | 6 ms |
+| whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 44 | 6 | 0.1 s | 8 ms |
+| naive composition | 0.96 | 1.00 | 25 | 0 | 50 | 1.4 s | 11 ms |
+
+The new family is [`antimeridian`](../traps/025-antimeridian-zone/), which was in
+the original twelve and took until the twenty-fifth trap to build. That is worth
+saying plainly, because it is the opposite of what a roadmap suggests: **famous
+is not the same as easy to plant.**
+
+Every obvious formulation of this failure is loud. An extent that spans 358
+degrees, a distance of 40 000 km between two islands, a centroid in the Gulf of
+Guinea — all real, all produced by ordinary code, and all absurd enough that
+something already catches them. A probe whose typical failure is absurd belongs
+in a unit test; this suite is for the answers nothing catches. What took the time
+was finding the quiet version.
+
+The quiet version is a **count**. The zone is two degrees by one in Fijian
+waters, written the way RFC 7946 §3.1.9 says to write it: a MultiPolygon split at
+180, every coordinate in range, geometry valid, nothing ambiguous in the file. Its
+bounds are therefore `(-180, -17.5, 180, -16.5)` — a band round the planet — so
+filtering to the study area's bounding box before testing containment, which is
+the coordinate-slice idiom out of the GeoPandas documentation, admits every vessel
+at that latitude. Nine instead of five.
+
+Nine is plausible in the way counts are: no unit, no magnitude, nothing to compare
+against. The four extra vessels are real positions at the right latitude, and only
+their longitudes give them away.
+
+**The two halves of the standard do not compose**, and that is the finding rather
+than any one library's behaviour. §3.1.9 says split the geometry at the line;
+§5.2 says a bounding box whose west exceeds its east is the one that crosses it. A
+geometry split correctly per the first has bounds that cannot be written in the
+form the second describes, and no planar geometry library computes anything else.
+
+Careful GeoPandas and MapSmith both answer 5, on the trap and on its clean twin.
+The twin moves the zone ten degrees west, where the bounding box *is* the zone and
+the failing filter is exactly right — so a system that has learned to distrust
+bounding boxes near the line still has to answer an ordinary rectangle.
+
 ## 2026-08-30 — half a cell, and the engine that half-honours the convention
 
 Published run: [`2026-08-30-grid-registration/`](2026-08-30-grid-registration/).
