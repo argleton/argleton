@@ -49,11 +49,11 @@ maintainer has not already been told.
 ## 2026-08-30 — half a cell, and the engine that half-honours the convention
 
 Published run: [`2026-08-30-grid-registration/`](2026-08-30-grid-registration/).
-Engine tier, `spec_commit` [`86bae60`](../../../commit/86bae60), twenty-two families.
+Engine tier, `spec_commit` [`9322b17`](../../../commit/9322b17), twenty-two families.
 
 | system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
 |---|---|---|---|---|---|---|---|
-| MapSmith (main) | **0.00** | 1.00 | 23 | 2 | 46 | 5.9 s | 103 ms |
+| MapSmith (main) | **0.00** | 1.00 | 24 | 0 | 48 | 6.1 s | 100 ms |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 | 18 | 0.9 s | 17 ms |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 38 | 10 | 0.4 s | 5 ms |
 | whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 42 | 6 | 0.1 s | 9 ms |
@@ -94,13 +94,18 @@ a centre land one full cell out. An engine that half-honours a convention is
 harder to be careful with than one that ignores it, because the correction that
 fixes the second breaks on the first.
 
-**MapSmith reports `unsupported` twice, and stays 0.00 over the twenty-three it
-can attempt.** It has no operation that says *where* a cell is — it reads
-rasters, summarises them, samples them and derives vectors from them, and every
-one of those turns an index into a coordinate the same way rasterio does, so the
-convention question has never been asked in that codebase. The gap is left
-visible rather than filled with an adjacent answer: two `unsupported` verdicts
-say "we cannot attempt this", which is a smaller claim than 0.00 and a true one.
+**MapSmith reported `unsupported` twice when this run was first published, and
+answers both probes now.** The gap was the finding and it was worth publishing as
+one: no operation said *where* a cell is, and no line of MapSmith read the
+raster-type tag — the same absence twice, because nothing had ever needed to ask
+the question. Fixing it was not a patch at the point of failure. Every place that
+turned an index into a coordinate had the defect, so the decision moved into one
+module and a test now fails if a second copy appears.
+
+The two published numbers for MapSmith are unchanged at 0.00 and 1.00, and the
+denominator moved from 23 to 24. That is the only honest way this could improve:
+the rate was already zero, and what the trap actually bought was a column of the
+table nobody looks at.
 
 The trap was found while writing a contour operation for MapSmith. The engine
 placed every contour half a cell from where the elevation it named actually
