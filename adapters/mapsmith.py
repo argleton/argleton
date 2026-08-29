@@ -79,18 +79,45 @@ class Adapter:
         import geopandas as gpd
         from mapsmith.engines import vector
 
-        # `measure_length` writes the per-feature length into a column and the
-        # adapter adds it up, which is the composition the operation invites.
-        # It measures every feature it is given, polygons included — that is
-        # documented and deliberate, a perimeter being a real quantity — so
-        # whether this is right depends entirely on what the layer holds.
+        # `measure_length` measures every feature it is given, polygons
+        # included — documented and deliberate, a perimeter being a real
+        # quantity — so whether the total answers the question depends on what
+        # the layer holds, and MapSmith cannot know which features the question
+        # was about.
+        #
+        # What it does is say so. Since 2026-08-30 the manifest carries a
+        # non-critical check, `one_geometry_type_in_the_layer`, that fails when
+        # the layer holds more than one kind, with the reason and the remedy.
+        # Acting on it is the composition that check exists for — the same shape
+        # as picking a layer from `describe_routed` after trap 006, which is
+        # also a thing this adapter could not do until MapSmith made it
+        # possible.
+        source = workdir / probe.arguments[0]
         out = workdir / "_argleton_lengths.parquet"
         try:
-            vector.measure_length(
-                str(workdir / probe.arguments[0]), str(out), method="planar"
-            )
+            vector.measure_length(str(source), str(out), method="planar")
         except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
             return self._refusal_or_error(exc)
+
+        mixed = any(
+            "more than one kind of feature" in note for note in self._warnings(out)
+        )
+        if mixed:
+            # Select the features the question is about and ask again, which is
+            # what the hint says to do. Filtered by geometry rather than by an
+            # attribute: the geometry is what makes `length` mean something, and
+            # a LineString cannot be a building whatever a column says.
+            lines = gpd.read_parquet(source) if str(source).endswith(".parquet") \
+                else gpd.read_file(source)
+            lines = lines[lines.geom_type.isin(["LineString", "MultiLineString"])]
+            selected = workdir / "_argleton_pipes.parquet"
+            lines.to_parquet(selected)
+            out = workdir / "_argleton_pipe_lengths.parquet"
+            try:
+                vector.measure_length(str(selected), str(out), method="planar")
+            except Exception as exc:  # noqa: BLE001
+                return self._refusal_or_error(exc)
+
         measured = gpd.read_parquet(out)
         column = "length_m" if "length_m" in measured.columns else measured.columns[-2]
         return Outcome(
