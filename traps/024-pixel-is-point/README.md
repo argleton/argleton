@@ -1,13 +1,16 @@
 # 024 — pixel is point
 
-**A grid whose own metadata says its values sit at the nodes, read by every
-coordinate helper as if they filled the cells.**
+**A grid whose own metadata says its values sit at the nodes, read by the
+coordinate helpers as if they filled the cells.**
 
 `hollow.tif` is an 8×8 digital elevation model at 30 m spacing, a shallow
 depression with exactly one lowest cell. The question is where that cell is.
 
-The right answer is an easting of **412090**. rasterio and a plain numpy
-composition both say **412105**. Whitebox says **412120**. Nothing warns.
+The right answer is an easting of **412090**. The composition almost everyone
+writes says **412105**, half a cell east. Whitebox says **412120**, a whole cell.
+Nothing warns either time — and a caller who reads one extra line of metadata
+gets it right, which is what makes this the caller's error rather than the
+library's.
 
 ## Why the file is not wrong
 
@@ -50,7 +53,7 @@ src.tags()["AREA_OR_POINT"]                   # 'Point'
 Same open dataset, same breath. The information survives all the way to the
 caller and is discarded in the last line.
 
-## Two engines, two different wrong answers
+## Three compositions, three answers
 
 | engine | answer | how far |
 |---|---|---|
