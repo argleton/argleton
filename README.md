@@ -259,9 +259,14 @@ thing it evaluates is easy to dismiss in one line — but pretending at
 independence we do not have would be worse than the problem. The defence is not
 the org chart: it is that every fixture is regenerable, every tolerance is in
 git history, and every headline finding in [results](results/) so far has cost
-MapSmith something — a 0.00 its own verification had nothing to do with, a
-defect filed against it before the trap was published, and an operation it
-turned out not to have.
+MapSmith something. **Six defects have gone back to it**: a 0.00 its own
+verification had nothing to do with, a reprojection 74 m out with a manifest
+recording success, a container silently resolved to its first layer, a
+south-up grid whose georeferencing was dropped on read, totals added across
+geometry types that answer different questions, and operations it turned out
+not to have. They are listed on
+[MapSmith's own page](https://github.com/mapsmith-ai/MapSmith#roadmap), where
+the list is kept.
 
 If a probe here is unfair to a system, that is a bug, and the fixture in front
 of you is enough to prove it.
