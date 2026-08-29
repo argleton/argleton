@@ -172,6 +172,21 @@ class Adapter:
         cells = int((band == wanted).sum())
         return Outcome(answer=float(cells * resolution * resolution))
 
+
+    def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        # Read the array, find the lowest cell, ask the library where it is.
+        # Three lines, and the third one is the whole probe: `xy` returns the
+        # centre of the cell under the pixel-is-area reading, always, whatever
+        # the file says about itself.
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            values = ds.read(1)
+            row, column = np.unravel_index(np.argmin(values), values.shape)
+            easting, _ = ds.xy(int(row), int(column))
+        return Outcome(answer=float(easting))
+
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import rasterio
 

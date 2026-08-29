@@ -1,0 +1,129 @@
+id         = "024-pixel-is-point"
+population = "trap"
+family     = "grid-registration"
+title      = "A grid that says its values are at the nodes, read as if they filled the cells"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "lowest_cell_easting(hollow.tif)"
+prompt = """
+hollow.tif is a digital elevation model of a shallow depression. It has exactly
+one lowest cell. Give the easting of that cell, in the coordinate system the
+file declares. Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 412090.0
+tolerance = 1.0
+derivation = """
+The file declares AREA_OR_POINT=Point, which is GeoTIFF's RasterPixelIsPoint:
+each value is a sample AT a grid node, not an average over a cell around it.
+Under that reading the tie point in the header IS the position of the value in
+pixel (0, 0), so the value in pixel (row r, column c) sits at
+
+  easting  = 412000 + 30 c
+  northing = 5108000 - 30 r
+
+The surface is z = 300 + 0.5 ((c - 3)^2 + (r - 2)^2) over 8 x 8 nodes at 30 m
+spacing, so the minimum is at r = 2, c = 3, it is 300.0 m, and it is strict: the
+next lowest value anywhere on the grid is 300.5 m. Which cell is lowest is
+therefore not a matter of interpolation, rounding or tie-breaking — it is one
+cell, by half a metre.
+
+  easting = 412000 + 30 * 3 = 412090
+
+No interpolation enters the question at all. That is deliberate: a probe that
+asked for a VALUE at a position could be answered correctly by either nearest
+neighbour or bilinear, and those two disagree wherever a half-cell shift would
+show. Asking for a POSITION isolates the registration and nothing else, which is
+why the tolerance can be 1 m rather than a band that admits several methods.
+
+The failure below is 15 m out, which is 15 tolerances."""
+
+[naive_failure]
+description = """
+Read the array, take argmin, convert the index back to a coordinate with the
+library's own helper:
+
+    with rasterio.open(path) as src:
+        a = src.read(1)
+        row, col = np.unravel_index(np.argmin(a), a.shape)
+        easting, northing = src.xy(row, col)
+
+`src.xy` returns the centre of the cell under the pixel-is-AREA reading, always.
+Measured on rasterio 1.5.1 against this file: 412105.0, where the node is at
+412090.0. Half a cell east and half a cell south, on a file whose own metadata
+says the values are at the nodes.
+
+The tag is not hidden and it is not lost. `src.tags()["AREA_OR_POINT"]` returns
+"Point" from the same open dataset, in the same breath — GDAL reads the GeoTIFF
+raster-type key faithfully, exposes it, and documents that it does not adjust
+the geotransform for it. So the information survives all the way to the caller
+and is discarded in the last line, by a helper whose name gives no hint that it
+has taken a side.
+
+Whitebox 2.0.6 lands in the same place by a different route, and its contours on
+this file come back on the node line rather than the cell line — which means a
+correction calibrated on an AREA-registered DEM turns a right answer into one
+that is a whole cell out. Two engines, two conventions, no error either time."""
+observed_value = 412105.0
+plausible      = true
+why_plausible  = """
+An easting that differs in its last two digits. There is nothing to notice: the
+number has the right magnitude, the right number of digits, lands inside the
+raster, and inside the depression. Plotted, the point falls in the hollow.
+
+Fifteen metres is the dangerous size for exactly the reason a hundred metres is
+not. It is smaller than the error of the handheld GPS somebody will use to walk
+to it, so a field crew sent to the coordinates finds the sinkhole, confirms it,
+and reports back that the position was right. It is larger than every tolerance
+that matters afterwards: a borehole, a pole, a service trench, a property corner,
+the cell of any 10 m grid this gets joined to.
+
+And it is systematic rather than random. Every position derived from this DEM
+moves the same way, so nothing looks inconsistent — the whole analysis is
+internally coherent and uniformly fifteen metres from the ground. Two datasets
+built this way agree with each other perfectly and disagree with the world."""
+derivation = """
+The pixel-is-area reading places the tie point at the upper-left CORNER of pixel
+(0, 0), so cell centres are at
+
+  easting  = 412000 + 30 c + 15
+  northing = 5108000 - 30 r - 15
+
+and the lowest cell, still (2, 3), is reported at 412105.0. The difference from
+the truth is exactly half the cell size, 15 m, in each axis — not an
+approximation, and not dependent on the values in the grid."""
+
+[refusal]
+accept_if_mentions = ["area_or_point", "pixel is point", "pixelispoint", "pixel-is-point", "registration", "half a cell", "half-cell", "grid registration", "cell centre", "cell center", "node", "raster type"]
+
+[provenance]
+source = """
+The GeoTIFF specification defines two raster types: RasterPixelIsArea, where a
+value describes the cell it fills, and RasterPixelIsPoint, where it is a sample
+at a grid node. They differ by half a pixel in each axis, and the choice is
+recorded in the file (GeoTIFF 1.1, GTRasterTypeGeoKey; OGC 19-008r4).
+
+GDAL reads that key and exposes it as the AREA_OR_POINT metadata item, and its
+documentation is explicit that the geotransform is NOT adjusted for it: the
+value is reported and the caller decides. rasterio inherits that behaviour, so
+`src.tags()` tells you the convention and `src.xy()` ignores it, from the same
+dataset object.
+
+This is not a legacy corner. USGS elevation products — the 3DEP/NED lineage — are
+pixel-is-point, and so are many national DEMs; the ESRI ASCII grid format is
+area-registered by convention and GMT grids can be either. Reprojecting or
+resampling one into the other without accounting for the half cell is a standard
+way to acquire a fifteen-metre systematic shift on a 30 m grid.
+
+Measured for this probe on 2026-08-30: rasterio 1.5.1 reports the tag as "Point"
+and returns the area-registered centre from `xy()`; whitebox-workflows 2.0.6
+places its contours on this file a full cell from where a correction calibrated
+on an area-registered DEM expects them. Both engines answer, neither warns."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+rasterio = "1.5.1"
+"whitebox-workflows" = "2.0.6"

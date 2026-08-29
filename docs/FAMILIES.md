@@ -1,8 +1,8 @@
 # Families, and what is actually covered
 
-Twenty-six families are on the list — twelve planned at the start, fourteen added
+Twenty-seven families are on the list — twelve planned at the start, fifteen added
 from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty-one are implemented.** This page exists so that
+themselves warn about. **Twenty-two are implemented.** This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -36,12 +36,23 @@ cannot read as ten independent findings.
 | 22 | `aggregation-weighting` | [017](../traps/017-aggregation-weighting/) + [c017](../clean/c017-equal-populations/) | 13.67% unemployment instead of 1.38% | Averaging rates treats a town of a thousand as equal to a city of a hundred thousand, and both figures describe a plausible region |
 | 23 | `tabular-join` | [018](../traps/018-join-key-typing/) + [c018](../clean/c018-plain-keys/), [020](../traps/020-join-cardinality/) + [c020](../clean/c020-one-owner-each/) | 62000 people instead of 100000; 65000 m² of land instead of 50000 | A CSV reader turns "001" into 1 and four municipalities leave the join silently; a one-to-many join multiplies the land and the sum counts it twice |
 
+| 27 | `grid-registration` | [024](../traps/024-pixel-is-point/) + [c024](../clean/c024-pixel-is-area/) | easting 412105 instead of 412090 — and 412120 from a second engine | The file says `AREA_OR_POINT=Point` and the library hands you the tag from the same object whose coordinate helper ignores it. Half a cell is 15 m on a 30 m DEM: smaller than the GPS a crew walks in with, larger than every tolerance afterwards, and systematic, so the whole analysis stays internally consistent |
+
 Families 13 to 23 were not in the original design. 13 came from building family
 3 (`linear-units`), on noticing that a unit label can be *true* while the plane
 it measures is not the ground; 14 from writing a resampling operation and asking
 what its output alphabet is allowed to contain; 15 to 23 from a survey of what
 the archives, the libraries and their own documentation warn about — 47 candidate
 mechanisms, of which these are the ones whose truth is arithmetic.
+
+Family 27 arrived differently again, and the way it arrived is the argument for
+building instruments before opinions. It came out of writing a contour operation
+for MapSmith: the engine placed every contour half a cell from where the
+elevation it named actually occurs, which was found by checking the output
+against the input rather than by reading the documentation. Asking how far that
+generalised produced the GeoTIFF raster-type key, a convention that is declared
+in the file, reported faithfully by every library, and honoured by none of the
+coordinate helpers built on top of them.
 
 Two of them are not geometric at all (`aggregation-weighting`, `tabular-join`),
 and that is deliberate: an agent joins attribute tables and aggregates columns
@@ -94,8 +105,8 @@ See [ADDING-A-TRAP.md](ADDING-A-TRAP.md).
 
 ## What this list does not claim
 
-That these twenty-six are the complete set. They are the families we can currently
-argue for, each with a source. A twenty-seventh that meets the four conditions
+That these twenty-seven are the complete set. They are the families we can currently
+argue for, each with a source. A twenty-eighth that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this
 list has entries, and being able to say which ones failed the conditions is

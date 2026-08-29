@@ -25,6 +25,24 @@ class Adapter:
             return Outcome(unsupported=True)
         return operation(probe, workdir)
 
+
+    def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
+        import numpy as np
+        import rasterio
+
+        # Careful rasterio, and careful is not enough here. The masked read, the
+        # explicit dtype, the index unpacked properly — and then `xy`, because
+        # `xy` is what rasterio offers for turning an index into a position and
+        # there is no argument on it that mentions registration.
+        #
+        # The tag is one call away on the same object. Nothing in the API
+        # suggests it belongs in this line, which is the finding.
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            values = ds.read(1, masked=True)
+            row, column = np.unravel_index(np.argmin(values), values.shape)
+            easting, _ = ds.xy(int(row), int(column))
+        return Outcome(answer=float(easting))
+
     def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio

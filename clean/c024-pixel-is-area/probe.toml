@@ -1,0 +1,52 @@
+id         = "c024-pixel-is-area"
+population = "clean"
+family     = "grid-registration"
+title      = "The same hollow on an ordinarily registered grid"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "lowest_cell_easting(hollow.tif)"
+prompt = """
+hollow.tif is a digital elevation model of a shallow depression. It has exactly
+one lowest cell. Give the easting of that cell, in the coordinate system the
+file declares. Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 412105.0
+tolerance = 1.0
+derivation = """
+The same surface as 024-pixel-is-point, the same tie point, the same 30 m
+spacing, the same strict minimum at row 2, column 3. One thing differs and it is
+the thing under test: this file declares AREA_OR_POINT=Area, the default and the
+ordinary case.
+
+Under that reading the tie point is the upper-left CORNER of pixel (0, 0), a
+value describes the cell it fills, and the position of a cell is its centre:
+
+  easting = 412000 + 30 * 3 + 15 = 412105
+
+Note what that is. It is exactly the number that is wrong on the trap. The pair
+is built so that the two correct answers are each other's failure, fifteen
+metres apart, from files that differ in one metadata tag."""
+
+[provenance]
+source = """
+Clean twin of 024-pixel-is-point, and the half of the pair that catches the
+over-correction.
+
+A system that has learned about pixel-is-point and now subtracts half a cell
+everywhere passes the trap and fails this. A system that never heard of it
+passes this and fails the trap. Only one that reads the tag answers both, which
+is the property being measured — and neither probe alone can distinguish it from
+a system that cannot read a DEM at all.
+
+The clean population exists for that reason generally: a silent-error rate is
+gameable by refusing everything, and a correction is gameable by applying it
+unconditionally. This pair closes both."""
+found_by = "mapsmith"
+date     = "2026-08-30"
+
+[provenance.engine_versions]
+rasterio = "1.5.1"
+"whitebox-workflows" = "2.0.6"
