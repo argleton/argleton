@@ -1,8 +1,8 @@
 # Families, and what is actually covered
 
-Twenty-four families are on the list — twelve planned at the start, twelve added
+Twenty-six families are on the list — twelve planned at the start, fourteen added
 from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty are implemented.** This page exists so that
+themselves warn about. **Twenty-one are implemented.** This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -18,6 +18,7 @@ cannot read as ten independent findings.
 | 3 | `linear-units` | [002](../traps/002-feet-as-metres/) + [c002](../clean/c002-projected-area/) | 100 ha instead of 9.29 ha | Both are ordinary parcels; they differ by 3.28², a factor nothing downstream questions |
 | 4 | `mismatched-crs` | [004](../traps/004-mismatched-crs-join/) + [c004](../clean/c004-points-in-polygon/) | 0 points in the zone instead of 12 | An empty spatial result is a finding, not an error — "no wells inside the zone" reads as good news, and nothing downstream questions an empty join |
 | 25 | `positional-pairing` | [022](../traps/022-thiessen-pairing/) + [c022](../clean/c022-two-gauges/) | 554 mm of rainfall instead of 268 | The cells are all valid, they tile the extent, the count is right and the map is a Thiessen diagram — only the pairing between a cell and the row it carries is wrong, and the set of cells is identical either way, so nothing about the geometry can show it |
+| 26 | `axis-order` | [023](../traps/023-axis-order/) + [c023](../clean/c023-longitude-first/) | 16261 m² instead of 14042 | EPSG:4326 declares latitude first and every geometry library expects longitude first — both conventions are current, both are declared, and a corner schedule read in the order it is written puts the parcel 14 degrees away without leaving the valid range for either coordinate |
 | 24 | `datum-ballpark` | [021](../traps/021-ballpark-datum/) + [c021](../clean/c021-greenwich-variant/) | latitude 45.5 instead of 45.500669074, which is 74 m | The longitude is right, the output CRS is right, and the transformation the library chose reports its accuracy as -1 only if you ask after the fact |
 | 6 | `nodata` | [003](../traps/003-nodata-in-statistics/) + [c003](../clean/c003-raster-mean-nodata/) | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore in a volume or a flood level |
 | 7 | `invalid-geometry` | [005](../traps/005-bowtie-area/) + [c005](../clean/c005-polygon-area/) | 2400 m² instead of 5100 m² | The signed-shoelace artifact of a self-crossing ring: no exception, no warning, and both numbers are ordinary parcels |
@@ -93,8 +94,8 @@ See [ADDING-A-TRAP.md](ADDING-A-TRAP.md).
 
 ## What this list does not claim
 
-That these twenty-five are the complete set. They are the families we can currently
-argue for, each with a source. A twenty-sixth that meets the four conditions
+That these twenty-six are the complete set. They are the families we can currently
+argue for, each with a source. A twenty-seventh that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this
 list has entries, and being able to say which ones failed the conditions is

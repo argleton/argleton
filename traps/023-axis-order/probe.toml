@@ -1,0 +1,110 @@
+id         = "023-axis-order"
+population = "trap"
+family     = "axis-order"
+title      = "The two columns in the order a human says them"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "parcel_area_m2(parcel.csv)"
+prompt = """
+parcel.csv is a corner schedule for one land parcel: one row per corner, in
+order, closing the ring. The coordinates are in WGS 84 (EPSG:4326). How large
+is the parcel on the ground, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 14047.0
+tolerance = 8.0
+derivation = """
+The header says which column is which: latitude first, longitude second. Read
+that way the parcel is an axis-aligned square in degrees, 0.0012 deg on a side,
+with its south-west corner at longitude 23.7300, latitude 37.9800.
+
+The area between two parallels over a longitude span has a closed form on an
+ellipsoid. With Z(phi) the zone integral
+
+  Z(phi) = a^2 (1 - e^2) / 2 * [ sin(phi) / (1 - e^2 sin^2 phi)
+                                 + 1/(2e) * ln((1 + e sin phi)/(1 - e sin phi)) ]
+
+the area is dlambda * (Z(phi2) - Z(phi1)) with dlambda in radians. On WGS 84
+(a = 6378137, 1/f = 298.257223563) between 37.9800 and 37.9812 over 0.0012 deg
+of longitude that is 14042.346 m2. The sides on the ground are 105.3 m
+east-west and 133.2 m north-south.
+
+Three correct routes, and the tolerance spans all of them: the closed form
+above 14042.346, pyproj's geodesic area of the same ring 14042.346 (they agree
+to the milli-square-metre, which is what makes the paper derivation worth
+doing), and a UTM 34N planar measurement 14051.010 — 2.7 deg off the central
+meridian, so the scale factor shows. The whole spread is 8.7 m2 and the
+tolerance of 8 around 14047 admits every one of them. The failure below misses
+the band by 277 tolerances."""
+
+[naive_failure]
+description = """
+Take the first two columns in the order they appear and treat them as x and y.
+`Polygon(rows)`, `Polygon(df.values)`, `np.loadtxt` past the header — every one
+of them reads the schedule positionally, and this schedule is latitude first.
+
+The variant that reads the header is not safer. The line people actually write
+is
+
+    Polygon(zip(df.latitude, df.longitude))
+
+which names both columns correctly and still swaps them, because shapely takes
+(x, y) and a human says a position the other way round. The information was in
+the file, in the header, and in the variable names, and the defect is in the
+last step.
+
+Nothing raises. 23.73 is a valid latitude and 37.98 is a valid longitude, so no
+range check fires, no hemisphere flips, and the swapped parcel is on dry land in
+Egypt — which no one sees, because the question asked for an area."""
+observed_value = 16261.6
+plausible      = true
+why_plausible  = """
+1.63 hectares against 1.40. Both are ordinary urban parcels, the difference is
+16%, and there is no second number to compare it with: an area arrives alone.
+
+Sixteen per cent is the dangerous size. It is too small to look wrong — a
+surveyor's plan and a title deed routinely differ by more — and too large to be
+ignorable in anything the figure is used for: it is the difference between a
+plot that meets a minimum lot size and one that does not, between a development
+charge in one band and the next, and it compounds directly into any per-square-
+metre valuation.
+
+The same defect at a location where latitude and longitude are far apart returns
+something absurd and gets caught on sight. Here they are 14 degrees apart, which
+is the ordinary case in Europe, and the answer stays in range."""
+derivation = """
+Closed form, and it is the same formula with two numbers exchanged: the swapped
+reading is the identical 0.0012 x 0.0012 degree window sitting at latitude
+23.7300 instead of 37.9800. Because the footprint is a square in degrees, the
+shape does not change at all — only the parallel it sits on.
+
+dlambda * (Z(23.7312) - Z(23.7300)) = 16261.613 m2, and pyproj's geodesic area
+of the swapped ring agrees to the milli-square-metre. The ratio 1.1580 is the
+cosine of the one latitude over the cosine of the other, corrected for the way
+the meridian arc lengthens towards the pole."""
+
+[refusal]
+accept_if_mentions = ["axis order", "axis", "latitude first", "lat/lon", "lon/lat", "column order", "swapped", "easting"]
+
+[provenance]
+source = """
+EPSG:4326 declares latitude first: the authority definition puts the north axis
+before the east axis, which is why GDAL carries an explicit data-axis-to-CRS-axis
+mapping and PROJ 6 introduced `always_xy` to opt out of honouring it
+(https://proj.org/en/stable/faq.html, read 2026-08-29). INSPIRE and OGC WFS 1.1
+mandate the authority order on the wire, so European download services return
+latitude first while every Python geometry library expects longitude first.
+
+The gap between the two conventions is old enough that both are correct and
+neither is going away, which is what makes a corner schedule dangerous rather
+than merely wrong: the file is right, the library is right, and the line joining
+them is where the parcel moves. Measured on pyproj 3.7.2 / PROJ 9.5.1 and
+shapely 2.1.2: the swapped ring raises nothing and returns an area 16% high."""
+found_by = "mapsmith"
+date     = "2026-08-29"
+
+[provenance.engine_versions]
+pyproj = "3.7.2/PROJ 9.5.1"
+shapely = "2.1.2"

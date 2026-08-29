@@ -238,3 +238,21 @@ class Adapter:
         if hit.empty:
             return Outcome(error="no Thiessen cell contains the site")
         return Outcome(answer=float(hit[field].iloc[0]))
+
+    def op_parcel_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import csv
+
+        from pyproj import Geod
+        from shapely.geometry import Polygon
+
+        # Read the corner schedule and build the ring: take the two coordinate
+        # columns in the order they appear, which is what `Polygon(df.values)`,
+        # `np.loadtxt` past the header and every csv.reader loop do.
+        #
+        # The header names both columns. Nobody asks it which one is x.
+        with (workdir / probe.arguments[0]).open(encoding="utf-8") as handle:
+            rows = list(csv.reader(handle))
+        ring = [(float(row[1]), float(row[2])) for row in rows[1:]]
+        return Outcome(answer=abs(Geod(ellps="WGS84").geometry_area_perimeter(
+            Polygon(ring)
+        )[0]))

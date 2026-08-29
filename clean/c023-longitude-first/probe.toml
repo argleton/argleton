@@ -1,0 +1,43 @@
+id         = "c023-longitude-first"
+population = "clean"
+family     = "axis-order"
+title      = "The same corner schedule, longitude first"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "parcel_area_m2(parcel.csv)"
+prompt = """
+parcel.csv is a corner schedule for one land parcel: one row per corner, in
+order, closing the ring. The coordinates are in WGS 84 (EPSG:4326). How large
+is the parcel on the ground, in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 14047.0
+tolerance = 8.0
+derivation = """
+The same parcel as 023-axis-order and therefore the same number: an axis-aligned
+square of 0.0012 deg with its south-west corner at longitude 23.7300, latitude
+37.9800, whose ellipsoidal area is 14042.346 m2 by the zone integral, 14042.346
+by pyproj's geodesic area and 14051.010 in the UTM 34N plane. The tolerance of 8
+around 14047 admits all three.
+
+What changed is the column order in the file: longitude first, as the header
+says. Reading the two columns in the order they appear is correct here."""
+
+[provenance]
+source = """
+Clean twin of 023-axis-order: the same question, the same footprint, the same
+five rows, the same header line naming both columns. One thing differs, and it
+is the thing under test — which of the two declared conventions the file uses.
+
+Without this twin a silent-error rate on the family could not be told apart from
+a system that cannot read a corner schedule at all. A system that answers this
+and fails 023 mishandles axis order; one that fails both cannot do the task, and
+that is a different and lesser finding."""
+found_by = "mapsmith"
+date     = "2026-08-29"
+
+[provenance.engine_versions]
+pyproj = "3.7.2/PROJ 9.5.1"
+shapely = "2.1.2"

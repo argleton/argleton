@@ -531,3 +531,47 @@ class Adapter:
             answer=float(values.iloc[0]),
             warnings=self._warnings(cells) + self._warnings(joined),
         )
+
+    def op_parcel_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import pandas as pd
+        from mapsmith.engines import vector
+
+        # `parse_coordinates` has no positional path: `latitude_columns` and
+        # `longitude_columns` are both required and neither has a default, so
+        # the caller cannot hand it two columns and let it guess which is which.
+        # That was written for the DMS trap — "the caller says which, because the
+        # file cannot" — and it closes this one for the same reason rather than
+        # by luck.
+        table = workdir / probe.arguments[0]
+        columns = {name.strip().lower() for name in pd.read_csv(table, nrows=1).columns}
+        for lon_name, lat_name in (("longitude", "latitude"), ("lon", "lat")):
+            if {lon_name, lat_name} <= columns:
+                break
+        else:
+            return Outcome(
+                error="the corner schedule does not name its coordinate columns"
+            )
+
+        points = workdir / "_argleton_corners.parquet"
+        gathered = workdir / "_argleton_gathered.parquet"
+        ring = workdir / "_argleton_ring.parquet"
+        measured = workdir / "_argleton_area.parquet"
+        try:
+            vector.parse_coordinates(
+                str(table), str(points),
+                latitude_columns=lat_name, longitude_columns=lon_name,
+            )
+            # Dissolve first: `hull` works per feature, so five corner rows
+            # would give five hulls of one point each and an area of zero.
+            # MapSmith says so rather than returning the zero quietly —
+            # "0/5 features have polygonal geometry ... check whether the layer
+            # you meant is the polygon one" — which is how this composition got
+            # fixed instead of published.
+            vector.dissolve(str(points), str(gathered))
+            # The corners are convex and given in order, so the hull is the
+            # parcel. `hull` states which hull it took.
+            vector.hull(str(gathered), str(ring), kind="convex")
+            result = vector.measure_area(str(ring), str(measured), method="geodesic")
+        except Exception as failure:  # noqa: BLE001 - the adapter reports, it does not raise
+            return Outcome(error=f"{type(failure).__name__}: {failure}")
+        return Outcome(answer=float(result["total_area_m2"]))

@@ -207,3 +207,31 @@ class Adapter:
                 "assignment is not unique"
             )
         return Outcome(answer=float(gauges.loc[nearest, field]))
+
+    def op_parcel_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import csv
+
+        from pyproj import Geod
+        from shapely.geometry import Polygon
+
+        # The header is the contract. A corner schedule can be written either
+        # way round — EPSG:4326 declares latitude first and every geometry
+        # library expects longitude first, and both conventions are current —
+        # so the column NAMES decide, not their positions.
+        with (workdir / probe.arguments[0]).open(encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+        names = {name.strip().lower() for name in rows[0]}
+        for lon_name, lat_name in (("longitude", "latitude"), ("lon", "lat"), ("x", "y")):
+            if {lon_name, lat_name} <= names:
+                break
+        else:
+            return Outcome(
+                error="the corner schedule does not name its coordinate columns, "
+                "so which one is longitude cannot be established"
+            )
+        ring = [(float(row[lon_name]), float(row[lat_name])) for row in rows]
+        # Geodesic on the ellipsoid the CRS names: no map plane, so no
+        # projection distortion enters the answer.
+        return Outcome(answer=abs(Geod(ellps="WGS84").geometry_area_perimeter(
+            Polygon(ring)
+        )[0]))

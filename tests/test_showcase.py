@@ -26,7 +26,8 @@ NUMBER_WORDS = {
     "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
     "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
     "twenty-one": 21, "twenty-two": 22, "twenty-three": 23,
-    "twenty-four": 24, "twenty-five": 25,
+    "twenty-four": 24, "twenty-five": 25, "twenty-six": 26,
+    "twenty-seven": 27, "twenty-eight": 28,
 }
 
 
@@ -164,7 +165,11 @@ def test_the_family_counts_agree_everywhere():
     families_md = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
     planned = len(set(re.findall(r"^\|\s*(\d+)\s*\|", families_md, re.MULTILINE)))
 
-    stated = re.search(r"\*\*([A-Za-z]+) are implemented\.\*\*", families_md)
+    # `[A-Za-z-]+`, with the hyphen: the count passed twenty and the words grew
+    # one. A pattern that silently stops matching is a check that silently stops
+    # checking, and this one would have gone quiet at exactly the moment the
+    # number started being easy to get wrong.
+    stated = re.search(r"\*\*([A-Za-z-]+) are implemented\.\*\*", families_md)
     assert stated, "FAMILIES.md no longer states how many families are implemented"
     assert NUMBER_WORDS[stated.group(1).lower()] == implemented, "FAMILIES.md implemented count"
 
