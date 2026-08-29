@@ -56,8 +56,8 @@ ok   trap  001-tiff-predictor             correct   1093.0
 ok   trap  003-nodata-in-statistics       correct   1000.0
 ok   trap  009-resampled-classes          correct   0.0
 ok   trap  010-scale-offset               correct   0.3333333333333334
-FAIL trap  024-pixel-is-point             silent_error   expected 412090.0 ± 1.0, got 412105.0
-silent_error_rate 0.2 over 5 traps  |  completion_rate 1.0 over 5 clean
+ok   trap  024-pixel-is-point             correct   412090.0
+silent_error_rate 0.0 over 5 traps  |  completion_rate 1.0 over 5 clean
 
 $ argleton --adapter engine:whitebox
 ok   clean c001-raster-mean          correct        1093.0
@@ -76,12 +76,12 @@ The two summary numbers say different things and both matter: this engine can do
 every task it was given (completion 1.0) *and* gets two of those files silently
 wrong (the 0.6667).
 
-The last probe is worth reading twice. Both engines answer it, both answer it
-differently, and both are wrong: the file declares that its values sit at grid
-nodes rather than filling cells, rasterio's coordinate helper ignores that and
-lands half a cell out, and whitebox lands a whole cell out by half-honouring the
-same convention. The clean twin above — same surface, same tie point, one
-different tag — they both get right.
+The last probe is worth reading twice, because the two engines part company on
+it. The file declares that its values sit at grid nodes rather than filling
+cells. The careful rasterio composition reads that declaration and answers
+correctly; whitebox reacts to it in the direction that lands a whole cell out,
+at 412120 where the truth is 412090. Both get the clean twin — same surface,
+same tie point, one different tag — right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
 report it — and it is the most useful one here. It scores **0.9583 / 1.0**: it
@@ -147,7 +147,7 @@ numbers do not say](results/).
 |---|---|---|---|---|
 | MapSmith (main) | 0.00 | 1.00 | 23 | 2 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 |
-| rasterio 1.5.1 (careful composition) | 0.2 | 1.00 | 5 | 38 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 38 |
 | whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 42 |
 | naive composition | 0.9583 | 1.00 | 24 | 0 |
 

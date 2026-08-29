@@ -49,13 +49,13 @@ maintainer has not already been told.
 ## 2026-08-30 — half a cell, and the engine that half-honours the convention
 
 Published run: [`2026-08-30-grid-registration/`](2026-08-30-grid-registration/).
-Engine tier, `spec_commit` [`b73aeb6`](../../../commit/b73aeb6), twenty-two families.
+Engine tier, `spec_commit` [`86bae60`](../../../commit/86bae60), twenty-two families.
 
 | system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
 |---|---|---|---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 23 | 2 | 46 | 5.9 s | 103 ms |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 | 18 | 0.9 s | 17 ms |
-| rasterio 1.5.1 (careful composition) | 0.2 | 1.00 | 5 | 38 | 10 | 0.4 s | 5 ms |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 5 | 38 | 10 | 0.4 s | 5 ms |
 | whitebox-workflows 2.0.6 | 0.6667 | 1.00 | 3 | 42 | 6 | 0.1 s | 9 ms |
 | naive composition | 0.9583 | 1.00 | 24 | 0 | 48 | 1.4 s | 11 ms |
 
@@ -67,22 +67,32 @@ they differ by half a pixel in each axis. USGS elevation products are the second
 kind. `hollow.tif` declares it.
 
 Asked where the lowest cell of an 8×8 DEM at 30 m spacing is, the correct
-easting is **412090**. rasterio and the naive composition both answer **412105**,
-half a cell east. Whitebox answers **412120** — a whole cell.
+easting is **412090**. The naive composition answers **412105**, half a cell
+east. Whitebox answers **412120** — a whole cell. The careful rasterio
+composition answers **412090**, and that is the row that makes the family worth
+having.
 
-**Whitebox is the finding.** It reacts to the tag: its reported grid origin
-shifts on this file where it does not on the area-registered twin. But it shifts
-in the direction that makes a caller who then adds the usual half cell for a
-centre land one full cell out. An engine that half-honours a convention is worse
-than one that ignores it, because the correction that fixes the second breaks on
-the first — and rasterio's is the honest failure of the two, since `src.xy()` has
-never claimed to read the tag while `src.tags()` hands it to you from the same
-object.
+**The careful adapter passes because four lines are enough.** Read
+`src.tags()["AREA_OR_POINT"]`, subtract half a cell when it says `Point`. The
+information is on the same open dataset that `src.xy()` reads from, acting on it
+is cheap, and nothing in the API prompts you to — which is what makes this the
+caller's error rather than the library's, and what separates it from a defect we
+could only report upstream.
 
-**rasterio moves off 0.00 for the first time**, from 0.00 over four traps to 0.20
-over five. Nothing about rasterio changed; a fifth trap now applies to it. That
-is what a rate over a small denominator does, and it is why the denominator is in
-the table.
+It also cost this suite a red build to get right. The first run of this trap had
+the careful rasterio adapter at 0.20, because the adapter used `xy` and stopped
+there; the CI gate that requires the careful adapters to stay at zero went red
+and was correct to. *Careful* is defined in that gate as composing a library the
+way somebody who knows it does, in the cases where the library offers the right
+path. rasterio offers it. The adapter was not careful, and the gate — not a
+reviewer — is what said so.
+
+**Whitebox is the other case, and it is worse.** It reacts to the tag: its
+reported grid origin shifts on this file where it does not on the twin. But it
+shifts in the direction that makes a caller who then adds the usual half cell for
+a centre land one full cell out. An engine that half-honours a convention is
+harder to be careful with than one that ignores it, because the correction that
+fixes the second breaks on the first.
 
 **MapSmith reports `unsupported` twice, and stays 0.00 over the twenty-three it
 can attempt.** It has no operation that says *where* a cell is — it reads

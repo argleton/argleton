@@ -1,27 +1,26 @@
 {
   "system": "rasterio 1.5.1 (careful composition)",
   "adapter": "engine:rasterio",
-  "spec_commit": "b73aeb6",
+  "spec_commit": "86bae60",
   "date": "2026-08-29",
-  "silent_error_rate": 0.2,
+  "silent_error_rate": 0.0,
   "completion_rate": 1.0,
   "traps_run": 5,
   "clean_run": 5,
   "unsupported": 38,
   "timing": {
     "probes": 10,
-    "total_ms": 369.2,
-    "median_ms": 4.7,
-    "first_probe_ms": 294.2,
+    "total_ms": 410.4,
+    "median_ms": 6.0,
+    "first_probe_ms": 321.0,
     "slowest": {
       "probe_id": "c001-raster-mean",
-      "ms": 294.2
+      "ms": 321.0
     },
     "adapter_breakdown_ms": null
   },
   "verdict_counts": {
-    "correct": 9,
-    "silent_error": 1,
+    "correct": 10,
     "unsupported": 38
   },
   "by_family": {
@@ -63,7 +62,7 @@
     },
     "grid-registration": {
       "probes": 2,
-      "silent_errors": 1
+      "silent_errors": 0
     },
     "implicit-parameter-units": {
       "probes": 2,
@@ -122,7 +121,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 294.2,
+      "duration_ms": 321.0,
       "timings": null
     },
     {
@@ -142,7 +141,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 24.3,
+      "duration_ms": 27.6,
       "timings": null
     },
     {
@@ -172,7 +171,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -202,7 +201,7 @@
       "verdict": "correct",
       "detail": "900.0",
       "answer": 900.0,
-      "duration_ms": 8.0,
+      "duration_ms": 6.5,
       "timings": null
     },
     {
@@ -212,7 +211,7 @@
       "verdict": "correct",
       "detail": "0.5000000093132254",
       "answer": 0.5000000093132254,
-      "duration_ms": 3.7,
+      "duration_ms": 5.5,
       "timings": null
     },
     {
@@ -232,7 +231,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -242,7 +241,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -252,7 +251,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -272,7 +271,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -292,7 +291,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -302,7 +301,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -342,7 +341,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -352,7 +351,7 @@
       "verdict": "correct",
       "detail": "412105.0",
       "answer": 412105.0,
-      "duration_ms": 3.8,
+      "duration_ms": 3.9,
       "timings": null
     },
     {
@@ -362,7 +361,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 4.4,
+      "duration_ms": 5.1,
       "timings": null
     },
     {
@@ -382,7 +381,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 18.1,
+      "duration_ms": 25.2,
       "timings": null
     },
     {
@@ -392,7 +391,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -402,7 +401,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -412,7 +411,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -422,7 +421,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -432,7 +431,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -442,7 +441,7 @@
       "verdict": "correct",
       "detail": "0.0",
       "answer": 0.0,
-      "duration_ms": 4.9,
+      "duration_ms": 4.2,
       "timings": null
     },
     {
@@ -452,7 +451,7 @@
       "verdict": "correct",
       "detail": "0.3333333333333334",
       "answer": 0.3333333333333334,
-      "duration_ms": 4.0,
+      "duration_ms": 4.7,
       "timings": null
     },
     {
@@ -462,7 +461,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -512,7 +511,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.3,
       "timings": null
     },
     {
@@ -522,7 +521,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -542,7 +541,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -562,7 +561,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -589,10 +588,10 @@
       "probe_id": "024-pixel-is-point",
       "population": "trap",
       "family": "grid-registration",
-      "verdict": "silent_error",
-      "detail": "expected 412090.0 \u00b1 1.0, got 412105.0 \u2014 this is the predicted naive failure",
-      "answer": 412105.0,
-      "duration_ms": 3.8,
+      "verdict": "correct",
+      "detail": "412090.0",
+      "answer": 412090.0,
+      "duration_ms": 6.7,
       "timings": null
     }
   ]

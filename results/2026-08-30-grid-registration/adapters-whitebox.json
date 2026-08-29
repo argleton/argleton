@@ -1,7 +1,7 @@
 {
   "system": "whitebox-workflows 2.0.6",
   "adapter": "engine:whitebox",
-  "spec_commit": "b73aeb6",
+  "spec_commit": "86bae60",
   "date": "2026-08-29",
   "silent_error_rate": 0.6667,
   "completion_rate": 1.0,
@@ -10,12 +10,12 @@
   "unsupported": 42,
   "timing": {
     "probes": 6,
-    "total_ms": 60.0,
-    "median_ms": 8.8,
-    "first_probe_ms": 14.6,
+    "total_ms": 56.8,
+    "median_ms": 7.7,
+    "first_probe_ms": 16.1,
     "slowest": {
       "probe_id": "003-nodata-in-statistics",
-      "ms": 18.4
+      "ms": 20.3
     },
     "adapter_breakdown_ms": null
   },
@@ -122,7 +122,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 14.6,
+      "duration_ms": 16.1,
       "timings": null
     },
     {
@@ -142,7 +142,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 18.0,
+      "duration_ms": 12.3,
       "timings": null
     },
     {
@@ -182,7 +182,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -192,7 +192,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -202,7 +202,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -222,7 +222,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -232,7 +232,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -252,7 +252,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -262,7 +262,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -272,7 +272,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -282,7 +282,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -292,7 +292,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -302,7 +302,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -312,7 +312,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -352,7 +352,7 @@
       "verdict": "correct",
       "detail": "412105.0",
       "answer": 412105.0,
-      "duration_ms": 3.0,
+      "duration_ms": 3.1,
       "timings": null
     },
     {
@@ -362,7 +362,7 @@
       "verdict": "silent_error",
       "detail": "expected 1093.0 \u00b1 0.001, got 36.09375 \u2014 this is the predicted naive failure",
       "answer": 36.09375,
-      "duration_ms": 3.0,
+      "duration_ms": 2.3,
       "timings": null
     },
     {
@@ -382,7 +382,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 18.4,
+      "duration_ms": 20.3,
       "timings": null
     },
     {
@@ -392,7 +392,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -462,7 +462,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.1,
+      "duration_ms": 0.0,
       "timings": null
     },
     {
@@ -482,7 +482,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -492,7 +492,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -542,7 +542,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -552,7 +552,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -562,7 +562,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -572,7 +572,7 @@
       "verdict": "unsupported",
       "detail": "the adapter does not implement this operation",
       "answer": null,
-      "duration_ms": 0.0,
+      "duration_ms": 0.1,
       "timings": null
     },
     {
@@ -592,7 +592,7 @@
       "verdict": "silent_error",
       "detail": "expected 412090.0 \u00b1 1.0, got 412120.0",
       "answer": 412120.0,
-      "duration_ms": 3.0,
+      "duration_ms": 2.7,
       "timings": null
     }
   ]
