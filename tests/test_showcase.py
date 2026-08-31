@@ -452,7 +452,24 @@ def test_the_readme_names_the_release_that_reproduces_the_results():
         f"the README says release {stated.group(1)} reproduces the table; the "
         f"package in this tree is {shipped}"
     )
-    assert int(stated.group(2)) == traps, (
-        f"the README says that release carries {stated.group(2)} traps; this tree "
-        f"has {traps}"
+    # The released count and the checkout's count are allowed to differ — a trap
+    # lands before a release does — but the difference has to be DECLARED. The
+    # paragraph promises exactly that ("when the checkout runs ahead of the
+    # release this paragraph says so"), and until 2026-08-31 this check could
+    # not express it: it demanded the two numbers match, which would have forced
+    # either a stale README or a version number naming a release that does not
+    # exist on PyPI. Both are the failure the test was written against.
+    published = int(stated.group(2))
+    if published == traps:
+        return
+    ahead = re.search(r"this checkout has\s+(\d+)\s+traps", prose)
+    assert ahead, (
+        f"the README says release {shipped} carries {published} traps and this "
+        f"tree has {traps}, and nothing on the page says the checkout is ahead. "
+        "A reader who installs the release and cannot reproduce the table has "
+        "been told something untrue — which is the failure this suite names in "
+        "other people's work."
+    )
+    assert int(ahead.group(1)) == traps, (
+        f"the README says the checkout has {ahead.group(1)} traps; it has {traps}"
     )

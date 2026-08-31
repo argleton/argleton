@@ -45,6 +45,25 @@ class Adapter:
     # ---- tier A ---------------------------------------------------------------
 
 
+    def op_raster_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # `describe_dataset` is the operation a caller reaches for, and it
+        # reports the resolution and the size, which is the area. What it does
+        # not report is WHICH georeferencing it read — and on this fixture two
+        # of them disagree. Wired here before the fix rather than after, so the
+        # measurement exists: building the correction first would mean never
+        # knowing whether the probe would have caught it.
+        from mapsmith.engines import dispatch
+
+        described = dispatch.describe_routed(str(workdir / probe.arguments[0]))
+        resolution = described["resolution"]
+        area = (
+            abs(resolution["x"] * resolution["y"])
+            * described["width"]
+            * described["height"]
+        )
+        return Outcome(answer=float(area))
+
+
     def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
         # `unsupported` here until 2026-08-30, and the gap was the finding: no
         # operation reported WHERE a cell is, and no line of MapSmith read the

@@ -1,0 +1,39 @@
+id         = "c030-single-georeferencing"
+population = "clean"
+family     = "hidden-configuration"
+title      = "The same raster with only its own georeferencing"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "raster_ground_area_m2(terrain.tif)"
+prompt = """
+terrain.tif is a 20 by 20 elevation raster. Its georeferencing was corrected
+after delivery and the correction is in the GeoTIFF itself, so use the
+georeferencing stored in the GeoTIFF. What ground area does the raster cover,
+in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 40000.0
+tolerance = 1.0
+derivation = """
+The same raster as trap 030 and therefore the same answer, which is the point of
+a clean twin: 10 m cells, 20 of them a side, 200 x 200 = 40000 square metres.
+
+Here there is only one georeferencing to read, so the question has one answer
+whichever precedence the reader applies and whatever the environment says. A
+system that gets 40000 here and something else on the trap has been changed by
+the sidecar; a system that misses both could not measure a raster in the first
+place, and that is the distinction this file exists to make."""
+
+[provenance]
+source = """
+A GeoTIFF with its own georeferencing and nothing beside it: the ordinary case,
+and the one that has to be measured alongside the trap for the trap's rate to
+mean anything. Same size, same cells, same origin, same CRS, same values — the
+only difference is the file that is not there."""
+found_by = "mapsmith"
+date     = "2026-08-31"
+
+[provenance.engine_versions]
+rasterio = "1.5.1/GDAL 3.12.4"

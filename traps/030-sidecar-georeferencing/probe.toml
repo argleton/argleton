@@ -1,0 +1,95 @@
+id         = "030-sidecar-georeferencing"
+population = "trap"
+family     = "hidden-configuration"
+title      = "Two georeferencings in one dataset, and no answer says which it used"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "raster_ground_area_m2(terrain.tif)"
+prompt = """
+terrain.tif is a 20 by 20 elevation raster. Its georeferencing was corrected
+after delivery and the correction is in the GeoTIFF itself, so use the
+georeferencing stored in the GeoTIFF. What ground area does the raster cover,
+in square metres? Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 40000.0
+tolerance = 1.0
+derivation = """
+The GeoTIFF's own geotransform declares 10 m cells at origin (500000, 5030000)
+on EPSG:32632. Twenty cells of 10 m is 200 m on each side, so the raster covers
+200 x 200 = 40000 square metres.
+
+Closed form, and it does not depend on reading the file: the fixture writes that
+geotransform and `build.py` states both numbers as constants. The tolerance of
+1 m2 exists only to absorb float formatting; every correct route lands exactly
+on 40000."""
+
+[naive_failure]
+description = """
+Open the raster and read its transform. That is one line, it raises nothing, and
+it returns the sidecar's georeferencing rather than the file's: GDAL's
+documented precedence puts a `.aux.xml` ahead of the GeoTIFF's own tags, because
+a sidecar is how a user overrides georeferencing they know to be wrong.
+
+So the answer comes from a file the caller never mentioned, and the cells are
+20 m instead of 10 m. Nothing in the output names the sidecar, names the
+precedence, or reports which of the two sources was used. The same call with
+`GDAL_PAM_ENABLED=NO` in the environment returns the other number, equally
+silently."""
+observed_value = 160000.0
+plausible      = true
+why_plausible  = """
+160000 m2 is 16 hectares: an ordinary size for an elevation tile, and exactly
+what a 20 by 20 grid of 20 m cells should cover. Every internal consistency
+check passes — the cell size, the row count and the area agree with each other,
+because they all come from the same sidecar.
+
+There is nothing to notice. The number is not round in a suspicious way, not
+absurd, not negative, and not off by a factor a person would recognise: four is
+what you get from cells twice as wide, and nobody knows the cells are twice as
+wide. A competent reader seeing 160000 has no reason to doubt it, which is the
+admission criterion of this suite.
+
+The position is wrong too, by a hundred kilometres, and that is the part that
+travels: an area is reported once, but an origin propagates into every clip,
+every join and every map."""
+derivation = """
+Closed form: the sidecar declares 20 m cells, so 20 cells make 400 m a side and
+400 x 400 = 160000 m2 — four times the truth, because area goes as the square of
+the cell. The origin moves 100000 m east and 10000 m north, which is the
+difference between the two declared origins."""
+
+[refusal]
+accept_if_mentions = [
+    "aux.xml", "sidecar", "PAM", "two georeferencing", "georeferencing sources",
+    "GDAL_GEOREF_SOURCES", "overrides", "which georeferencing",
+]
+
+[provenance]
+source = """
+GDAL documents the precedence: `GDAL_GEOREF_SOURCES` defaults to
+`PAM,INTERNAL,TABFILE,WORLDFILE,NONE` for GeoTIFF, so a `.aux.xml` beats the
+file's own tags, and `GDAL_PAM_ENABLED=NO` disables the sidecar entirely
+(https://gdal.org/en/stable/drivers/raster/gtiff.html, read 2026-08-31).
+
+This is not a bug and there is nothing upstream to fix: a sidecar is the
+mechanism by which a user corrects georeferencing, so it has to win. Both
+answers are the library behaving exactly as documented, which is what makes
+this a field in a record rather than an issue in a tracker — there is nothing
+to fix, and everything to state.
+
+Measured on this fixture with rasterio 1.5.1 / GDAL 3.12.4: the default returns
+20 m cells at (600000, 5040000) and `GDAL_PAM_ENABLED=NO` returns 10 m cells at
+(500000, 5030000). Same file, same line of code, four times the area.
+
+The manifest specification carries the same demonstration in section 3.8
+(`environment`), which is the field a producer would use to say which source it
+read. This probe is what makes that section a measurement instead of an
+argument."""
+found_by = "mapsmith"
+date     = "2026-08-31"
+
+[provenance.engine_versions]
+rasterio = "1.5.1/GDAL 3.12.4"

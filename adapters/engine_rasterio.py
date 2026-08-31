@@ -26,6 +26,29 @@ class Adapter:
         return operation(probe, workdir)
 
 
+    def op_raster_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import rasterio
+
+        path = workdir / probe.arguments[0]
+        # The task says to use the georeferencing stored in the GeoTIFF, and
+        # honouring that means knowing whether anything else is claiming to
+        # georeference the same file. A `.aux.xml` beside it does, and by GDAL's
+        # documented precedence it wins unless asked otherwise.
+        sidecar = path.with_suffix(path.suffix + ".aux.xml")
+        opened_with = "internal georeferencing"
+        with rasterio.Env(GDAL_GEOREF_SOURCES="INTERNAL"), rasterio.open(path) as ds:
+            cell_area = abs(ds.transform.a * ds.transform.e)
+            area = float(cell_area * ds.width * ds.height)
+        said = [f"read with {opened_with}"]
+        if sidecar.exists():
+            # Said out loud: the number is one of two the file can produce, and
+            # an answer that does not name the source is not reproducible.
+            said.append(
+                f"{sidecar.name} also georeferences this raster and would give a "
+                "different answer; GDAL prefers it by default"
+            )
+        return Outcome(answer=area, warnings=said)
+
     def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio

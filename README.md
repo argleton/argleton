@@ -34,7 +34,10 @@ pip install "argleton[fixtures]"
 The probes ship with the runner, so that is the whole setup — release 0.3.0 carries the
 29 traps and 27 families the results below were produced from. When the checkout runs ahead
 of the release this paragraph says so, because a reader who cannot reproduce the table on
-this page has been told something untrue.
+this page has been told something untrue. **It is ahead right now: this checkout has 30
+traps and 28 families.** The extra one is `hidden-configuration`, and the table below does
+not include it — installing the release gives you exactly the probes the table was produced
+from.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
@@ -118,7 +121,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Twenty-seven families of twenty-seven, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Twenty-eight families of twenty-eight, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -151,10 +154,11 @@ rate means a system did not fail silently *on these probes*.
 | `geographic-crs` | 12.7 ha instead of 8.99 | area in square degrees converted with 111320², which is right for latitude and right for longitude only at the equator |
 | `empty-result` | 0 m² workable instead of 160000 | difference is not commutative, and an empty result reads as a finding rather than a failure |
 | `grid-registration` | easting 412105 instead of 412090 | the file declares `AREA_OR_POINT=Point` and the library reports the tag from the same object whose coordinate helper ignores it; half a cell on a 30 m DEM is 15 m, systematic, and inside the GPS error of anyone sent to check |
+| `hidden-configuration` | 160000 m² instead of 40000 | a sidecar georeferences the same raster and wins by documented precedence; both readings are the library behaving as written, and no answer says which one it used |
 
 ## Results
 
-Engine tier, twenty-seven families, `spec_commit` pinned — [every run, and what the
+Engine tier, twenty-seven families — the published runs predate the twenty-eighth — `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |

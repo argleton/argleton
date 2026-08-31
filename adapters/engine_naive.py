@@ -193,6 +193,16 @@ class Adapter:
         return Outcome(answer=float(cells * resolution * resolution))
 
 
+    def op_raster_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import rasterio
+
+        # Open it and read the transform. One line, no warning, and it is the
+        # sidecar's transform rather than the file's: GDAL's documented
+        # precedence puts `.aux.xml` first. Nothing here can tell.
+        with rasterio.open(workdir / probe.arguments[0]) as ds:
+            cell_area = abs(ds.transform.a * ds.transform.e)
+            return Outcome(answer=float(cell_area * ds.width * ds.height))
+
     def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
         import numpy as np
         import rasterio
