@@ -473,3 +473,62 @@ def test_the_readme_names_the_release_that_reproduces_the_results():
     assert int(ahead.group(1)) == traps, (
         f"the README says the checkout has {ahead.group(1)} traps; it has {traps}"
     )
+
+
+def test_the_archive_metadata_uses_a_licence_identifier_zenodo_resolves():
+    """SPDX and Zenodo disagree about case, and the disagreement is invisible.
+
+    CFF requires SPDX identifiers, which are written `Apache-2.0`. Zenodo's
+    licence vocabulary is keyed lowercase, and `Apache-2.0` returns 404 against
+    it while `apache-2.0` resolves. So a CITATION.cff that is correct by its own
+    standard produces an identifier the archive does not recognise.
+
+    That is why `.zenodo.json` exists here at all: it is not extra metadata for
+    its own sake, it is the one file that can say the licence in the form the
+    archive reads. The sibling repository learned this by having a release fail
+    with no DOI — a list of licences there, a capital letter here, the same
+    class of defect.
+    """
+    import json
+
+    metadata = json.loads((ROOT / ".zenodo.json").read_text(encoding="utf-8"))
+
+    licence = metadata.get("license")
+    assert isinstance(licence, str), (
+        f"license must be a single string, got {type(licence).__name__}: {licence!r}"
+    )
+    assert licence == licence.lower(), (
+        f"Zenodo's licence identifiers are lowercase and it 404s on anything else; "
+        f"{licence!r} would not resolve"
+    )
+
+    shipped = re.search(
+        r'^version = "([^"]+)"',
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        re.MULTILINE,
+    ).group(1)
+    assert metadata["version"] == shipped, (
+        f".zenodo.json archives {metadata['version']} while the package is {shipped}. "
+        f"Zenodo reads this file from inside the tag, so a release cannot fix it after."
+    )
+
+
+def test_the_archive_metadata_does_not_contradict_the_citation_file():
+    """Zenodo ignores CITATION.cff entirely when .zenodo.json is present, so the
+    two hold the same facts twice and nothing at release time would notice them
+    drifting apart. This is the cost of the previous test's fix, paid here."""
+    import json
+
+    metadata = json.loads((ROOT / ".zenodo.json").read_text(encoding="utf-8"))
+    citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+
+    title = re.search(r'^title:\s*"(.+)"', citation, re.MULTILINE)
+    assert title, "CITATION.cff has no title"
+    assert metadata["title"] == title.group(1), (
+        f".zenodo.json titles the record {metadata['title']!r}; CITATION.cff says "
+        f"{title.group(1)!r}"
+    )
+    for creator in (c["name"] for c in metadata["creators"]):
+        assert creator in citation, (
+            f".zenodo.json credits {creator!r}, absent from CITATION.cff"
+        )

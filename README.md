@@ -31,13 +31,10 @@ machine, so there is nothing to download and nothing to take on trust:
 pip install "argleton[fixtures]"
 ```
 
-The probes ship with the runner, so that is the whole setup — release 0.3.0 carries the
-29 traps and 27 families the results below were produced from. When the checkout runs ahead
+The probes ship with the runner, so that is the whole setup — release 0.4.0 carries the
+30 traps and 28 families the results below were produced from. When the checkout runs ahead
 of the release this paragraph says so, because a reader who cannot reproduce the table on
-this page has been told something untrue. **It is ahead right now: this checkout has 30
-traps and 28 families.** The extra one is `hidden-configuration`, and the table below does
-not include it — installing the release gives you exactly the probes the table was produced
-from.
+this page has been told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:

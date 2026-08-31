@@ -1,0 +1,19 @@
+{
+  "upload_type": "software",
+  "title": "Argleton: a correctness suite for geospatial systems",
+  "version": "0.4.0",
+  "creators": [
+    {"name": "The Argleton project"}
+  ],
+  "license": "apache-2.0",
+  "access_right": "open",
+  "keywords": [
+    "geospatial",
+    "GIS",
+    "benchmark",
+    "correctness",
+    "silent errors",
+    "evaluation"
+  ],
+  "description": "<p>Argleton measures how often a geospatial system answers confidently and wrongly.</p><p>Each probe has a right answer known <em>by construction</em> &mdash; derived on paper, never measured from a reference implementation &mdash; and a typical wrong answer that looks entirely plausible. Every trap ships with a defect-free twin, so a system cannot score well by refusing to answer: the suite reports a silent-error rate alongside a completion rate on the twins, and a refusal counts as neither a pass nor a silent error.</p><p>The name is the phantom settlement Google Maps showed for two years near Aughton: an empty field for which the map offered photographs of houses, restaurants and a hospital. Well-formed data, valid against its schema, rendered with confidence, entirely false, and crashing nothing. That is the class of error this suite measures.</p><p>Published from an organisation separate from the system it was extracted from, and that relationship is stated in the repository rather than hidden &mdash; an evaluation living inside the thing it evaluates can be dismissed in one line.</p>"
+}

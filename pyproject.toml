@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "argleton"
-version = "0.3.0"
+version = "0.4.0"
 description = "Probes whose right answer is known by construction, and whose wrong answer looks fine"
 readme = "README.md"
 requires-python = ">=3.11"          # tomllib, so the runner needs nothing installed
