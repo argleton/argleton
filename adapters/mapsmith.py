@@ -55,6 +55,20 @@ class Adapter:
         from mapsmith.engines import dispatch
 
         described = dispatch.describe_routed(str(workdir / probe.arguments[0]))
+        # Since 2026-08-31 describe says WHICH georeferencing it read when more
+        # than one claims the file. Before that this adapter reported an area
+        # from a sidecar it never looked for, and so did the product: the
+        # measurement came first and the field second, which is the order that
+        # tells you whether the probe would have caught it.
+        source = described.get("georeferencing")
+        if source and source.get("georeferencing_source") != "internal":
+            return Outcome(refusal=(
+                f"this raster is georeferenced twice: its own tags say "
+                f"{source['georeferencing_internal_would_give']} and "
+                f"{source['georeferencing_sidecar_present']} beside it says otherwise. "
+                "GDAL prefers the sidecar, so an area computed here would come from "
+                "a file the question did not name. Which of the two should it use?"
+            ))
         resolution = described["resolution"]
         area = (
             abs(resolution["x"] * resolution["y"])
