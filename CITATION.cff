@@ -5,6 +5,11 @@ type: software
 authors:
   - name: "The Argleton project"
 repository-code: "https://github.com/argleton/argleton"
+doi: "10.5281/zenodo.22206349"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22206349"
+    description: "Concept DOI — always resolves to the latest release"
 url: "https://argleton.org"
 license: Apache-2.0
 version: "0.4.0"

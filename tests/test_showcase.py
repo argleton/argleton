@@ -640,3 +640,28 @@ def test_the_trap_count_credited_to_a_release_is_the_count_that_release_carries(
         f"the README says release {version} carries {credited_families} families; "
         f"the tag v{version} carries {actual_families}"
     )
+
+
+def test_the_published_doi_is_the_concept_doi():
+    """Two DOIs exist per release and only one is safe to write down.
+
+    Zenodo mints a version DOI for each release and one concept DOI that always
+    resolves to the newest. A version DOI hard-coded into a file nobody re-reads
+    becomes a citation for a superseded release the moment the next one lands —
+    the same defect as a stale trap count, in a field that looks permanent.
+    """
+    citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+
+    in_readme = set(re.findall(r"10\.5281/zenodo\.(\d+)", README))
+    in_citation = set(re.findall(r"10\.5281/zenodo\.(\d+)", citation))
+
+    assert in_readme, "the README publishes no DOI"
+    assert in_citation, "CITATION.cff carries no DOI"
+    assert in_readme == in_citation, (
+        f"the README cites zenodo.{sorted(in_readme)} and CITATION.cff cites "
+        f"zenodo.{sorted(in_citation)}"
+    )
+    assert len(in_readme) == 1, (
+        f"more than one DOI is published: {sorted(in_readme)}. Only the concept "
+        f"DOI belongs in a file that is not rewritten at every release."
+    )

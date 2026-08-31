@@ -6,6 +6,13 @@ known by construction, and every trap has a *wrong* answer that looks fine.
 **[argleton.org](https://argleton.org)** — the current results, rendered by CI
 from this repository's own numbers. Nothing on that page is typed in by hand.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22206349.svg)](https://doi.org/10.5281/zenodo.22206349)
+
+Cite it as `10.5281/zenodo.22206349`, which always resolves to the current release. To cite the
+exact version you measured against, take the version DOI from the
+[Zenodo record](https://doi.org/10.5281/zenodo.22206349) — which is the same reason every run
+here pins its `spec_commit`.
+
 That second half is the whole point. Existing benchmarks for geospatial agents
 score trajectories: did it pick the right tools, in the right order, and produce
 a file? A system can score full marks on all of that and hand you a number that
