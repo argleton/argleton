@@ -16,6 +16,12 @@ jobs:
         python: ["3.11", "3.13"]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          # Tags, because one showcase test checks the trap count the README
+          # attributes to a release against the tag that release was cut from.
+          # A shallow checkout has no tags, and the test would skip in exactly
+          # the place it is meant to run.
+          fetch-depth: 0
       - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
         with:
           python-version: ${{ matrix.python }}

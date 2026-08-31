@@ -532,3 +532,111 @@ def test_the_archive_metadata_does_not_contradict_the_citation_file():
         assert creator in citation, (
             f".zenodo.json credits {creator!r}, absent from CITATION.cff"
         )
+
+
+def traps_in_tag(tag: str) -> int | None:
+    """How many traps the tagged commit actually carries, or None if unknowable.
+
+    None means the tag is not in this checkout: either the release has not been
+    cut yet, or somebody cloned shallow. Both are real, and neither is a defect
+    in the README — so the caller must not treat None as a failure.
+    """
+    import subprocess
+
+    try:
+        listing = subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", tag, "--", "traps/"],
+            cwd=ROOT, capture_output=True, text=True, timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if listing.returncode != 0:
+        return None
+    return len([line for line in listing.stdout.splitlines() if line.endswith("probe.toml")])
+
+
+def families_in_tag(tag: str) -> int | None:
+    """How many distinct families the tagged commit carries, or None if unknowable."""
+    import subprocess
+
+    try:
+        found = subprocess.run(
+            # The pathspec and the `=` both matter. Two trap READMEs open a line
+            # with the word "family", and a looser pattern counted them: the
+            # first version of this helper reported 30 families where there are
+            # 28, which is a guard measuring something adjacent to the claim.
+            ["git", "grep", "-h", "-E", "^family[[:space:]]*=", tag,
+             "--", "traps/*/probe.toml"],
+            cwd=ROOT, capture_output=True, text=True, timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if found.returncode != 0:
+        return None
+    names = {
+        line.split("=", 1)[1].strip().strip('"')
+        for line in found.stdout.splitlines()
+        if "=" in line
+    }
+    return len(names) or None
+
+
+def test_the_trap_count_credited_to_a_release_is_the_count_that_release_carries():
+    """The count attributed to the release was taken on faith, and it was wrong.
+
+    Until 2026-08-31 the README said release 0.3.0 carried 29 traps. The tag
+    carries 23, and so does the wheel on PyPI — a reader who installed it and
+    counted would have found six probes missing, which is the 0.1.0 defect this
+    file already has a test for, recurring under that test's nose.
+
+    It recurred because the existing check verifies the *checkout* count and
+    takes the *released* count as given: adding traps and bumping the released
+    number instead of the ahead-of-release number passed cleanly. The released
+    artifact cannot change, so its count is a fact with exactly one source —
+    the commit the release was cut from.
+
+    Skipped only when the tag is genuinely absent: between the release commit
+    and the tag, and in a shallow clone. CI fetches tags so that this test runs
+    there rather than quietly passing.
+    """
+    prose = README
+    stated = re.search(
+        r"release ([0-9.]+) carries the\s+(\d+) traps and (\d+) families", prose
+    )
+    assert stated, "the README no longer names the release that reproduces the table"
+    version, credited = stated.group(1), int(stated.group(2))
+    credited_families = int(stated.group(3))
+
+    actual = traps_in_tag(f"v{version}")
+    if actual is None:
+        shipped = re.search(
+            r'^version = "([^"]+)"',
+            (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+            re.MULTILINE,
+        ).group(1)
+        assert version == shipped, (
+            f"the README credits release {version}, which is neither tagged in this "
+            f"checkout nor the version being prepared ({shipped}) — so nothing can "
+            f"confirm the count it claims"
+        )
+        return
+
+    assert credited == actual, (
+        f"the README says release {version} carries {credited} traps; the tag "
+        f"v{version} carries {actual}. The released artifact cannot change, so "
+        f"this number cannot move — when the checkout gains traps, the sentence "
+        f"that changes is the one saying the checkout is ahead."
+    )
+
+    # The sibling number in the same sentence, and it was wrong in the same way:
+    # 0.3.0 was credited with 27 families and the tag carries 26. Guarding half
+    # a sentence is how the other half drifts.
+    actual_families = families_in_tag(f"v{version}")
+    assert actual_families is not None, (
+        f"the traps in tag v{version} could be counted but its families could not, "
+        f"which means the two counts are being read in incompatible ways"
+    )
+    assert credited_families == actual_families, (
+        f"the README says release {version} carries {credited_families} families; "
+        f"the tag v{version} carries {actual_families}"
+    )
