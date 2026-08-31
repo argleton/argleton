@@ -148,6 +148,34 @@ def test_the_readme_transcripts_print_todays_summary_lines():
     assert checked >= 1, "no transcript summary lines found — did the README format change?"
 
 
+def test_the_install_paragraph_does_not_credit_the_run_to_the_release():
+    """The release count and the RUN count are two numbers, one sentence apart.
+
+    On 2026-08-31 the paragraph read "release 0.4.0 carries the 30 traps and 28
+    families the results below were produced from". Every number in it was
+    right and the sentence was false: the published run covers 29, because trap
+    030 landed after it. The sibling guard below checks the release count
+    against the tag and had nothing to say, because the defect was not in a
+    number — it was in the word attaching one number to the other.
+
+    A reader who installs the release, reruns, and gets a rate the table does
+    not show has been told something untrue, which is the failure this suite
+    exists to name in other people's work.
+    """
+    run_name, systems = latest_run()
+    ran = max(r["traps_run"] for r in systems.values())
+    carried = len([p for p in discover(ROOT) if p.population == "trap"])
+    if ran == carried:
+        return
+    prose = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert re.search(rf"run over {ran} of them", prose), (
+        f"the release carries {carried} traps and the published run ({run_name}) "
+        f"covers {ran}. The install paragraph has to say the table is a run over "
+        f"{ran} of them, or a reader who reruns gets a number the table does not "
+        "show and no way to know why."
+    )
+
+
 def test_the_naive_score_quoted_in_prose_is_current():
     _, systems = latest_run()
     naive = next(r for r in systems.values() if r["adapter"] == "engine:naive")
@@ -210,6 +238,76 @@ def test_the_site_template_has_no_hand_typed_count_and_no_orphan_placeholder():
         "template. Add a placeholder and let build.py count — `next_ordinal()` "
         "is there. 'first' and 'second' as ordinary prose are fine; an ordinal that "
         "names a position in the family list is a count."
+    )
+
+
+def test_the_results_headline_counts_the_run_and_not_the_checkout():
+    """A figure about a run has to be read out of the run.
+
+    Found by a reader of the live page on 2026-08-31: the heading over the
+    results table said "30 traps, 28 families" while the published run had faced
+    29 and 27. Both numbers came from `traps/` in the working tree, so every
+    family added after a run silently inflated that run's coverage — on the one
+    surface whose whole argument is that its numbers can be checked. Same class
+    as the `sorted[-1]` defect that published the older of two runs: the fix is
+    that the run is the only source for a claim about the run.
+
+    So the results section may use `{{RUN_TRAPS}}` and `{{RUN_FAMILIES}}` and
+    must not use the suite-wide counters, and the two placeholders must resolve
+    to what the published run actually saw.
+    """
+    # Loaded by path: the directory is called `site`, which is a stdlib module
+    # name, so an ordinary import would silently get the wrong thing.
+    import importlib.util
+
+    location = importlib.util.spec_from_file_location(
+        "argleton_site_build", ROOT / "site" / "build.py"
+    )
+    builder = importlib.util.module_from_spec(location)
+    location.loader.exec_module(builder)
+    coverage_gap, run_coverage = builder.coverage_gap, builder.run_coverage
+
+    _, data = latest_run()
+    records = list(data.values())
+    traps, families = run_coverage(records)
+
+    assert traps == max(r["traps_run"] for r in records), "run trap count"
+    covered = set()
+    for record in records:
+        covered |= set(record["by_family"])
+    assert families == len(covered), "run family count"
+
+    implemented = {p.family for p in discover(ROOT) if p.population == "trap"}
+    assert families <= len(implemented), (
+        "the published run reports more families than the suite implements, "
+        "which means one of the two is being counted wrong"
+    )
+
+    template = (ROOT / "site" / "index.template.html").read_text(encoding="utf-8")
+    results = template[template.index('<section id="results"'):]
+    results = results[: results.index('<section id="families"')]
+    for suite_wide in ("{{TRAPS}}", "{{FAMILIES}}"):
+        assert suite_wide not in results, (
+            f"{suite_wide} counts the checkout and appears in the results "
+            "section, which describes one run of it. Use {{RUN_TRAPS}} / "
+            "{{RUN_FAMILIES}}."
+        )
+    assert "{{RUN_TRAPS}}" in results and "{{RUN_FAMILIES}}" in results, (
+        "the results section no longer states the coverage of the run it shows"
+    )
+
+    # And the caveat that keeps a 0.00 from being read as broader than it is:
+    # present exactly when families were added after the run was published.
+    gap = coverage_gap(
+        [{"family": f, "population": "trap"} for f in implemented], families
+    )
+    assert bool(gap) == (len(implemented) > families), (
+        "the coverage caveat is generated, and it disagrees with the counts: "
+        f"{len(implemented)} implemented, {families} in the run, gap={gap!r}"
+    )
+    assert "{{COVERAGE_GAP}}" in results, (
+        "the results section dropped the placeholder that names families the "
+        "published run never saw"
     )
 
 
@@ -651,15 +749,21 @@ def test_the_published_doi_is_the_concept_doi():
     the same defect as a stale trap count, in a field that looks permanent.
     """
     citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+    # The site too: it is the surface a researcher reaches first, and it carried
+    # no DOI at all for the whole morning after one was minted. A citation that
+    # exists only in the repository is a citation the people who cite did not see.
+    site = (ROOT / "site" / "index.template.html").read_text(encoding="utf-8")
 
     in_readme = set(re.findall(r"10\.5281/zenodo\.(\d+)", README))
     in_citation = set(re.findall(r"10\.5281/zenodo\.(\d+)", citation))
+    in_site = set(re.findall(r"10\.5281/zenodo\.(\d+)", site))
 
     assert in_readme, "the README publishes no DOI"
     assert in_citation, "CITATION.cff carries no DOI"
-    assert in_readme == in_citation, (
-        f"the README cites zenodo.{sorted(in_readme)} and CITATION.cff cites "
-        f"zenodo.{sorted(in_citation)}"
+    assert in_site, "argleton.org publishes no DOI, and it is where a citer lands"
+    assert in_readme == in_citation == in_site, (
+        f"the README cites zenodo.{sorted(in_readme)}, CITATION.cff cites "
+        f"zenodo.{sorted(in_citation)} and the site cites zenodo.{sorted(in_site)}"
     )
     assert len(in_readme) == 1, (
         f"more than one DOI is published: {sorted(in_readme)}. Only the concept "

@@ -56,6 +56,26 @@ def latest_run() -> tuple[str, list[dict]]:
     return latest.name, data
 
 
+def run_coverage(data: list[dict]) -> tuple[int, int]:
+    """(traps, families) the PUBLISHED RUN saw — not what the checkout holds.
+
+    These two numbers head the results table, and until 2026-08-31 they were
+    counted from `traps/` instead: the page said "30 traps, 28 families" over a
+    run that had faced 29 and 27, because a family landed after the run was
+    published. Same class as the `sorted[-1]` defect that published the older of
+    two runs on one day — a figure about a run has to be read out of the run.
+
+    Traps is the widest coverage any single system reached, which is what
+    `traps_run` in the table is per system; families is the union of the
+    `by_family` breakdowns, so a family nobody could be asked about does not
+    count as covered.
+    """
+    families: set[str] = set()
+    for record in data:
+        families |= set(record["by_family"])
+    return max(record["traps_run"] for record in data), len(families)
+
+
 def planned_families() -> int:
     """Every family FAMILIES.md numbers, implemented or not.
 
@@ -147,6 +167,32 @@ def families_table(probe_list: list[dict]) -> str:
     return "\n".join(rows)
 
 
+def coverage_gap(probe_list: list[dict], run_families: int) -> str:
+    """The caveat naming families the published run never saw, or nothing.
+
+    Generated rather than written, and empty when there is no gap, because the
+    honest version of this sentence changes every time a family lands: for one
+    day the page said the family list had closed while a twenty-eighth family
+    was already in `traps/` and in no published result. `results/README.md`
+    stated the gap correctly and the page a stranger actually reads did not.
+    """
+    implemented = {p["family"] for p in probe_list if p["population"] == "trap"}
+    if len(implemented) <= run_families:
+        return ""
+    missing = len(implemented) - run_families
+    families = "families" if missing > 1 else "family"
+    verb = "have" if missing > 1 else "has"
+    them = "them" if missing > 1 else "it"
+    return (
+        f'    <li><strong>{missing} {families} in the suite {verb} no result '
+        f"here.</strong> The run above faced {run_families} of "
+        f"{len(implemented)} implemented families; the {families} landed after "
+        f"it was published, so no system on this page has been asked about "
+        f'{them}. The <a href="#families">family table</a> below is the suite, '
+        "and this table is one run of it.</li>"
+    )
+
+
 def share_card(destination: Path, truth, naive) -> None:
     """The two numbers, 1200x630, for the card a link becomes on a social feed.
 
@@ -203,14 +249,18 @@ def main(destination: Path) -> int:
     traps = [p for p in probe_list if p["population"] == "trap"]
     zero = next(p for p in traps if p["id"].startswith("001"))
 
+    run_traps, run_families = run_coverage(data)
+
     replacements = {
         "{{RESULTS_ROWS}}": results_table(data),
         "{{FAMILY_ROWS}}": families_table(probe_list),
+        "{{RUN_TRAPS}}": str(run_traps),
+        "{{RUN_FAMILIES}}": str(run_families),
+        "{{COVERAGE_GAP}}": coverage_gap(probe_list, run_families),
         "{{RUN}}": run_id,
         "{{SPEC_COMMIT}}": data[0]["spec_commit"],
         "{{TRUTH}}": str(zero["truth"]),
         "{{NAIVE}}": str(zero["naive"]),
-        "{{TRAPS}}": str(len(traps)),
         "{{FAMILIES}}": str(len({p["family"] for p in traps})),
         "{{FAMILIES_PLANNED}}": str(planned_families()),
         "{{NEXT_ORDINAL}}": next_ordinal(),
@@ -234,8 +284,9 @@ def main(destination: Path) -> int:
     print(
         f"index.html {(destination / 'index.html').stat().st_size // 1024} KB | "
         f"card.png {(destination / 'card.png').stat().st_size // 1024} KB | "
-        f"{len(data)} systems, {len(traps)} traps, "
-        f"{len({p['family'] for p in traps})} families | run {run_id}"
+        f"{len(data)} systems | run {run_id}: {run_traps} traps, "
+        f"{run_families} families | suite: {len(traps)} traps, "
+        f"{len({p['family'] for p in traps})} families"
     )
     return 0
 

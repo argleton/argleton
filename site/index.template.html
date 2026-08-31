@@ -187,7 +187,7 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
 
 <section id="results"><div class="wrap">
   <p class="kicker">Run {{RUN}} · spec_commit {{SPEC_COMMIT}} · engine tier</p>
-  <h2>{{SYSTEMS}} systems, {{TRAPS}} traps, {{FAMILIES}} families</h2>
+  <h2>{{SYSTEMS}} systems, {{RUN_TRAPS}} traps, {{RUN_FAMILIES}} families</h2>
   <table>
     <thead><tr>
       <th>System</th>
@@ -213,12 +213,13 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
     <a href="https://github.com/argleton/argleton/blob/main/results/README.md">results/README.md</a>.
   </p>
   <ul>
+{{COVERAGE_GAP}}
     <li><strong>A 0.00 means a system did not fail silently <em>on these probes</em>.</strong> Not
     that it is correct, not that it is safe, and not that it would survive the families that are
     named and not yet built — nor the thirty further mechanisms a survey of the literature turned
     up while this run was being made.</li>
     <li><strong>Read “not applicable” before the rate.</strong> A rate over two traps and a rate
-    over {{TRAPS}} are different claims. An adapter that can only be asked two questions must not
+    over {{RUN_TRAPS}} are different claims. An adapter that can only be asked two questions must not
     be able to look better than one that faced all of them.</li>
     <li><strong>One family can move any of these rates a long way</strong>, because most carry one
     trap each. Treat a difference of one probe as one probe.</li>
@@ -333,6 +334,11 @@ feature_count_exact  expected 1, got 1</pre>
     <a href="https://github.com/argleton/argleton/blob/main/docs/ADDING-A-TRAP.md">Adding a trap</a> ·
     Apache-2.0, no CLA
   </p>
+  <p class="caption" style="margin-top:0.9rem">
+    Citing it: <a href="https://doi.org/10.5281/zenodo.22206349"><code>10.5281/zenodo.22206349</code></a>
+    resolves to the current release. For the exact version you measured against, take the version
+    DOI from that record — the same reason every run here pins its <code>spec_commit</code>.
+  </p>
 </div></section>
 
 <section id="who"><div class="wrap">
@@ -358,6 +364,7 @@ feature_count_exact  expected 1, got 1</pre>
   <span>Apache-2.0</span>
   <span>{{PROBES}} probes · built from {{COMMIT}}</span>
   <nav>
+    <a href="https://doi.org/10.5281/zenodo.22206349">DOI</a>
     <a href="https://github.com/argleton/argleton">GitHub</a>
     <a href="https://github.com/argleton/argleton/issues">Issues</a>
   </nav>

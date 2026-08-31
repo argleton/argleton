@@ -151,20 +151,20 @@ def main(argv: list[str] | None = None) -> int:
         f"over {summary['traps_run']} traps  |  "
         f"completion_rate {summary['completion_rate']} over {summary['clean_run']} clean"
     )
-    tempo = summary.get("timing")
-    if tempo:
-        riga = (
-            f"time: {tempo['total_ms'] / 1000:.1f}s total  |  "
-            f"{tempo['median_ms']:.0f}ms median over {tempo['probes']} probes  |  "
-            f"first {tempo['first_probe_ms'] / 1000:.1f}s  |  "
-            f"slowest {tempo['slowest']['probe_id']} {tempo['slowest']['ms'] / 1000:.1f}s"
+    timing = summary.get("timing")
+    if timing:
+        line = (
+            f"time: {timing['total_ms'] / 1000:.1f}s total  |  "
+            f"{timing['median_ms']:.0f}ms median over {timing['probes']} probes  |  "
+            f"first {timing['first_probe_ms'] / 1000:.1f}s  |  "
+            f"slowest {timing['slowest']['probe_id']} {timing['slowest']['ms'] / 1000:.1f}s"
         )
-        print(riga)
-        if tempo.get("adapter_breakdown_ms"):
-            parti = ", ".join(
-                f"{k} {v / 1000:.1f}s" for k, v in sorted(tempo["adapter_breakdown_ms"].items())
+        print(line)
+        if timing.get("adapter_breakdown_ms"):
+            shares = ", ".join(
+                f"{k} {v / 1000:.1f}s" for k, v in sorted(timing["adapter_breakdown_ms"].items())
             )
-            print(f"      of which, reported by the adapter: {parti}")
+            print(f"      of which, reported by the adapter: {shares}")
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

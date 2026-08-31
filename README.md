@@ -39,9 +39,12 @@ pip install "argleton[fixtures]"
 ```
 
 The probes ship with the runner, so that is the whole setup — release 0.4.0 carries the
-30 traps and 28 families the results below were produced from. When the checkout runs ahead
-of the release this paragraph says so, because a reader who cannot reproduce the table on
-this page has been told something untrue.
+30 traps and 28 families this repository holds today. The published table further down is a
+run over 29 of them: the thirtieth landed after that run and no published run covers it yet,
+so rerunning here gives you one trap more and a naive rate of 0.9333 instead of 0.931 —
+different because the denominator grew, not because anything moved. When the checkout runs
+ahead of the release this paragraph says so, because a reader who cannot reproduce the table
+on this page has been told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
@@ -98,8 +101,8 @@ at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
 clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. It scores **0.931 / 1.0**: it
-answers every clean probe correctly, falls into twenty-seven of the twenty-nine traps, and
+report it — and it is the most useful one here. In the published run it scores **0.931 / 1.0**:
+it answers every clean probe correctly, falls into twenty-seven of the twenty-nine traps, and
 **passes the other two**. 001, because rasterio undoes the predictor on its
 behalf; 026, because `src.res` reports the cell size faithfully whichever way the
 rows run, which on that probe makes a plain numpy gradient more faithful to the
