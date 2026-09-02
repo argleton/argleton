@@ -2,7 +2,7 @@
 
 Thirty-three families are on the list — twelve from the original design, the rest
 added from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty-eight are implemented.** As of 2026-09-02 the
+themselves warn about. **Twenty-nine are implemented.** As of 2026-09-02 the
 published run covers all twenty-eight; the remaining five are named under
 [Planned](#planned) and not yet built. This page exists so that
 a number from Argleton can never be read as broader than it is: a low
@@ -44,6 +44,7 @@ cannot read as ten independent findings.
 | 10 | `raster-affine` | [026](../traps/026-south-up-grid/) + [c026](../clean/c026-north-up-grid/) | 45° of slope instead of 5.7° | The fifth number of a geotransform may be positive, and an engine that cannot express that discards the georeferencing — cells of 1 m at the origin. A slope is a rise over a run, and every cell is wrong by the same factor, so the map has the right shape and the wrong legend |
 | 27 | `grid-registration` | [024](../traps/024-pixel-is-point/) + [c024](../clean/c024-pixel-is-area/) | easting 412105 instead of 412090 — and 412120 from a second engine | The file says `AREA_OR_POINT=Point` and the library hands you the tag from the same object whose coordinate helper ignores it. Half a cell is 15 m on a 30 m DEM: smaller than the GPS a crew walks in with, larger than every tolerance afterwards, and systematic, so the whole analysis stays internally consistent |
 | 28 | `hidden-configuration` | [030](../traps/030-sidecar-georeferencing/) + [c030](../clean/c030-single-georeferencing/) | 160000 m2 instead of 40000, and an origin 100 km away | A `.aux.xml` beside a GeoTIFF georeferences it too, and GDAL prefers the sidecar by documented design because that is how a user overrides georeferencing they know to be wrong. Both readings are the library behaving as written; neither answer says which one it used, and one environment variable switches between them |
+| 29 | `ring-role-by-winding` | [031](../traps/031-hole-wound-as-shell/) + [c031](../clean/c031-hole-wound-as-hole/) | 31000 m2 instead of 29000 — the easement added rather than subtracted | A shapefile carries no nesting: which ring is a hole is decided by the direction it is wound and by nothing else, and GDAL applies that rule as documented (`OGR_ORGANIZE_POLYGONS` defaults to `ONLY_CCW`). An inner ring wound like its parent therefore reads as a second shell, and its area is added. The error flatters the owner by 6.9%, which is smaller than the gap between two surveys of the same field |
 
 Families 13 to 23 were not in the original design. 13 came from building family
 3 (`linear-units`), on noticing that a unit label can be *true* while the plane
@@ -90,7 +91,6 @@ at something that was run.
 | `utm-zone-edge` | The wrong UTM zone chosen at a tile boundary |
 | `temporal-aggregation` | An annual composite used for a phenomenon that is sub-annual |
 | `time-reference` | A timestamp read in the wrong zone, or GPS time taken for UTC (18 s apart) |
-| `ring-orientation` | A polygon wound the wrong way, which on an S2-based engine becomes the rest of the world |
 
 ## What a family needs before it counts
 

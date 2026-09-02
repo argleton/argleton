@@ -58,6 +58,16 @@ class Adapter:
             total += sum(Polygon(ring).area for ring in geometry.interiors)
         return Outcome(answer=float(total))
 
+    def op_net_plot_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+
+        # Read the file and sum the area. Nothing here asks whether the
+        # geometry that came back is valid, and on this pair that single
+        # omission is the whole difference: the reader hands back two
+        # overlapping shells because the inner ring is wound like an outer one,
+        # and `.area` adds them.
+        return Outcome(answer=float(gpd.read_file(workdir / probe.arguments[0]).area.sum()))
+
     def op_total_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
 

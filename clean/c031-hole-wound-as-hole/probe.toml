@@ -1,0 +1,44 @@
+id         = "c031-hole-wound-as-hole"
+population = "clean"
+family     = "ring-role-by-winding"
+title      = "The same plot, with the easement wound the way the format expects"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "net_plot_area_m2(plot.shp)"
+prompt = """
+plot.shp holds one survey plot with an easement running through it. The
+easement cannot be built on. How many square metres of the plot are left?
+Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 29000.0
+tolerance = 0.01
+derivation = """
+Identical to the trap: 200 x 150 = 30000 m2 minus 40 x 25 = 1000 m2 is 29000.
+
+The twin exists so that a system cannot score by refusing everything with an
+easement in it. The two files hold the same coordinates in the same order; the
+inner ring is written anticlockwise here and clockwise there, which is the only
+difference and the whole of the difference. A system that reports 29000 on both
+has read the format; one that refuses both has learned that plots with holes
+are dangerous, which is not the same thing."""
+
+[provenance]
+source = """
+Written through OGR without patching, which is why it is correct: measured on
+2026-09-02, the shapefile writer normalises ring direction on the way out, so
+this library produces the conventional winding on its own. The trap had to be
+made by reversing the inner ring in the bytes afterwards.
+
+That asymmetry is worth stating rather than hiding. It means a file with the
+wrong winding does not come from GeoPandas, GDAL or QGIS writing a shapefile:
+it comes from a converter, an exporter or a hand-rolled writer, which is where
+it comes from in the field."""
+found_by = "mapsmith"
+date     = "2026-09-02"
+
+[provenance.engine_versions]
+geopandas = "1.1.4"
+gdal      = "3.12.4"

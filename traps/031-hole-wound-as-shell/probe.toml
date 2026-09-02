@@ -1,0 +1,108 @@
+id         = "031-hole-wound-as-shell"
+population = "trap"
+family     = "ring-role-by-winding"
+title      = "The easement counted as land, because of the direction it was written in"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "net_plot_area_m2(plot.shp)"
+prompt = """
+plot.shp holds one survey plot with an easement running through it. The
+easement cannot be built on. How many square metres of the plot are left?
+Answer with the number."""
+
+[truth]
+kind      = "scalar"
+value     = 29000.0
+tolerance = 0.01
+derivation = """
+The plot is 200 x 150 = 30000 m2 exactly and the easement 40 x 25 = 1000 m2
+exactly, both written as constants in `build.py`. A gap inside a parcel is
+subtracted, so the answer is 30000 - 1000 = 29000 m2, with no decimals and no
+projection involved: the fixture is already in a projected CRS whose unit is
+the metre, and reversing a ring changes no coordinate.
+
+The tolerance exists only to absorb float formatting."""
+
+[naive_failure]
+description = """
+Open the file and sum the area. That is one line, it raises nothing, and it
+returns 31000.
+
+A shapefile has no nesting: whether a ring is a shell or a hole is decided by
+the direction it is wound, and by nothing else. GDAL applies that rule as
+documented — `OGR_ORGANIZE_POLYGONS` defaults to `ONLY_CCW` for this driver,
+under which a clockwise ring is a shell and an anticlockwise one is a hole. The
+easement here is wound the same way as the plot, so the reader does what the
+format tells it to: two shells, one inside the other, and the inner area is
+added instead of subtracted.
+
+Nothing in the output mentions a ring, a winding or an ambiguity. The geometry
+that comes back is a MultiPolygon of two parts rather than a polygon with a
+hole, which is visible to anybody who looks — and the point of the probe is
+that a caller asking for an area has no reason to look."""
+observed_value = 31000.0
+plausible      = true
+why_plausible  = """
+3.1 hectares against 2.9. Both are ordinary sizes for a survey plot, the number
+is not round in a suspicious way, and it is not off by a factor anybody would
+recognise: the error is 6.9%, which is smaller than the difference between two
+surveys of the same field.
+
+It is also self-consistent in the way that matters. The bounding box is right,
+the coordinates are right, the CRS is right, the feature count is right, and
+the plot's outline is exactly where it should be. The only thing that is wrong
+is which of the two rings is a gap — and that is not a quantity anybody checks.
+
+The direction of the error is the quiet part: the easement is counted as land
+rather than as a gap, so the mistake is always in the owner's favour. An error
+that flatters is one nobody goes looking for."""
+derivation = """
+Closed form: 30000 + 1000 = 31000, the easement added rather than subtracted.
+The gap between truth and observation is exactly twice the easement's area,
+because the same 1000 m2 moves from one side of the subtraction to the other."""
+
+[refusal]
+accept_if_mentions = [
+    "winding", "wound", "ring direction", "ring orientation", "clockwise",
+    "counter-clockwise", "anticlockwise", "nested shells", "invalid",
+    "ORGANIZE_POLYGONS", "shell", "which ring is a hole",
+]
+
+[provenance]
+source = """
+GDAL documents the rule and the default: `OGR_ORGANIZE_POLYGONS` set to
+`ONLY_CCW` will "assume that rings with clockwise orientation represent shells
+and rings with counterclockwise orientation represent holes", performing "a
+limited topological analysis to determine which shell contains each hole", and
+"the Shapefile driver defaults to this method"
+(https://github.com/OSGeo/gdal/blob/master/doc/source/user/configoptions.rst,
+read 2026-09-02).
+
+This is not a defect in GDAL and there is nothing upstream to fix. The format
+carries no nesting, so the reader has to infer the role of a ring from
+something, and the winding is what the specification gives it. The defect is in
+the file, and files like it are produced by converters and exporters that do
+not normalise — which is why the probe patches the bytes rather than writing
+the polygon through OGR: measured on 2026-09-02, the shapefile WRITER
+normalises ring direction, so this file cannot be produced by accident from the
+same library that misreads it.
+
+Measured on this fixture with GeoPandas 1.1.4 / GDAL 3.12.4: the trap reads as
+a MultiPolygon of two parts with area 31000 and `is_valid` false, and GEOS
+names the reason exactly — "Nested shells". The twin reads as one polygon with
+one hole, area 29000, valid.
+
+The mechanism was already stated in prose by trap 011, whose README says the
+shapefile format "encodes holes only by ring winding order, with no explicit
+structure, so a converted file whose inner ring is wound the wrong way loses
+its hole with no error at all". This probe is what turns that sentence into a
+measurement. 011 is a different family: there the file is well formed and the
+consumer mishandles the nesting; here the file itself carries the ambiguity and
+a correct reader following the documented rule produces the wrong answer."""
+found_by = "mapsmith"
+date     = "2026-09-02"
+
+[provenance.engine_versions]
+geopandas = "1.1.4"
+gdal      = "3.12.4"

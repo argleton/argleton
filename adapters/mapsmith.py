@@ -209,6 +209,15 @@ class Adapter:
         # geometry's definition, so nothing here has to know it exists.
         return self._area(probe, workdir, method="planar")
 
+    def op_net_plot_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # `measure_area` repairs an invalid input ring before measuring and
+        # records the repair in `repairs`, which is the same path the bowtie
+        # trap takes. Here the invalidity is not a self-intersection but two
+        # shells that overlap, because the shapefile's inner ring is wound like
+        # an outer one — a different cause, the same requirement: do not report
+        # a number computed from a geometry the file did not mean.
+        return self._area(probe, workdir, method="planar")
+
     def op_total_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         from mapsmith.engines import vector
 

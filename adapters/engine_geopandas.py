@@ -270,6 +270,33 @@ class Adapter:
             )
         return Outcome(answer=float(gauges.loc[nearest, field]))
 
+    def op_net_plot_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from shapely.validation import explain_validity, make_valid
+
+        frame = gpd.read_file(workdir / probe.arguments[0])
+        if frame.crs is None or not frame.crs.is_projected:
+            return Outcome(refusal="the plot has no projected CRS, so an area in "
+                                   "square metres cannot be computed from it")
+        warns = []
+        geoms = frame.geometry
+        if not geoms.is_valid.all():
+            # A shapefile says which ring is a hole with the direction it is
+            # wound and with nothing else, so a ring wound like its parent
+            # arrives as a second shell overlapping the first. GEOS names it
+            # exactly — "Nested shells" — and the area of that object is the
+            # sum rather than the difference. Repair, then say so: measuring
+            # after a silent repair trades one silence for another.
+            reason = explain_validity(geoms[~geoms.is_valid].iloc[0])
+            warns.append(
+                f"the geometry is invalid ({reason}); in a shapefile a ring's "
+                "role is carried only by its winding, so an inner ring wound "
+                "like the outer one reads as a second shell and its area is "
+                "added instead of subtracted. Repaired before measuring."
+            )
+            geoms = geoms.apply(make_valid)
+        return Outcome(answer=float(geoms.area.sum()), warnings=warns)
+
     def op_parcel_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import csv
 
