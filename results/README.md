@@ -13,9 +13,9 @@ family with several probes cannot read as several independent findings.
 
 This section is at the top rather than the bottom on purpose, and it grows with
 the suite. Twenty-eight families of twenty-eight are implemented
-([FAMILIES.md](../docs/FAMILIES.md)). The runs below were produced on
-twenty-seven of them: `hidden-configuration` landed after the last published
-run, so no result on this page has seen it.
+([FAMILIES.md](../docs/FAMILIES.md)), and since 2026-09-02 the published run
+covers all of them. The older sections below were produced on fewer: read each
+section's family count rather than this page's.
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
   is correct, not that it is safe, and not that it would survive the five

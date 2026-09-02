@@ -1,8 +1,10 @@
 # Families, and what is actually covered
 
-Twenty-seven families are on the list — twelve planned at the start, fifteen added
-from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty-eight are implemented.** That is all of them, as of 2026-08-31. This page exists so that
+Thirty-three families are on the list — twelve from the original design, the rest
+added from reproductions and from a survey of what the archives and the libraries
+themselves warn about. **Twenty-eight are implemented.** As of 2026-09-02 the
+published run covers all twenty-eight; the remaining five are named under
+[Planned](#planned) and not yet built. This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
 this is the list of what that sentence covers.
@@ -35,7 +37,6 @@ cannot read as ten independent findings.
 | 21 | `coordinate-parsing` | [016](../traps/016-coordinate-parsing/) + [c016](../clean/c016-decimal-degrees/) | 41.5324 instead of 41.89 | Both are latitudes in central Italy, 40 km apart: close enough that a map looks right, far enough that every distance is wrong |
 | 22 | `aggregation-weighting` | [017](../traps/017-aggregation-weighting/) + [c017](../clean/c017-equal-populations/) | 13.67% unemployment instead of 1.38% | Averaging rates treats a town of a thousand as equal to a city of a hundred thousand, and both figures describe a plausible region |
 | 23 | `tabular-join` | [018](../traps/018-join-key-typing/) + [c018](../clean/c018-plain-keys/), [020](../traps/020-join-cardinality/) + [c020](../clean/c020-one-owner-each/) | 62000 people instead of 100000; 65000 m² of land instead of 50000 | A CSV reader turns "001" into 1 and four municipalities leave the join silently; a one-to-many join multiplies the land and the sum counts it twice |
-
 | 9 | `antimeridian` | [025](../traps/025-antimeridian-zone/) + [c025](../clean/c025-single-hemisphere-zone/) | 9 vessels in the zone instead of 5 | The zone is split at 180 exactly as RFC 7946 3.1.9 says to split it, so its bounds are (-180, ..., 180, ...) — a band round the planet — and the standard's own inverted-bbox convention has no representation in any planar geometry library. A count arrives with no unit and no magnitude to check |
 | 2 | `geographic-crs` | [028](../traps/028-degrees-as-metres/) + [c028](../clean/c028-projected-field/) | 12.7 ha instead of 8.99 | GeoJSON is defined on WGS 84, so area comes back in square degrees and has to be converted — and the factor everybody knows, 111320, is right for latitude and right for longitude only at the equator. The library's own warning points at the conversion that is the trap |
 | 5 | `empty-result` | [029](../traps/029-difference-order/) + [c029](../clean/c029-coincident-boundaries/) | 0 m² workable instead of 160000 | Difference is not commutative and both orders are valid questions. An empty result reads as a finding rather than a failure — *no part of the licence lies outside the reserve* is a sentence a board acts on |
@@ -77,19 +78,11 @@ closing section of this page asks of anyone.
 
 ## Planned
 
-Numbered as in the original design, so the gaps stay visible rather than being
-renumbered away.
-
-| # | Family | The error |
-|---|---|---|
-| 2 | `geographic-crs` | A metric operation on a geographic CRS with no reprojection — degrees treated as a length |
-| 5 | `empty-result` | An intersection that is empty because of a defect, told apart from one that is legitimately empty |
-| 8 | `mixed-geometry` | A layer holding more than one geometry type |
-| 9 | `antimeridian` | Extents that invert across the 180th meridian or at the poles |
-| 10 | `raster-affine` | Flipped axes or a non-standard affine transform |
-
-Three more came out of a 2026 survey of what the industry is shipping now, and
-matter because they are wrong on the asset class everyone is adopting:
+Every family from the original design is now implemented; the five below came out
+of a 2026 survey of what the industry is shipping, and matter because they are
+wrong on the asset class everyone is adopting. They have no number yet: a family
+is numbered when it has a probe pair, so that a number in a result always points
+at something that was run.
 
 | Family | The error |
 |---|---|
@@ -98,7 +91,6 @@ matter because they are wrong on the asset class everyone is adopting:
 | `temporal-aggregation` | An annual composite used for a phenomenon that is sub-annual |
 | `time-reference` | A timestamp read in the wrong zone, or GPS time taken for UTC (18 s apart) |
 | `ring-orientation` | A polygon wound the wrong way, which on an S2-based engine becomes the rest of the world |
-| `hidden-configuration` | The same expression answering differently depending on a project setting nothing records |
 
 ## What a family needs before it counts
 
@@ -134,8 +126,8 @@ added up, or what a unit meant, or which of two arguments came first.
 
 ## What this list does not claim
 
-That these twenty-seven are all of them. They are the families we can currently
-argue for, each with a source. A twenty-eighth that meets the four conditions
+That these twenty-eight are all of them. They are the families we can currently
+argue for, each with a source. A twenty-ninth that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this
 list has entries, and being able to say which ones failed the conditions is

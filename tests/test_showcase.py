@@ -206,13 +206,67 @@ def test_the_family_counts_agree_everywhere():
     assert stated, "FAMILIES.md no longer states how many families are implemented"
     assert NUMBER_WORDS[stated.group(1).lower()] == implemented, "FAMILIES.md implemented count"
 
+    # The five families that are named and not yet built carry no number, on
+    # purpose: a family is numbered when it has a probe pair. So "planned" is
+    # the numbered rows plus the named-but-unbuilt ones, and nothing else may
+    # add up differently. On 2026-09-02 they did: every numbered planned row had
+    # been implemented, so `planned - implemented` was 0 and the published page
+    # read "0 more are named" directly above a list of five.
+    unbuilt = _unbuilt_families(families_md)
+    assert unbuilt, "FAMILIES.md no longer names a family it has not built"
+    assert not (unbuilt & {p.family for p in discover(ROOT)}), (
+        f"{sorted(unbuilt & {p.family for p in discover(ROOT)})} are listed under "
+        "Planned in FAMILIES.md and have probes in the repository. A family that "
+        "shipped has to leave the planned list, or the page counts it twice and "
+        "the roadmap advertises work already done."
+    )
+
+    # The head of FAMILIES.md states the total. It said twenty-seven for two
+    # days under a table of twenty-eight, because the only guarded sentence was
+    # the one below it.
+    on_the_list = re.search(r"^([A-Za-z-]+) families are on the list", families_md, re.MULTILINE)
+    assert on_the_list, "FAMILIES.md no longer states how many families are on the list"
+    assert NUMBER_WORDS[on_the_list.group(1).lower()] == implemented + len(unbuilt), (
+        "FAMILIES.md total: the head of the page must equal implemented plus "
+        "the families named under Planned"
+    )
+
     covered = re.search(r"([A-Za-z-]+) families of ([a-z-]+)", README)
     assert covered, "the README no longer states its coverage"
     assert NUMBER_WORDS[covered.group(1).lower()] == implemented, "README implemented count"
-    assert NUMBER_WORDS[covered.group(2)] == planned, "README planned count"
+    assert NUMBER_WORDS[covered.group(2)] == planned + len(unbuilt), "README planned count"
 
     family_table = re.findall(r"^\| `([a-z-]+)` \|", README, re.MULTILINE)
     assert len(family_table) == implemented, "README family table row count"
+
+    # A blank line inside a Markdown table ends the table, and the rows after it
+    # render as literal pipes. The seven newest families spent three days that
+    # way on the page that is meant to say what the suite covers.
+    implemented_section = families_md.split("## Implemented", 1)[1].split(chr(10) + "## ", 1)[0]
+    blocks, current = [], []
+    for line in implemented_section.strip().split(chr(10)):
+        if line.startswith("|"):
+            current.append(line)
+        elif current:
+            blocks.append(current)
+            current = []
+    if current:
+        blocks.append(current)
+    assert len(blocks) == 1, (
+        f"{len(blocks)} table blocks under ## Implemented in FAMILIES.md. A blank "
+        "line inside a Markdown table ends it, and the rows after it render as "
+        "literal pipes on the page that says what the suite covers."
+    )
+    assert len(blocks[0]) == implemented + 2, (
+        f"{len(blocks[0]) - 2} rows in the Implemented table against {implemented} "
+        "families with probes"
+    )
+
+
+def _unbuilt_families(families_md: str) -> set[str]:
+    """The families FAMILIES.md names under Planned. Same parse as the build."""
+    planned = families_md.split("## Planned", 1)[-1].split(chr(10) + "## ", 1)[0]
+    return set(re.findall(r"^\|\s*`([a-z-]+)`\s*\|", planned, re.MULTILINE))
 
 
 def test_the_site_template_has_no_hand_typed_count_and_no_orphan_placeholder():

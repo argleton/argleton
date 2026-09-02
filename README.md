@@ -130,7 +130,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Twenty-eight families of twenty-eight, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Twenty-eight families of thirty-three, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 

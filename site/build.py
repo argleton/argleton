@@ -87,6 +87,20 @@ def planned_families() -> int:
     return len(set(re.findall(r"^\|\s*(\d+)\s*\|", text, re.MULTILINE)))
 
 
+def unbuilt_families() -> set[str]:
+    """The families FAMILIES.md names under Planned and has not built.
+
+    They carry no number on purpose — a family is numbered when it has a probe
+    pair, so that a number in a result always points at something that was run.
+    Counting numbered rows therefore made them invisible, and on 2026-09-02 the
+    page said "0 more are named" directly above a list of five: the numbered
+    planned rows had all been implemented, and nothing subtracted them.
+    """
+    text = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
+    planned = text.split("## Planned", 1)[-1].split("\n## ", 1)[0]
+    return set(re.findall(r"^\|\s*`([a-z-]+)`\s*\|", planned, re.MULTILINE))
+
+
 ORDINALS = {
     1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth", 6: "sixth",
     7: "seventh", 8: "eighth", 9: "ninth", 10: "tenth", 11: "eleventh",
@@ -95,6 +109,8 @@ ORDINALS = {
     20: "twentieth", 21: "twenty-first", 22: "twenty-second",
     23: "twenty-third", 24: "twenty-fourth", 25: "twenty-fifth",
     26: "twenty-sixth", 27: "twenty-seventh", 28: "twenty-eighth",
+    29: "twenty-ninth", 30: "thirtieth", 31: "thirty-first",
+    32: "thirty-second", 33: "thirty-third",
 }
 
 
@@ -262,9 +278,9 @@ def main(destination: Path) -> int:
         "{{TRUTH}}": str(zero["truth"]),
         "{{NAIVE}}": str(zero["naive"]),
         "{{FAMILIES}}": str(len({p["family"] for p in traps})),
-        "{{FAMILIES_PLANNED}}": str(planned_families()),
+        "{{FAMILIES_PLANNED}}": str(planned_families() + len(unbuilt_families())),
         "{{NEXT_ORDINAL}}": next_ordinal(),
-        "{{FAMILIES_REMAINING}}": str(planned_families() - len({p["family"] for p in traps})),
+        "{{FAMILIES_REMAINING}}": str(len(unbuilt_families())),
         "{{PROBES}}": str(len(probe_list)),
         "{{SYSTEMS}}": str(len(data)),
         "{{COMMIT}}": _git("rev-parse", "--short", "HEAD") or "unknown",
