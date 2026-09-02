@@ -28,6 +28,11 @@ NUMBER_WORDS = {
     "twenty-one": 21, "twenty-two": 22, "twenty-three": 23,
     "twenty-four": 24, "twenty-five": 25, "twenty-six": 26,
     "twenty-seven": 27, "twenty-eight": 28, "twenty-nine": 29,
+    # Filled in as the suite reaches them, and the cost of the gap is a
+    # `KeyError` rather than a false pass — which is the safe direction, and how
+    # this line came to be written: the run of 2026-09-02 took the suite to
+    # thirty traps and the word was not here.
+    "thirty": 30, "thirty-one": 31, "thirty-two": 32, "thirty-three": 33,
 }
 
 

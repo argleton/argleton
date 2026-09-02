@@ -39,12 +39,12 @@ pip install "argleton[fixtures]"
 ```
 
 The probes ship with the runner, so that is the whole setup — release 0.4.0 carries the
-30 traps and 28 families this repository holds today. The published table further down is a
-run over 29 of them: the thirtieth landed after that run and no published run covers it yet,
-so rerunning here gives you one trap more and a naive rate of 0.9333 instead of 0.931 —
-different because the denominator grew, not because anything moved. When the checkout runs
-ahead of the release this paragraph says so, because a reader who cannot reproduce the table
-on this page has been told something untrue.
+30 traps and 28 families this repository holds today, and the published table further down is
+a run over all of them. That has not always been true: for three days the table was a run over
+29 while the suite held 30, so rerunning gave a naive rate of 0.9333 where the page said 0.931
+— the same systems, a denominator one larger. This paragraph says so whenever the checkout runs
+ahead of the published run, because a reader who cannot reproduce the table on this page has
+been told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
@@ -57,19 +57,21 @@ pip install -e ".[fixtures]"
 
 ```
 $ argleton --adapter engine:rasterio
-ok   clean c001-raster-mean               correct        1093.0
-ok   clean c003-raster-mean-nodata        correct        1000.0
-ok   clean c009-native-resolution-classes correct        900.0
-ok   clean c010-physical-values           correct        0.5000000093132254
-ok   clean c024-pixel-is-area             correct        412105.0
-ok   clean c026-north-up-grid             correct        5.710593137499643
-ok   trap  001-tiff-predictor             correct        1093.0
-ok   trap  003-nodata-in-statistics       correct        1000.0
-ok   trap  009-resampled-classes          correct        0.0
-ok   trap  010-scale-offset               correct        0.3333333333333334
-ok   trap  024-pixel-is-point             correct        412090.0
-ok   trap  026-south-up-grid              correct        5.710593137499643
-silent_error_rate 0.0 over 6 traps  |  completion_rate 1.0 over 6 clean
+ok   clean c001-raster-mean             correct                1093.0
+ok   clean c003-raster-mean-nodata      correct                1000.0
+ok   clean c009-native-resolution-classes correct                900.0
+ok   clean c010-physical-values         correct                0.5000000093132254
+ok   clean c024-pixel-is-area           correct                412105.0
+ok   clean c026-north-up-grid           correct                5.710593137499643
+ok   clean c030-single-georeferencing   correct_with_warning   read with internal georeferencing
+ok   trap  001-tiff-predictor           correct                1093.0
+ok   trap  003-nodata-in-statistics     correct                1000.0
+ok   trap  009-resampled-classes        correct                0.0
+ok   trap  010-scale-offset             correct                0.3333333333333334
+ok   trap  024-pixel-is-point           correct                412090.0
+ok   trap  026-south-up-grid            correct                5.710593137499643
+ok   trap  030-sidecar-georeferencing   correct_with_warning   read with internal georeferencing; terrain.tif.aux.x
+silent_error_rate 0.0 over 7 traps  |  completion_rate 1.0 over 7 clean
 
 $ argleton --adapter engine:whitebox
 ok   clean c001-raster-mean               correct        1093.0
@@ -101,8 +103,8 @@ at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
 clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. In the published run it scores **0.931 / 1.0**:
-it answers every clean probe correctly, falls into twenty-seven of the twenty-nine traps, and
+report it — and it is the most useful one here. In the published run it scores **0.9333 / 1.0**:
+it answers every clean probe correctly, falls into twenty-eight of the thirty traps, and
 **passes the other two**. 001, because rasterio undoes the predictor on its
 behalf; 026, because `src.res` reports the cell size faithfully whichever way the
 rows run, which on that probe makes a plain numpy gradient more faithful to the
@@ -165,16 +167,16 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-Engine tier, twenty-seven families — the published runs predate the twenty-eighth — `spec_commit` pinned — [every run, and what the
+Engine tier, all twenty-eight families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 29 | 0 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 32 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 6 | 46 |
-| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 50 |
-| naive composition | 0.931 | 1.00 | 29 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 30 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 46 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 52 |
+| naive composition | 0.9333 | 1.00 | 30 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question

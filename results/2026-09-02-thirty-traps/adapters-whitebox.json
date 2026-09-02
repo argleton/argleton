@@ -1,0 +1,743 @@
+{
+  "system": "whitebox-workflows 2.0.6",
+  "adapter": "engine:whitebox",
+  "spec_commit": "f419a67",
+  "date": "2026-09-02",
+  "silent_error_rate": 0.75,
+  "completion_rate": 1.0,
+  "traps_run": 4,
+  "clean_run": 4,
+  "unsupported": 52,
+  "timing": {
+    "probes": 8,
+    "total_ms": 1619.1,
+    "median_ms": 17.7,
+    "first_probe_ms": 16.2,
+    "slowest": {
+      "probe_id": "c026-north-up-grid",
+      "ms": 871.3
+    },
+    "adapter_breakdown_ms": null
+  },
+  "verdict_counts": {
+    "correct": 5,
+    "silent_error": 3,
+    "unsupported": 52
+  },
+  "by_family": {
+    "aggregation-weighting": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "ambiguous-layer": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "antimeridian": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "axis-order": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "boundary-semantics": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "categorical-resampling": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "centroid-outside": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "coordinate-parsing": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "datum-ballpark": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "double-counting": {
+      "probes": 4,
+      "silent_errors": 0
+    },
+    "empty-result": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "geographic-crs": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "grid-registration": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "hidden-configuration": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "implicit-parameter-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "invalid-geometry": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "linear-units": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "mismatched-crs": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "mixed-geometry": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "nodata": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "polygon-holes": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "positional-pairing": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "projection-distortion": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "radiometric-scale-offset": {
+      "probes": 2,
+      "silent_errors": 0
+    },
+    "raster-affine": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "raster-encoding": {
+      "probes": 2,
+      "silent_errors": 1
+    },
+    "tabular-join": {
+      "probes": 4,
+      "silent_errors": 0
+    },
+    "z-dimension": {
+      "probes": 2,
+      "silent_errors": 0
+    }
+  },
+  "per_probe": [
+    {
+      "probe_id": "c001-raster-mean",
+      "population": "clean",
+      "family": "raster-encoding",
+      "verdict": "correct",
+      "detail": "1093.0",
+      "answer": 1093.0,
+      "duration_ms": 16.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c002-projected-area",
+      "population": "clean",
+      "family": "linear-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c003-raster-mean-nodata",
+      "population": "clean",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0,
+      "duration_ms": 19.3,
+      "timings": null
+    },
+    {
+      "probe_id": "c004-points-in-polygon",
+      "population": "clean",
+      "family": "mismatched-crs",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "c005-polygon-area",
+      "population": "clean",
+      "family": "invalid-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c006-named-layer",
+      "population": "clean",
+      "family": "ambiguous-layer",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "c007-distance-in-metres",
+      "population": "clean",
+      "family": "implicit-parameter-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c008-equal-area-crs",
+      "population": "clean",
+      "family": "projection-distortion",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "c009-native-resolution-classes",
+      "population": "clean",
+      "family": "categorical-resampling",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "c010-physical-values",
+      "population": "clean",
+      "family": "radiometric-scale-offset",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c011-solid-parcel",
+      "population": "clean",
+      "family": "polygon-holes",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c012-disjoint-concessions",
+      "population": "clean",
+      "family": "double-counting",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c013-flat-pipeline",
+      "population": "clean",
+      "family": "z-dimension",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c014-convex-parcel",
+      "population": "clean",
+      "family": "centroid-outside",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c015-wells-off-the-seam",
+      "population": "clean",
+      "family": "boundary-semantics",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c016-decimal-degrees",
+      "population": "clean",
+      "family": "coordinate-parsing",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c017-equal-populations",
+      "population": "clean",
+      "family": "aggregation-weighting",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c018-plain-keys",
+      "population": "clean",
+      "family": "tabular-join",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c019-fully-contained",
+      "population": "clean",
+      "family": "double-counting",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c020-one-owner-each",
+      "population": "clean",
+      "family": "tabular-join",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c021-greenwich-variant",
+      "population": "clean",
+      "family": "datum-ballpark",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c022-two-gauges",
+      "population": "clean",
+      "family": "positional-pairing",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c023-longitude-first",
+      "population": "clean",
+      "family": "axis-order",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c024-pixel-is-area",
+      "population": "clean",
+      "family": "grid-registration",
+      "verdict": "correct",
+      "detail": "412105.0",
+      "answer": 412105.0,
+      "duration_ms": 3.2,
+      "timings": null
+    },
+    {
+      "probe_id": "c025-single-hemisphere-zone",
+      "population": "clean",
+      "family": "antimeridian",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c026-north-up-grid",
+      "population": "clean",
+      "family": "raster-affine",
+      "verdict": "correct",
+      "detail": "5.56521959900856",
+      "answer": 5.56521959900856,
+      "duration_ms": 871.3,
+      "timings": null
+    },
+    {
+      "probe_id": "c027-lines-only",
+      "population": "clean",
+      "family": "mixed-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "c028-projected-field",
+      "population": "clean",
+      "family": "geographic-crs",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c029-coincident-boundaries",
+      "population": "clean",
+      "family": "empty-result",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "c030-single-georeferencing",
+      "population": "clean",
+      "family": "hidden-configuration",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "001-tiff-predictor",
+      "population": "trap",
+      "family": "raster-encoding",
+      "verdict": "silent_error",
+      "detail": "expected 1093.0 \u00b1 0.001, got 36.09375 \u2014 this is the predicted naive failure",
+      "answer": 36.09375,
+      "duration_ms": 1.7,
+      "timings": null
+    },
+    {
+      "probe_id": "002-feet-as-metres",
+      "population": "trap",
+      "family": "linear-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "003-nodata-in-statistics",
+      "population": "trap",
+      "family": "nodata",
+      "verdict": "correct",
+      "detail": "1000.0",
+      "answer": 1000.0,
+      "duration_ms": 19.2,
+      "timings": null
+    },
+    {
+      "probe_id": "004-mismatched-crs-join",
+      "population": "trap",
+      "family": "mismatched-crs",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "005-bowtie-area",
+      "population": "trap",
+      "family": "invalid-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "006-default-layer",
+      "population": "trap",
+      "family": "ambiguous-layer",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "007-buffer-in-degrees",
+      "population": "trap",
+      "family": "implicit-parameter-units",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "008-web-mercator-area",
+      "population": "trap",
+      "family": "projection-distortion",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "009-resampled-classes",
+      "population": "trap",
+      "family": "categorical-resampling",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "010-scale-offset",
+      "population": "trap",
+      "family": "radiometric-scale-offset",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "011-polygon-holes",
+      "population": "trap",
+      "family": "polygon-holes",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "012-double-counting",
+      "population": "trap",
+      "family": "double-counting",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "013-z-dimension",
+      "population": "trap",
+      "family": "z-dimension",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "014-centroid-outside",
+      "population": "trap",
+      "family": "centroid-outside",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "015-boundary-semantics",
+      "population": "trap",
+      "family": "boundary-semantics",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "016-coordinate-parsing",
+      "population": "trap",
+      "family": "coordinate-parsing",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "017-aggregation-weighting",
+      "population": "trap",
+      "family": "aggregation-weighting",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "018-join-key-typing",
+      "population": "trap",
+      "family": "tabular-join",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    },
+    {
+      "probe_id": "019-partial-overlap",
+      "population": "trap",
+      "family": "double-counting",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "020-join-cardinality",
+      "population": "trap",
+      "family": "tabular-join",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "021-ballpark-datum",
+      "population": "trap",
+      "family": "datum-ballpark",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "022-thiessen-pairing",
+      "population": "trap",
+      "family": "positional-pairing",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "023-axis-order",
+      "population": "trap",
+      "family": "axis-order",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "024-pixel-is-point",
+      "population": "trap",
+      "family": "grid-registration",
+      "verdict": "silent_error",
+      "detail": "expected 412090.0 \u00b1 1.0, got 412120.0",
+      "answer": 412120.0,
+      "duration_ms": 2.4,
+      "timings": null
+    },
+    {
+      "probe_id": "025-antimeridian-zone",
+      "population": "trap",
+      "family": "antimeridian",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "026-south-up-grid",
+      "population": "trap",
+      "family": "raster-affine",
+      "verdict": "silent_error",
+      "detail": "expected 5.64 \u00b1 0.2, got 43.99398475646973 \u2014 this is the predicted naive failure",
+      "answer": 43.99398475646973,
+      "duration_ms": 685.8,
+      "timings": null
+    },
+    {
+      "probe_id": "027-mixed-geometry",
+      "population": "trap",
+      "family": "mixed-geometry",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "028-degrees-as-metres",
+      "population": "trap",
+      "family": "geographic-crs",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "029-difference-order",
+      "population": "trap",
+      "family": "empty-result",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.0,
+      "timings": null
+    },
+    {
+      "probe_id": "030-sidecar-georeferencing",
+      "population": "trap",
+      "family": "hidden-configuration",
+      "verdict": "unsupported",
+      "detail": "the adapter does not implement this operation",
+      "answer": null,
+      "duration_ms": 0.1,
+      "timings": null
+    }
+  ]
+}

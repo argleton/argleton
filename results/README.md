@@ -48,6 +48,55 @@ about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
 
+## 2026-09-02 — the whole suite, for the first time
+
+Published run: [`2026-09-02-thirty-traps/`](2026-09-02-thirty-traps/).
+Engine tier, `spec_commit` [`f419a67`](../../../commit/f419a67), thirty traps and
+thirty clean cases across twenty-eight families — the entire suite as it stands.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 30 | 0 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 46 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 34 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 52 |
+| naive composition | 0.9333 | 1.00 | 30 | 0 |
+
+**What is new is the coverage, not the verdicts.** The published run had been
+sitting at twenty-nine traps and twenty-seven families since 30 August while the
+suite itself grew to thirty and twenty-eight, so every page quoting "thirty
+traps" beside that run was quoting two different things — the size of the suite
+and the size of the last measurement — as if they were one. They are the same
+number again now, and the site build reads both from the run rather than from
+the working tree, which is what let them drift in the first place.
+
+**The naive rate moved from 0.931 to 0.9333 and nothing changed.** It is 28 of
+30 where it was 27 of 29: the denominator grew by one trap that careless code
+also falls into. A rate that moves because the population moved is not a
+finding, and saying so is cheaper than letting a reader infer a trend from two
+decimal places.
+
+**MapSmith's thirty include one refusal, and it is counted as correct.** Trap
+`030-sidecar-georeferencing` presents a raster whose `.aux.xml` sidecar declares
+different georeferencing from the file's own tags. Both readings are GDAL
+behaving as documented, so there is no right number to return — the right answer
+is to stop and say which two readings disagree and how to choose between them.
+That is a `refused_correctly` verdict rather than an answer, and a suite that
+scored it as a miss would be rewarding a system for guessing.
+
+The other four verdicts that are not plain `correct` are warnings attached to
+correct answers: a self-intersecting ring repaired before measuring and the
+repair recorded, a weighted mean that differs from the unweighted one by 890%, a
+join that produced thirteen rows from ten parcels, and an empty result that is
+genuinely empty. In each the number is right and the record says what happened
+to get there, which is the distinction the whole suite is built to make.
+
+**Read the "not applicable" column before comparing rates.** Three of these five
+adapters answered a fraction of the suite — whitebox attempted four traps of
+thirty — so 0.75 and 0.00 are not two measurements of the same thing. Scoring an
+operation a system was never asked to perform would measure the adapter rather
+than the system.
+
 ## 2026-08-30 (final) — twenty-seven families of twenty-seven
 
 Published run: [`2026-08-30-all-families/`](2026-08-30-all-families/).
