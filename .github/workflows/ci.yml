@@ -82,13 +82,16 @@ jobs:
           # point — a trap that stops catching its own naive adapter, or one
           # that starts catching a case it should not, has changed what it
           # measures, and that must be a decision rather than a surprise.
-          # 0.9333 = 28 of 30 traps caught. TWO still pass, unchanged: 001,
+          # 0.9355 = 29 of 31 traps caught. TWO still pass, unchanged: 001,
           # where rasterio undoes the predictor on the naive adapter's behalf,
           # and 026, where `src.res` reports the cell size faithfully whichever
           # way the rows run — so a plain numpy gradient is more faithful to the
-          # geotransform than a specialised terrain engine is. Moved from 0.931
-          # on 2026-08-31 when trap 030 added family 28: the naive adapter falls
-          # into it, so both numerator and denominator went up by one. Before
+          # geotransform than a specialised terrain engine is. Moved from
+          # 0.9333 on 2026-09-02 when trap 031 added family 29 — a shapefile
+          # whose inner ring is wound like its outer one, which the naive
+          # composition reads as two shells and adds — so both numerator and
+          # denominator went up by one. Before that 0.931 on 2026-08-31 when
+          # trap 030 added family 28, the same way. Before
           # that 0.96 when traps 026 to 029 closed the original family list, and
           # 0.9583, 0.9565 and 0.9545 as traps 025, 024 and 023 landed.
           # Each time the denominator changed and the numerator changed with
@@ -96,5 +99,5 @@ jobs:
           # mechanism working — the number moved because a trap was added, which
           # is a decision, and it has to be written down here rather than
           # discovered in a published table.
-          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.9333, 1.0) else 1)
+          sys.exit(0 if (r["silent_error_rate"], r["completion_rate"]) == (0.9355, 1.0) else 1)
           PY
