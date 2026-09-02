@@ -303,7 +303,8 @@ def test_the_prose_around_the_family_tables_counts_the_family_tables():
 
     sentences = [
         ("what the published run covers", r"published run covers all ([a-z-]+)", run_families),
-        ("how many families are left to build", r"the remaining ([a-z-]+) are named under", unbuilt),
+        ("how many families are left to build",
+         r"the remaining ([a-z-]+) are named under", unbuilt),
         ("the introduction to the Planned table", r"implemented; the ([a-z-]+) below", unbuilt),
         ("the caveat on completeness", r"That these ([a-z-]+) are all of them", implemented),
     ]
