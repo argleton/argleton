@@ -269,6 +269,56 @@ def _unbuilt_families(families_md: str) -> set[str]:
     return set(re.findall(r"^\|\s*`([a-z-]+)`\s*\|", planned, re.MULTILINE))
 
 
+def test_the_prose_around_the_family_tables_counts_the_family_tables():
+    """The counts in FAMILIES.md that the guarded sentence shapes do not read.
+
+    Four sentences state a family count in prose of their own: how much of the
+    list the published run covers, how many are left over, what introduces the
+    Planned table, and the caveat under *What this list does not claim*. On
+    2026-09-02 family 29 left all four behind — "covers all twenty-eight", "the
+    remaining five", "the five below" over a table of four, "these twenty-eight
+    are all of them" — while the two guarded sentences directly above them had
+    been updated and the suite stayed green.
+
+    The caveat is the one that matters most: a page whose whole job is to stop a
+    0.00 being read as broader than it is cannot undercount the families it
+    covers. So this grows with the suite by construction, and each pattern is
+    asserted to match before it is asserted to agree, because a regex that
+    quietly stops matching is a check that quietly stops checking.
+    """
+    import importlib.util
+
+    location = importlib.util.spec_from_file_location(
+        "argleton_site_build", ROOT / "site" / "build.py"
+    )
+    builder = importlib.util.module_from_spec(location)
+    location.loader.exec_module(builder)
+
+    _, data = latest_run()
+    _, run_families = builder.run_coverage(list(data.values()))
+
+    implemented = len({p.family for p in discover(ROOT) if p.population == "trap"})
+    families_md = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
+    unbuilt = len(_unbuilt_families(families_md))
+
+    sentences = [
+        ("what the published run covers", r"published run covers all ([a-z-]+)", run_families),
+        ("how many families are left to build", r"the remaining ([a-z-]+) are named under", unbuilt),
+        ("the introduction to the Planned table", r"implemented; the ([a-z-]+) below", unbuilt),
+        ("the caveat on completeness", r"That these ([a-z-]+) are all of them", implemented),
+    ]
+    for what, pattern, expected in sentences:
+        found = re.search(pattern, families_md)
+        assert found, (
+            f"FAMILIES.md no longer states {what} in a shape this test can read. "
+            "Reword the pattern with the sentence, or the check goes quiet."
+        )
+        assert NUMBER_WORDS[found.group(1).lower()] == expected, (
+            f"FAMILIES.md, {what}: the page says {found.group(1)}, "
+            f"the repository says {expected}"
+        )
+
+
 def test_the_site_template_has_no_hand_typed_count_and_no_orphan_placeholder():
     """Counts on the page come from placeholders the build fills; a literal
     number word in the template is the "nine more" defect waiting to recur."""

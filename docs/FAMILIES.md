@@ -3,7 +3,7 @@
 Thirty-three families are on the list — twelve from the original design, the rest
 added from reproductions and from a survey of what the archives and the libraries
 themselves warn about. **Twenty-nine are implemented.** As of 2026-09-02 the
-published run covers all twenty-eight; the remaining five are named under
+published run covers all twenty-nine; the remaining four are named under
 [Planned](#planned) and not yet built. This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
@@ -79,7 +79,7 @@ closing section of this page asks of anyone.
 
 ## Planned
 
-Every family from the original design is now implemented; the five below came out
+Every family from the original design is now implemented; the four below came out
 of a 2026 survey of what the industry is shipping, and matter because they are
 wrong on the asset class everyone is adopting. They have no number yet: a family
 is numbered when it has a probe pair, so that a number in a result always points
@@ -126,8 +126,8 @@ added up, or what a unit meant, or which of two arguments came first.
 
 ## What this list does not claim
 
-That these twenty-eight are all of them. They are the families we can currently
-argue for, each with a source. A twenty-ninth that meets the four conditions
+That these twenty-nine are all of them. They are the families we can currently
+argue for, each with a source. A thirtieth that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this
 list has entries, and being able to say which ones failed the conditions is

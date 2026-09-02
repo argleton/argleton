@@ -78,10 +78,11 @@ So the family was not blocked on a missing engine. It was aimed at the wrong
 mechanism, and the tool we were about to install would have measured nothing.
 
 **The mechanism that does work is in the format, and this repository had already
-written it down.** Trap 011's README says a shapefile "encodes holes only by ring
+written it down.** [Trap 011](../traps/011-polygon-holes/)'s README says a shapefile "encodes holes only by ring
 winding order, with no explicit structure, so a converted file whose inner ring
 is wound the wrong way loses its hole with no error at all." Nothing measured it.
-`031` does: a 200 × 150 survey plot with a 40 × 25 easement whose inner ring is
+The new family, [`ring-role-by-winding`](../traps/031-hole-wound-as-shell/), does
+(with [`c031`](../clean/c031-hole-wound-as-hole/) beside it): a 200 × 150 survey plot with a 40 × 25 easement whose inner ring is
 wound like the outer one. GDAL applies its documented rule — for this driver
 `OGR_ORGANIZE_POLYGONS` defaults to `ONLY_CCW`, under which a clockwise ring is a
 shell — and returns two overlapping shells, so the easement is **added** instead
