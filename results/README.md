@@ -12,9 +12,10 @@ family with several probes cannot read as several independent findings.
 ## What these numbers do not say
 
 This section is at the top rather than the bottom on purpose, and it grows with
-the suite. Twenty-eight families of twenty-eight are implemented
+the suite. Twenty-nine families of thirty-three are implemented
 ([FAMILIES.md](../docs/FAMILIES.md)), and since 2026-09-02 the published run
-covers all of them. The older sections below were produced on fewer: read each
+covers all of the implemented ones. The other four are named there and not yet
+built. The older sections below were produced on fewer: read each
 section's family count rather than this page's.
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
@@ -47,6 +48,62 @@ Nobody is notified before publication as long as nothing here is a new claim
 about a third party: the Whitebox defect was reported upstream first, and the
 rest is documented behaviour. That changes the moment a result says something a
 maintainer has not already been told.
+
+## 2026-09-02 (later) — twenty-nine families, and one that was aimed at the wrong engine
+
+Published run: [`2026-09-02-ring-role/`](2026-09-02-ring-role/).
+Engine tier, `spec_commit` [`6f2b718`](../../../commit/6f2b718), thirty-one traps
+and thirty-one clean cases across twenty-nine families.
+
+| system | silent error rate | completion rate | traps run | not applicable |
+|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 31 | 0 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9355 | 1.00 | 31 | 0 |
+
+**The new family had been planned against an engine that does not have the
+defect.** `ring-orientation` was written down as "an inverted ring becomes the
+complement of the polygon on S2-based engines", with PostGIS `geography` named as
+the way to build it, and it sat unbuilt for a week because we did not have
+PostGIS. Read against the source, PostGIS is orientation-invariant on both paths
+that matter: `ptarray_area_spheroid` returns `fabs(area)` and combines rings by
+index, and `ptarray_contains_point_sphere` is a ray-crossing parity test, which
+cannot depend on the direction of travel. DuckDB is the same. BigQuery does
+produce the complement, but only under `oriented => TRUE` — an opt-in, and a
+suite that measures silent errors must not reward itself for turning one on.
+
+So the family was not blocked on a missing engine. It was aimed at the wrong
+mechanism, and the tool we were about to install would have measured nothing.
+
+**The mechanism that does work is in the format, and this repository had already
+written it down.** Trap 011's README says a shapefile "encodes holes only by ring
+winding order, with no explicit structure, so a converted file whose inner ring
+is wound the wrong way loses its hole with no error at all." Nothing measured it.
+`031` does: a 200 × 150 survey plot with a 40 × 25 easement whose inner ring is
+wound like the outer one. GDAL applies its documented rule — for this driver
+`OGR_ORGANIZE_POLYGONS` defaults to `ONLY_CCW`, under which a clockwise ring is a
+shell — and returns two overlapping shells, so the easement is **added** instead
+of subtracted. 31000 where the truth is 29000: a gap of exactly twice the
+easement, 6.9%, and in the owner's favour.
+
+The careful compositions get it right and say why, which is the point of having
+both rows: GEOS names the cause exactly — `Nested shells` — so the difference
+between 31000 and 29000 is one validity check away, for anyone who makes it.
+
+**The fixture patches the `.shp` bytes, and the reason belongs on this page.**
+The shapefile writer normalises ring direction on the way out: a hole handed to
+OGR clockwise lands on disk anticlockwise, measured by reading the record back.
+So this file cannot be produced by accident from the library that misreads it. It
+comes from a converter, an exporter or a hand-rolled writer — which is where it
+comes from in the field, and is why the probe builds it that way rather than
+pretending the writer would.
+
+**The naive rate moved from 0.9333 to 0.9355 and nothing changed**, again: 29 of
+31 where it was 28 of 30. The same sentence as the earlier run today, for the
+same reason, and it will keep being true every time the suite grows by a trap
+that careless code also falls into.
 
 ## 2026-09-02 — the whole suite, for the first time
 

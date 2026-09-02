@@ -39,12 +39,12 @@ pip install "argleton[fixtures]"
 ```
 
 The probes ship with the runner, so that is the whole setup — release 0.4.0 carries the
-30 traps and 28 families this repository holds today, and the published table further down is
-a run over all of them. That has not always been true: for three days the table was a run over
-29 while the suite held 30, so rerunning gave a naive rate of 0.9333 where the page said 0.931
-— the same systems, a denominator one larger. This paragraph says so whenever the checkout runs
-ahead of the published run, because a reader who cannot reproduce the table on this page has
-been told something untrue.
+30 traps and 28 families that were in the tree when it was tagged, while **this checkout has 31 traps
+and 29 families** — and the published table further down is a run over all of them, so
+reinstalling the release and rerunning gives one trap fewer and a naive rate of 0.9333 instead
+of 0.9355 — the same systems, a denominator one smaller. This paragraph says so whenever the
+checkout runs ahead of the release, because a reader who cannot reproduce the table on this
+page has been told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
@@ -103,8 +103,8 @@ at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
 clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. In the published run it scores **0.9333 / 1.0**:
-it answers every clean probe correctly, falls into twenty-eight of the thirty traps, and
+report it — and it is the most useful one here. In the published run it scores **0.9355 / 1.0**:
+it answers every clean probe correctly, falls into twenty-nine of the thirty-one traps, and
 **passes the other two**. 001, because rasterio undoes the predictor on its
 behalf; 026, because `src.res` reports the cell size faithfully whichever way the
 rows run, which on that probe makes a plain numpy gradient more faithful to the
@@ -130,7 +130,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Twenty-eight families of thirty-three, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Twenty-nine families of thirty-three, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -164,19 +164,20 @@ rate means a system did not fail silently *on these probes*.
 | `empty-result` | 0 m² workable instead of 160000 | difference is not commutative, and an empty result reads as a finding rather than a failure |
 | `grid-registration` | easting 412105 instead of 412090 | the file declares `AREA_OR_POINT=Point` and the library reports the tag from the same object whose coordinate helper ignores it; half a cell on a 30 m DEM is 15 m, systematic, and inside the GPS error of anyone sent to check |
 | `hidden-configuration` | 160000 m² instead of 40000 | a sidecar georeferences the same raster and wins by documented precedence; both readings are the library behaving as written, and no answer says which one it used |
+| `ring-role-by-winding` | 31000 m² instead of 29000 | a shapefile carries no nesting, so which ring is a hole is decided by the direction it is wound and by nothing else; an inner ring wound like its parent reads as a second shell and its area is added, flattering the owner by 6.9% |
 
 ## Results
 
-Engine tier, all twenty-eight families, `spec_commit` pinned — [every run, and what the
+Engine tier, all twenty-nine families, `spec_commit` pinned — [every run, and what the
 numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 30 | 0 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 34 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 46 |
-| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 52 |
-| naive composition | 0.9333 | 1.00 | 30 | 0 |
+| MapSmith (main) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9355 | 1.00 | 31 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question

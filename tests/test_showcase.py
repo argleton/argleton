@@ -380,11 +380,21 @@ def test_every_live_family_count_in_public_markdown_is_current():
     run is a record of what was claimed then and stays exactly as written.
     """
     implemented = len({p.family for p in discover(ROOT) if p.population == "trap"})
-    planned = len(set(re.findall(
-        r"^\|\s*(\d+)\s*\|",
-        (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8"),
+    # Numbered rows PLUS the ones named under Planned, which carry no number by
+    # design — a family is numbered when it has a probe pair, so that a number
+    # in a result always points at something that ran. Counting only the
+    # numbered ones made the unbuilt families invisible, which is the same
+    # blind spot that had the site caption saying "0 more are named" directly
+    # above a list of five on 2026-09-02. Same parse as `site/build.py`, so the
+    # page and this test cannot disagree about what the file says.
+    families = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
+    numbered = set(re.findall(r"^\|\s*(\d+)\s*\|", families, re.MULTILINE))
+    unbuilt = set(re.findall(
+        r"^\|\s*`([a-z-]+)`\s*\|",
+        families.split("## Planned", 1)[-1].split("\n## ", 1)[0],
         re.MULTILINE,
-    )))
+    ))
+    planned = len(numbered) + len(unbuilt)
     live = re.compile(r"([A-Za-z-]+) families of ([a-z-]+) are implemented")
     checked = 0
     for page in public_markdown():
