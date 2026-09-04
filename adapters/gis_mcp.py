@@ -31,19 +31,29 @@ class Adapter:
         return operation(probe, workdir)
 
     def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
-        # gis-mcp ships no band-math or index tool: composing one here out of
-        # numpy would measure numpy. Resolved at call time rather than assumed,
-        # so the day they add one this adapter picks it up.
-        try:
-            from gis_mcp import rasterio_functions
-        except ImportError:
-            return Outcome(unsupported=True)
-        for name in ("calculate_ndvi", "band_math", "raster_algebra", "raster_calculator"):
-            if hasattr(rasterio_functions, name):
-                break
-        else:
-            return Outcome(unsupported=True)
-        return Outcome(unsupported=True)
+        from gis_mcp.rasterio_functions import compute_ndvi, raster_band_statistics
+
+        # Until 2026-09-04 this method said "gis-mcp ships no band-math or index
+        # tool" and returned unsupported on every path -- including the path
+        # where its own lookup had just FOUND one. gis-mcp 0.15.0 ships
+        # compute_ndvi, and the review of the maintainer notice caught the
+        # comment being false while the notice asked them to tell us about
+        # tools we had missed. Composition, all theirs: compute_ndvi writes
+        # the index raster, raster_band_statistics reads its mean. What the
+        # trap measures is whether the index is built on the stored integers
+        # or on the physical values the scale/offset tags describe.
+        red = int(probe.arguments[1].split("=", 1)[1])
+        nir = int(probe.arguments[2].split("=", 1)[1])
+        index = workdir / "_gis_mcp_ndvi.tif"
+        written = compute_ndvi.fn(str(workdir / probe.arguments[0]), red, nir, str(index))
+        if written.get("status") != "success":
+            return Outcome(error=str(written.get("message", written)))
+        stats = raster_band_statistics.fn(str(index))
+        bands = stats.get("statistics") or {}
+        first = next(iter(bands.values()), None) if isinstance(bands, dict) else None
+        if not first or "mean" not in first:
+            return Outcome(error=f"raster_band_statistics returned no mean: {stats}")
+        return Outcome(answer=float(first["mean"]))
 
     def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         # Charitable composition (their own tools, at their best): gis-mcp wraps
@@ -402,14 +412,21 @@ class Adapter:
         # naive composition and called it gis-mcp.
         return Outcome(answer=self._careful_area(workdir / probe.arguments[0]))
 
-    # Two of the nine stay unsupported, and the reason is theirs rather than
-    # this file's:
+    # Two of the nine stay unsupported. An earlier version of this comment gave
+    # the wrong reasons for both, and the review of the maintainer notice
+    # corrected them; the honest ones are these.
     #
-    # `lowest_cell_easting` (024) needs the POSITION of a raster's minimum.
-    # gis-mcp reports band statistics but nothing that returns a cell index or
-    # a coordinate, and composing an argmin out of numpy here would measure
-    # numpy -- the same rule that keeps `ndvi_mean` honest.
+    # `lowest_cell_easting` (024) needs the ground POSITION of a raster's
+    # minimum on a grid that declares AREA_OR_POINT=Point. The cell itself is
+    # reachable with their tools -- `metadata_raster` returns the transform and
+    # bounds, `tile_raster` can hand back one file per cell -- so "nothing
+    # returns a coordinate" was false. What no gis-mcp output carries is the
+    # AREA_OR_POINT tag, and turning a cell index into a ground coordinate
+    # depends on it: that decision would be this file's, not theirs, which is
+    # exactly what this probe measures. So it stays unattempted.
     #
-    # `mean_slope_degrees` (026) needs slope. They ship `hillshade`, which
-    # consumes a slope internally and returns shading, and no tool that
-    # returns the angle.
+    # `mean_slope_degrees` (026): no tool returns the angle. A rise-over-run can
+    # be composed from `focal_statistics`, `raster_algebra` and the cell size
+    # from `metadata_raster`, and the review showed it lands within tolerance on
+    # the test surface. Not wired yet, so as not to quote a number that has not
+    # been run; it is on the list, and the notice says so.
