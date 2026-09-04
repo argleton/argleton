@@ -487,11 +487,19 @@ class Adapter:
         # to be discovered, since it is the glue's choice and not theirs.
         source = workdir / probe.arguments[0]
         transform = metadata_raster.fn(str(source))["metadata"]["transform"]
-        # abs() is the whole probe. On a south-up grid the fifth element of the
-        # transform is POSITIVE, and a run is a length whichever way the rows
-        # are stored; the engines that fail this one discard the georeferencing
-        # instead of reading the sign. rasterio reports it faithfully and
-        # `metadata_raster` passes it through, so the cell size survives.
+        # What gets this probe right is the first element, and it is right for
+        # free: rasterio reports the transform faithfully and `metadata_raster`
+        # passes it through, so the run is 10 m on the south-up grid exactly as
+        # on the north-up twin. The engines that fail here are the ones that
+        # build a grid model of their own, cannot express a positive fifth
+        # element, and drop the georeferencing entirely -- reading 1 m cells at
+        # the origin.
+        #
+        # The abs() on the fifth element earns its place on the TWIN, not on the
+        # trap: north-up means negative by convention, so without it the
+        # square-cell check below would reject the ordinary grid and accept the
+        # unusual one. A guard that fires on the control and not on the trap is
+        # worse than no guard, and this one is one character away from being it.
         run = abs(float(transform[0]))
         if abs(run - abs(float(transform[4]))) > 1e-9:
             return Outcome(error="non-square cells: a 3x3 max-drop has no single run")
