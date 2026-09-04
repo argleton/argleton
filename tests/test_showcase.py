@@ -111,14 +111,27 @@ def test_the_readme_results_table_is_the_latest_run():
 
 def test_the_results_index_has_a_section_for_the_latest_run_and_it_agrees():
     """`results/README.md` must open a dated section for the newest run, and
-    that section's table must match the JSON beside it."""
+    that section's table must match the JSON beside it.
+
+    Including how many rows it has. Until 2026-09-04 this test checked every
+    row it found and never that it had found them all, so a system could be
+    left out of the section and the suite would agree with what remained --
+    the shape of defect this project keeps catching in itself, one file away
+    from the twin check on the root README that does count. It matters at
+    exactly one moment: the run where the number of systems changes.
+    """
     run_name, systems = latest_run()
     text = (ROOT / "results" / "README.md").read_text(encoding="utf-8")
     date = run_name[:10]
     heading = re.search(rf"^## {re.escape(date)}\b.*$", text, re.MULTILINE)
     assert heading, f"results/README.md has no section for the {run_name} run"
     section = text[heading.end():].split("\n## ", 1)[0]
-    for name, cells in parse_result_rows(section):
+    rows = parse_result_rows(section)
+    assert len(rows) == len(systems), (
+        f"the {run_name} section lists {len(rows)} systems, the run measured "
+        f"{len(systems)}: {sorted(systems)}"
+    )
+    for name, cells in rows:
         record = by_base_name(name, systems)
         assert float(cells[0]) == record["silent_error_rate"], f"{name}: silent error rate"
         assert float(cells[1]) == record["completion_rate"], f"{name}: completion rate"
