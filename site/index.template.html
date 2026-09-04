@@ -214,6 +214,7 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
   </p>
   <ul>
 {{COVERAGE_GAP}}
+{{PARTIAL_COVERAGE}}
     <li><strong>A 0.00 means a system did not fail silently <em>on these probes</em>.</strong> Not
     that it is correct, not that it is safe, and not that it would survive the families that are
     named and not yet built — nor the thirty further mechanisms a survey of the literature turned
@@ -223,9 +224,11 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
     be able to look better than one that faced all of them.</li>
     <li><strong>One family can move any of these rates a long way</strong>, because most carry one
     trap each. Treat a difference of one probe as one probe.</li>
-    <li><strong>Engine tier only.</strong> Every number here comes from an adapter calling a
-    library directly. Nothing on this page measures an agent, and an agent wrapping a careful
-    library can still produce a careless answer.</li>
+    <li><strong>Engine tier only.</strong> Every number here comes from an adapter calling code
+    directly — a library’s functions, or, for the MCP servers on this page, the functions their
+    tools are made of, in the same process rather than over a transport. Nothing here measures a
+    server end to end, nothing here measures an agent, and an agent wrapping a careful library can
+    still produce a careless answer.</li>
     <li><strong>A pass can be inherited.</strong> Some of them are: an adapter can be right because
     the library underneath happened to undo the problem, which is not the same as the adapter
     knowing about it. The run separates the two where we can tell.</li>

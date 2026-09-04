@@ -36,8 +36,12 @@ FONTS = (
 )
 
 # The order systems appear in the table. Ours first, deliberately: a suite whose
-# authors are not at the top of their own list is hiding something.
-ORDER = ["MapSmith", "rasterio", "GeoPandas", "whitebox", "naive"]
+# authors are not at the top of their own list is hiding something. Then the
+# other system of the same kind, then the libraries, then the baseline — by what
+# a row is, not by how the row scored. Sorting a third party downwards to soften
+# the comparison would be its own kind of dishonesty, and the columns beside the
+# rate already say how many traps each system was asked.
+ORDER = ["MapSmith", "gis-mcp", "rasterio", "GeoPandas", "whitebox", "naive"]
 
 
 def latest_run() -> tuple[str, list[dict]]:
@@ -209,6 +213,42 @@ def coverage_gap(probe_list: list[dict], run_families: int) -> str:
     )
 
 
+def partial_coverage(data: list[dict], run_traps: int) -> str:
+    """The caveat naming systems our adapter could not ask everything, or nothing.
+
+    Generated, and for the same reason as `coverage_gap`: the sentence changes
+    every time an adapter grows a method, and the version a stranger reads has
+    to be the one the run supports.
+
+    What it guards against is a specific misreading, and it is the misreading
+    this project has spent the most care avoiding. `unsupported` is defined in
+    METHOD.md as "the adapter does not implement the operation" — a statement
+    about the code in `adapters/`. Put in a column headed N/A beside a system's
+    name, it reads as a gap in that system. On gis-mcp the difference was
+    measured rather than argued: the adapter had methods for nine of the
+    operations the suite asks, and extending it moved the published rate from
+    0.3636 to 0.2105 without gis-mcp changing a line.
+    """
+    short = sorted(
+        ((d["system"], d["traps_run"]) for d in data if d["traps_run"] < run_traps),
+        key=lambda pair: pair[1],
+    )
+    if not short:
+        return ""
+    named = ", ".join(f"{html.escape(name)} ({count} of {run_traps})" for name, count in short)
+    return (
+        '    <li><strong>An N/A is a limit of our adapter, not of the system.</strong> '
+        f"Not every system here was asked every trap: {named}. The rest came back "
+        "<code>unsupported</code>, which "
+        '<a href="https://github.com/argleton/argleton/blob/main/docs/METHOD.md">METHOD.md</a> '
+        "defines as <em>the adapter does not implement the operation</em> — a statement about "
+        "the code in <code>adapters/</code>, not about the system. Read each rate over the "
+        "traps that system faced, and do not read this column as a coverage gap of theirs. "
+        "Where an adapter of ours has been too thin, extending it has moved a rate a long "
+        "way with nothing changing in the system measured.</li>"
+    )
+
+
 def share_card(destination: Path, truth, naive) -> None:
     """The two numbers, 1200x630, for the card a link becomes on a social feed.
 
@@ -273,6 +313,7 @@ def main(destination: Path) -> int:
         "{{RUN_TRAPS}}": str(run_traps),
         "{{RUN_FAMILIES}}": str(run_families),
         "{{COVERAGE_GAP}}": coverage_gap(probe_list, run_families),
+        "{{PARTIAL_COVERAGE}}": partial_coverage(data, run_traps),
         "{{RUN}}": run_id,
         "{{SPEC_COMMIT}}": data[0]["spec_commit"],
         "{{TRUTH}}": str(zero["truth"]),
