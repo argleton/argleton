@@ -1,5 +1,13 @@
-"""Adapter: gis-mcp (mahdin75/gis-mcp) — 92+ tools wrapping Shapely, PyProj,
+"""Adapter: gis-mcp (mahdin75/gis-mcp) — 88 tools wrapping Shapely, PyProj,
 GeoPandas, Rasterio and PySAL.
+
+Eighty-eight is what the server registers, asked of it rather than counted by
+eye: `await gis_mcp.get_tools()` on 0.15.0. The header said "92+" until
+2026-09-04 and the figure had no derivation behind it. Counting the source
+gives other numbers, all of them wrong in a different way -- 87 `@tool()`
+decorators, because one is registered elsewhere, and 101 module attributes
+that carry a `.fn`, because several are re-exported and counted twice and
+thirteen `get_*_operations` helpers are documentation rather than tools.
 
 Measured because it is the natural counterpoint to MapSmith's shape — many thin
 tools, no provenance — and because a suite that only measures its own author is
