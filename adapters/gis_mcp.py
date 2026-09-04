@@ -94,14 +94,54 @@ class Adapter:
         return Outcome(answer=float(result["statistics"]["Band 1"]["mean"]))
 
     def op_planar_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
-        import geopandas as gpd
-        from gis_mcp.shapely_functions import get_area
+        # The charitable composition, and until 2026-09-04 this method was not
+        # it. It read the file and handed get_area the bare WKT -- which is the
+        # three-line function the traps describe, not the careful caller D-035
+        # asks this adapter to be. The same file already used the careful path
+        # for 007, 008 and 028, so the rule was being applied to some rows and
+        # not others; three independent reviewers of the maintainer notice
+        # caught it. With gis-mcp's own tools a careful caller gets both traps
+        # this method serves right: read_file_gpd reports the CRS, and where
+        # its unit is not the metre, project_geometry to the same projection in
+        # metres before get_area (002: 92,903.41); is_valid then make_valid
+        # before get_area on a ring that is not simple (005: 5,100). What is
+        # still true of the interface -- get_area has no place for a unit and
+        # no validity flag -- is recorded in the trap READMEs, not measured as
+        # a silent error here.
+        return Outcome(answer=self._careful_area(workdir / probe.arguments[0]))
 
-        # The reading happens outside the server, and whatever the layer knew
-        # about its unit does not fit through a WKT string.
-        geometry = gpd.read_file(workdir / probe.arguments[0]).geometry.iloc[0]
-        result = get_area.fn(geometry.wkt)
-        return Outcome(answer=float(result["area"]))
+    def _careful_area(self, path: Path) -> float:
+        """Planar area in square metres, the way a careful gis-mcp caller gets it.
+
+        Every decision is made by one of their tools; the glue only reads the
+        file (their reader returns a preview, not the geometry) and carries
+        the CRS between calls, because no gis-mcp tool returns a geometry with
+        its CRS attached.
+        """
+        import re
+
+        import geopandas as gpd
+        from gis_mcp.pyproj_functions import project_geometry
+        from gis_mcp.shapely_functions import get_area, is_valid, make_valid
+
+        frame = gpd.read_file(path)
+        wkt = frame.geometry.iloc[0].wkt
+        crs = frame.crs
+        if crs is not None and not crs.is_geographic:
+            unit = crs.axis_info[0].unit_name
+            if unit not in ("metre", "meter", "m"):
+                # The same projection with +units=m: the unit is the only
+                # thing that changes, so a planar area comes back planar.
+                proj = crs.to_proj4()
+                twin = (
+                    re.sub(r"\+units=\S+", "+units=m", proj)
+                    if "+units=" in proj
+                    else proj + " +units=m"
+                )
+                wkt = project_geometry.fn(wkt, crs.to_string(), twin)["geometry"]
+        if not is_valid.fn(wkt).get("is_valid", True):
+            wkt = make_valid.fn(wkt)["geometry"]
+        return float(get_area.fn(wkt)["area"])
 
     def op_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
@@ -354,14 +394,13 @@ class Adapter:
         return Outcome(answer=float((right - left) * (top - bottom)))
 
     def op_net_plot_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
-        import geopandas as gpd
-        from gis_mcp.shapely_functions import get_area
-
-        # A plain read and their area tool. The plot is projected, so the
-        # planar area is the ground area, and the ring roles were decided by
-        # the shapefile reader before any tool saw the geometry.
-        plot = gpd.read_file(workdir / probe.arguments[0])
-        return Outcome(answer=float(get_area.fn(plot.geometry.iloc[0].wkt)["area"]))
+        # Same careful composition as the other area rows. The ring roles were
+        # decided by the shapefile reader before any tool saw the geometry, and
+        # GEOS reports the result as invalid ("Nested shells"); is_valid then
+        # make_valid, both theirs, give 29,000 where the bare read gives 31,000.
+        # Until 2026-09-04 this method took the bare read, which measured the
+        # naive composition and called it gis-mcp.
+        return Outcome(answer=self._careful_area(workdir / probe.arguments[0]))
 
     # Two of the nine stay unsupported, and the reason is theirs rather than
     # this file's:
