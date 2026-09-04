@@ -62,11 +62,14 @@ class Adapter:
         # call time rather than assumed: if it does not, the honest verdict is
         # unsupported, not a number produced by glue we wrote.
         try:
-            from gis_mcp.rasterio_functions import resample_raster
+            from gis_mcp.rasterio_functions import (
+                metadata_raster,
+                raster_band_statistics,
+                reclassify_raster,
+                resample_raster,
+            )
         except ImportError:
             return Outcome(unsupported=True)
-
-        import rasterio
 
         resolution = float(probe.arguments[1].split("=", 1)[1])
         wanted = int(probe.arguments[2].split("=", 1)[1])
@@ -77,8 +80,8 @@ class Adapter:
         # source is 20 m, hence 20/15. Their `resampling` argument, like ours,
         # has NO default — the caller must state it, and a caller told the
         # legend states a categorical method. Same charity as trap 007.
-        with rasterio.open(source) as ds:
-            scale = abs(float(ds.res[0])) / resolution
+        before = metadata_raster.fn(str(source))["metadata"]["transform"]
+        scale = abs(float(before[0])) / resolution
         try:
             resample_raster.fn(
                 source=str(source),
@@ -89,13 +92,42 @@ class Adapter:
         except Exception as exc:  # noqa: BLE001 — a refusal and a crash are different verdicts
             return Outcome(error=f"{type(exc).__name__}: {exc}")
 
-        import numpy as np
-        import rasterio
-
-        with rasterio.open(destination) as ds:
-            band = ds.read(1)
-            cell = abs(float(ds.res[0])) * abs(float(ds.res[1]))
-        return Outcome(answer=float(int(np.sum(band == wanted)) * cell))
+        # The readout is theirs too, and until 2026-09-04 it was not: this was
+        # the one method in the file where the glue reduced a raster to the
+        # answer itself (`numpy.sum(band == wanted)`). gis-mcp can do it --
+        # reclassify to a 0/1 mask, then read that mask's mean -- and it
+        # returns the same numbers here, so the change buys consistency rather
+        # than a different result. The rule it now follows is D-071: the glue
+        # carries data and converts units, and never turns a dataset into the
+        # number the question asks for.
+        after = metadata_raster.fn(str(destination))["metadata"]
+        holes = [value for value in (after.get("no_data") or ()) if value is not None]
+        if holes:
+            # `raster_band_statistics` averages a MASKED array, so with nodata
+            # present its mean is over the valid cells while width x height
+            # counts all of them, and the product would read the holes as
+            # class members. Nothing in the toolset returns a valid-cell count,
+            # so the honest move is to stop rather than to guess one.
+            return Outcome(error=f"cannot count classes with nodata present: {holes}")
+        seen = raster_band_statistics.fn(str(destination))["statistics"]["Band 1"]
+        legend = {value: 0 for value in range(int(seen["min"]), int(seen["max"]) + 1)}
+        legend[wanted] = 1
+        mask = workdir / "_argleton_class_mask.tif"
+        written = reclassify_raster.fn(str(destination), legend, str(mask))
+        if written.get("status") != "success":
+            return Outcome(error=str(written.get("message", written)))
+        counted = raster_band_statistics.fn(str(mask))["statistics"]["Band 1"]
+        if counted["min"] < 0.0 or counted["max"] > 1.0:
+            # A value the legend did not cover survived -- a fractional class
+            # code from a continuous resampling, say -- so the mask's mean is
+            # not a proportion of cells and the product below would be a
+            # confident wrong number, which is the thing this suite measures.
+            return Outcome(error=f"the class mask is not 0/1: {counted}")
+        cells = counted["mean"] * int(after["width"]) * int(after["height"])
+        if abs(cells - round(cells)) > 1e-6:
+            return Outcome(error=f"the class count is not a whole number of cells: {cells}")
+        area = abs(float(after["transform"][0])) * abs(float(after["transform"][4]))
+        return Outcome(answer=float(round(cells) * area))
 
     def op_raster_mean(self, probe: Probe, workdir: Path) -> Outcome:
         from gis_mcp.rasterio_functions import raster_band_statistics
@@ -182,28 +214,45 @@ class Adapter:
 
     def op_count_within_distance(self, probe: Probe, workdir: Path) -> Outcome:
         import geopandas as gpd
+        from gis_mcp.pyproj_functions import calculate_geodetic_distance, project_geometry
+        from shapely import wkt as shapely_wkt
 
-        # The charitable composition, on purpose: gis-mcp also ships a
-        # units-blind buffer, but its geodetic-distance tool is the right
-        # instrument for a metric question on geographic coordinates, and a
-        # careful client would reach for it. On projected data the plain
-        # planar distance is already in the right unit.
+        # The charitable composition, on purpose. gis-mcp also ships a
+        # units-blind buffer, and `buffer` then `sjoin_gpd` is the obvious
+        # route with this toolset -- measured, it answers 24 on the trap, which
+        # is the naive failure the probe describes. Their geodetic-distance
+        # tool is the right instrument for a metric question and a careful
+        # client would reach for it, so that is what this asks.
+        #
+        # Until 2026-09-04 the projected branch measured with GEOPANDAS
+        # (`others.distance(target)`), on the true and irrelevant grounds that
+        # a planar distance is already in metres: the clean twin's number then
+        # came from geopandas rather than from the system under test, so the
+        # control was not controlling anything. One composition now serves
+        # both, reprojecting with their tool where the coordinates are not
+        # lon/lat. Measured either way the answers are 3 and 5 -- the
+        # correction moves no number, which is exactly why it survived review.
         frame = gpd.read_file(workdir / probe.arguments[0])
+        if frame.crs is None:
+            return Outcome(refusal="the layer declares no CRS")
         target_id = probe.arguments[1].split("=", 1)[1]
         distance = float(probe.arguments[2].split("=", 1)[1])
         target = frame[frame["well_id"] == target_id].geometry.iloc[0]
         others = frame[frame["well_id"] != target_id]
-        if frame.crs is not None and frame.crs.is_geographic:
-            from gis_mcp.pyproj_functions import calculate_geodetic_distance
 
-            count = 0
-            for geometry in others.geometry:
-                measured = calculate_geodetic_distance.fn(
-                    [target.x, target.y], [geometry.x, geometry.y]
-                )
-                count += measured["distance"] <= distance
-            return Outcome(answer=int(count))
-        return Outcome(answer=int((others.distance(target) <= distance).sum()))
+        def as_lonlat(geometry):
+            if frame.crs.is_geographic:
+                return geometry
+            moved = project_geometry.fn(geometry.wkt, str(frame.crs), "EPSG:4326")
+            return shapely_wkt.loads(moved["geometry"])
+
+        here = as_lonlat(target)
+        count = 0
+        for geometry in others.geometry:
+            there = as_lonlat(geometry)
+            measured = calculate_geodetic_distance.fn([here.x, here.y], [there.x, there.y])
+            count += measured["distance"] <= distance
+        return Outcome(answer=int(count))
 
     def op_points_in_polygon_count(self, probe: Probe, workdir: Path) -> Outcome:
         from gis_mcp.geopandas_functions import sjoin_gpd
@@ -412,9 +461,59 @@ class Adapter:
         # naive composition and called it gis-mcp.
         return Outcome(answer=self._careful_area(workdir / probe.arguments[0]))
 
-    # Two of the nine stay unsupported. An earlier version of this comment gave
-    # the wrong reasons for both, and the review of the maintainer notice
-    # corrected them; the honest ones are these.
+    def op_mean_slope_degrees(self, probe: Probe, workdir: Path) -> Outcome:
+        import math
+
+        from gis_mcp.rasterio_functions import (
+            focal_statistics,
+            metadata_raster,
+            raster_algebra,
+            raster_band_statistics,
+        )
+
+        # No gis-mcp tool returns a slope angle: `hillshade` computes one on
+        # the way past and hands back only the shaded image. So this is a
+        # composition of four of their tools -- the greatest drop inside each
+        # 3x3 window (focal max minus focal min), the mean of those drops, and
+        # the cell size off the transform -- and the glue does one division and
+        # one arctangent, because nothing in the set turns a ratio into an
+        # angle. The notice sent to the maintainer on 2026-09-04 said this was
+        # on our list; this is it, and gis-mcp answers correctly.
+        #
+        # The estimator is a max-drop over the window rather than Horn: exact
+        # on a plane tilted along an axis, which this surface is, and an
+        # overestimate on a diagonal tilt, which the toolset cannot fix because
+        # nothing in it shifts a raster by a cell. Said here rather than left
+        # to be discovered, since it is the glue's choice and not theirs.
+        source = workdir / probe.arguments[0]
+        transform = metadata_raster.fn(str(source))["metadata"]["transform"]
+        # abs() is the whole probe. On a south-up grid the fifth element of the
+        # transform is POSITIVE, and a run is a length whichever way the rows
+        # are stored; the engines that fail this one discard the georeferencing
+        # instead of reading the sign. rasterio reports it faithfully and
+        # `metadata_raster` passes it through, so the cell size survives.
+        run = abs(float(transform[0]))
+        if abs(run - abs(float(transform[4]))) > 1e-9:
+            return Outcome(error="non-square cells: a 3x3 max-drop has no single run")
+        highest = workdir / "_gis_mcp_focal_max.tif"
+        lowest = workdir / "_gis_mcp_focal_min.tif"
+        for statistic, destination in (("max", highest), ("min", lowest)):
+            written = focal_statistics.fn(str(source), statistic, 3, str(destination))
+            if written.get("status") != "success":
+                return Outcome(error=str(written.get("message", written)))
+        drop = workdir / "_gis_mcp_drop.tif"
+        subtracted = raster_algebra.fn(str(highest), str(lowest), 1, "subtract", str(drop))
+        if subtracted.get("status") != "success":
+            return Outcome(error=str(subtracted.get("message", subtracted)))
+        stats = raster_band_statistics.fn(str(drop))
+        bands = stats.get("statistics") or {}
+        first = next(iter(bands.values()), None) if isinstance(bands, dict) else None
+        if not first or "mean" not in first:
+            return Outcome(error=f"raster_band_statistics returned no mean: {stats}")
+        return Outcome(answer=math.degrees(math.atan(float(first["mean"]) / (2.0 * run))))
+
+    # One of the nine stays unsupported, and an earlier version of this comment
+    # gave the wrong reason for it; the honest one is this.
     #
     # `lowest_cell_easting` (024) needs the ground POSITION of a raster's
     # minimum on a grid that declares AREA_OR_POINT=Point. The cell itself is
@@ -424,9 +523,3 @@ class Adapter:
     # AREA_OR_POINT tag, and turning a cell index into a ground coordinate
     # depends on it: that decision would be this file's, not theirs, which is
     # exactly what this probe measures. So it stays unattempted.
-    #
-    # `mean_slope_degrees` (026): no tool returns the angle. A rise-over-run can
-    # be composed from `focal_statistics`, `raster_algebra` and the cell size
-    # from `metadata_raster`, and the review showed it lands within tolerance on
-    # the test surface. Not wired yet, so as not to quote a number that has not
-    # been run; it is on the list, and the notice says so.
