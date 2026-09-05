@@ -213,7 +213,7 @@ def coverage_gap(probe_list: list[dict], run_families: int) -> str:
     )
 
 
-def partial_coverage(data: list[dict], run_traps: int) -> str:
+def partial_coverage(data: list[dict], run_traps: int, probe_total: int) -> str:
     """The caveat naming systems our adapter could not ask everything, or nothing.
 
     Generated, and for the same reason as `coverage_gap`: the sentence changes
@@ -226,8 +226,26 @@ def partial_coverage(data: list[dict], run_traps: int) -> str:
     about the code in `adapters/`. Put in a column headed N/A beside a system's
     name, it reads as a gap in that system. On gis-mcp the difference was
     measured rather than argued: the adapter had methods for nine of the
-    operations the suite asks, and extending it moved the published rate from
-    0.3636 to 0.2105 without gis-mcp changing a line.
+    operations the suite asks, and extending it moved its measured rate from
+    0.3636 (4 of 11) to 0.20 (4 of 20) without gis-mcp changing a line, as
+    measured on 2026-09-05. Not "the published rate", which is what this said
+    until then: gis-mcp is in no run under `results/`, so there was no
+    published rate to move.
+
+    The denominators are written out because they are the part that goes
+    stale -- the numerator has stayed at four while the adapter grew three
+    times -- and the date is written out because **nothing here can derive
+    them**. Those runs live outside this repository, so this is the one
+    paragraph on the page whose numbers no build recomputes. It went stale
+    within a day of being written: the first version of this sentence said
+    "4 of 19", which was true the previous evening and not the next morning.
+
+    It also has to say what the column is counted in, which it did not until
+    2026-09-05. `unsupported` is a per-probe outcome (METHOD.md: "the
+    denominator is the probes actually attempted") sitting next to a per-trap
+    column, so whitebox read "4 traps run, 54 N/A" — two numbers that add to
+    neither 31 nor 62. Nothing was wrong with either figure and the table still
+    looked broken, which on this page costs the same as being wrong.
     """
     short = sorted(
         ((d["system"], d["traps_run"]) for d in data if d["traps_run"] < run_traps),
@@ -242,8 +260,11 @@ def partial_coverage(data: list[dict], run_traps: int) -> str:
         "<code>unsupported</code>, which "
         '<a href="https://github.com/argleton/argleton/blob/main/docs/METHOD.md">METHOD.md</a> '
         "defines as <em>the adapter does not implement the operation</em> — a statement about "
-        "the code in <code>adapters/</code>, not about the system. Read each rate over the "
-        "traps that system faced, and do not read this column as a coverage gap of theirs. "
+        "the code in <code>adapters/</code>, not about the system. That last column counts "
+        "<em>probes</em>, not traps: each trap contributes two, itself and its clean twin, "
+        f"{probe_total} in all — so it is not meant to add up against the column beside it. "
+        "Read each rate over the traps that system faced, and do not read this column as a "
+        "coverage gap of theirs. "
         "Where an adapter of ours has been too thin, extending it has moved a rate a long "
         "way with nothing changing in the system measured.</li>"
     )
@@ -313,7 +334,7 @@ def main(destination: Path) -> int:
         "{{RUN_TRAPS}}": str(run_traps),
         "{{RUN_FAMILIES}}": str(run_families),
         "{{COVERAGE_GAP}}": coverage_gap(probe_list, run_families),
-        "{{PARTIAL_COVERAGE}}": partial_coverage(data, run_traps),
+        "{{PARTIAL_COVERAGE}}": partial_coverage(data, run_traps, len(probe_list)),
         "{{RUN}}": run_id,
         "{{SPEC_COMMIT}}": data[0]["spec_commit"],
         "{{TRUTH}}": str(zero["truth"]),

@@ -55,7 +55,7 @@ Published run: [`2026-09-02-ring-role/`](2026-09-02-ring-role/).
 Engine tier, `spec_commit` [`6f2b718`](../../../commit/6f2b718), thirty-one traps
 and thirty-one clean cases across twenty-nine families.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 31 | 0 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
@@ -112,7 +112,7 @@ Published run: [`2026-09-02-thirty-traps/`](2026-09-02-thirty-traps/).
 Engine tier, `spec_commit` [`f419a67`](../../../commit/f419a67), thirty traps and
 thirty clean cases across twenty-eight families — the entire suite as it stands.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 30 | 0 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 46 |
@@ -160,7 +160,7 @@ than the system.
 Published run: [`2026-08-30-all-families/`](2026-08-30-all-families/).
 Engine tier, `spec_commit` [`089a34d`](../../../commit/089a34d), twenty-seven families.
 
-| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+| system | silent error rate | completion rate | traps run | probes n/a | probes timed | total | median |
 |---|---|---|---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 29 | 0 | 58 | 11.2 s | 131 ms |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 13 | 32 | 26 | 1.1 s | 13 ms |
@@ -220,7 +220,7 @@ until the data stops having the shape it usually has.
 Published run: [`2026-08-30-antimeridian/`](2026-08-30-antimeridian/).
 Engine tier, `spec_commit` [`74a620f`](../../../commit/74a620f), twenty-three families.
 
-| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+| system | silent error rate | completion rate | traps run | probes n/a | probes timed | total | median |
 |---|---|---|---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 25 | 0 | 50 | 6.7 s | 112 ms |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 10 | 30 | 20 | 0.9 s | 14 ms |
@@ -268,7 +268,7 @@ bounding boxes near the line still has to answer an ordinary rectangle.
 Published run: [`2026-08-30-grid-registration/`](2026-08-30-grid-registration/).
 Engine tier, `spec_commit` [`9322b17`](../../../commit/9322b17), twenty-two families.
 
-| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+| system | silent error rate | completion rate | traps run | probes n/a | probes timed | total | median |
 |---|---|---|---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 24 | 0 | 48 | 6.1 s | 100 ms |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 9 | 30 | 18 | 0.9 s | 17 ms |
@@ -338,7 +338,7 @@ which is the correct behaviour available today and not the one we want.
 Published run: [`2026-08-29-axis-order/`](2026-08-29-axis-order/).
 Engine tier, `spec_commit` [`243f912`](../../../commit/243f912), twenty-one families.
 
-| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median |
+| system | silent error rate | completion rate | traps run | probes n/a | probes timed | total | median |
 |---|---|---|---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 23 | 0 | 46 | 8.1 s | 104 ms |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 38 | 46 | 0.5 s | 7 ms |
@@ -382,7 +382,7 @@ Published run: [`2026-08-28-timings/`](2026-08-28-timings/).
 Engine tier, `spec_commit` [`4a6dbac`](../../../commit/4a6dbac), twenty families.
 Same verdicts as the run above; what is new is the last three columns.
 
-| system | silent error rate | completion rate | traps run | not applicable | probes timed | total | median | first probe |
+| system | silent error rate | completion rate | traps run | probes n/a | probes timed | total | median | first probe |
 |---|---|---|---|---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 22 | 0 | 44 | 6.3 s | 103 ms | 1.9 s |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 36 | 8 | 0.6 s | 6 ms | 0.6 s |
@@ -423,7 +423,7 @@ median at 0 ms in the first version of this measurement.
 Published run: [`2026-08-28-thiessen-pairing/`](2026-08-28-thiessen-pairing/).
 Engine tier, `spec_commit` [`45cfd14`](../../../commit/45cfd14), twenty families.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 22 | 0 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 36 |
@@ -484,7 +484,7 @@ exactly as they apply to the others.
 Published run: [`2026-08-27-datum-shift-fixed/`](2026-08-27-datum-shift-fixed/).
 Engine tier, `spec_commit` [`3e98cf6`](../../../commit/3e98cf6), nineteen families.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | **0.00** | 1.00 | 21 | 0 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 34 |
@@ -524,7 +524,7 @@ Published run: [`2026-08-26-nineteen-families/`](2026-08-26-nineteen-families/).
 Engine tier, `spec_commit` [`461ef15`](../../../commit/461ef15), nineteen families:
 one new one, `datum-ballpark`, joins the eighteen below.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | **0.0476** | 1.00 | 21 | 0 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 4 | 34 |
@@ -581,7 +581,7 @@ Published run: [`2026-08-26-eighteen-families/`](2026-08-26-eighteen-families/).
 Engine tier, `spec_commit` [`cadf41b`](../../../commit/cadf41b), eighteen families:
 eight new ones join the ten below.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | 0.00 | 1.00 | 20 | 0 |
 | rasterio 1.5.1 | 0.00 | 1.00 | 4 | 32 |
@@ -630,7 +630,7 @@ Published run: [`2026-08-26-ten-families/`](2026-08-26-ten-families/).
 Engine tier, `spec_commit` [`d97d2ae`](../../../commit/d97d2ae), ten families:
 `radiometric-scale-offset` (010) joins the nine below.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | 0.00 | 1.00 | 10 | 0 |
 | rasterio 1.5.1 | 0.00 | 1.00 | 4 | 12 |
@@ -663,7 +663,7 @@ Published run: [`2026-08-26-nine-families/`](2026-08-26-nine-families/).
 Engine tier, `spec_commit` [`cfb2919`](../../../commit/cfb2919), nine families:
 `categorical-resampling` (009) joins the eight below.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main) | 0.00 | 1.00 | 9 | 0 |
 | rasterio 1.5.1 | 0.00 | 1.00 | 3 | 12 |
@@ -701,7 +701,7 @@ Published run: [`2026-08-25-eight-families/`](2026-08-25-eight-families/).
 Engine tier, `spec_commit` [`bc95d3b`](../../../commit/bc95d3b), eight families:
 `projection-distortion` (008) joins the seven below.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith (main @ 40bddcb) | **0.00** | 1.00 | 8 | 0 |
 | rasterio 1.5.1 | **0.00** | 1.00 | 2 | 12 |
@@ -747,7 +747,7 @@ Superseded run: [`2026-08-25-six-families/`](2026-08-25-six-families/).
 Engine tier, `spec_commit` [`06d4e66`](../../../commit/06d4e66), six families:
 `ambiguous-layer` (006) joins the five below.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith 0.2.2 (main @ d681b54) | **0.25** | 1.00 | 4 | 4 |
 | rasterio 1.5.1 | **0.00** | 1.00 | 2 | 8 |
@@ -778,7 +778,7 @@ Engine tier, `spec_commit` [`7856f88`](../../../commit/7856f88), five families:
 the three below plus `mismatched-crs` (004) and `invalid-geometry` (005), both
 added since the first run.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith 0.2.2 (main @ d681b54) | **0.00** | 1.00 | 3 | 4 |
 | rasterio 1.5.1 | **0.00** | 1.00 | 2 | 6 |
@@ -811,7 +811,7 @@ the predictor on its behalf.
 Superseded run: [`2026-08-23-first-run/`](2026-08-23-first-run/).
 Engine tier, `spec_commit` [`1584e5d`](../../../commit/1584e5d), three families.
 
-| system | silent error rate | completion rate | traps run | not applicable |
+| system | silent error rate | completion rate | traps run | probes n/a |
 |---|---|---|---|---|
 | MapSmith 0.2.2 | **0.00** | 1.00 | 2 | 2 |
 | rasterio 1.5.1 | **0.00** | 1.00 | 2 | 2 |

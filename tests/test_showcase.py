@@ -139,6 +139,49 @@ def test_the_results_index_has_a_section_for_the_latest_run_and_it_agrees():
         assert int(cells[3]) == record["unsupported"], f"{name}: not-applicable count"
 
 
+def test_the_two_count_columns_are_reconcilable_and_say_what_they_count():
+    """`traps run` and the n/a column are in different units, and must say so.
+
+    Found on 2026-09-05 by reading the live table as a stranger. whitebox showed
+    "4 traps run, 54 N/A" over a 31-trap run: two correct numbers that add to
+    neither 31 nor 62, because `unsupported` is a per-probe outcome (METHOD.md:
+    "the denominator is the probes actually attempted") and it sat in a column
+    headed only "N/A" beside a per-trap one. Nothing was false and the table
+    looked broken — which, on the page whose entire argument is that its numbers
+    can be checked, costs what being wrong costs. It matters most for a system
+    the adapter can only partly ask, which is every system published here except
+    our own and the naive one.
+
+    Two things are asserted, and the first is what makes the second necessary:
+    that the identity really is `2 * traps_run + unsupported == probes`, so if
+    anyone ever redefines either field the guard fails instead of the label
+    quietly becoming a lie; and that both surfaces name the unit.
+    """
+    _, systems = latest_run()
+    probes = len(discover(ROOT))
+    for name, record in sorted(systems.items()):
+        assert 2 * record["traps_run"] + record["unsupported"] == probes, (
+            f"{name}: {record['traps_run']} traps run and {record['unsupported']} "
+            f"unsupported do not account for the {probes} probes in the suite. "
+            "If that is intended, this test and both column labels need rewriting "
+            "together — the labels are only true while this identity holds."
+        )
+
+    template = (ROOT / "site" / "index.template.html").read_text(encoding="utf-8")
+    header = re.search(r"<th[^>]*>Traps run</th>\s*<th[^>]*>([^<]+)</th>", template)
+    assert header, "the results table no longer has a column after 'Traps run'"
+    assert "probe" in header.group(1).lower(), (
+        f"the column beside 'Traps run' is headed {header.group(1)!r}, which does "
+        "not say it counts probes rather than traps"
+    )
+
+    index = (ROOT / "results" / "README.md").read_text(encoding="utf-8")
+    assert "| traps run | not applicable |" not in index, (
+        "results/README.md heads the per-probe column 'not applicable' next to a "
+        "per-trap one, with nothing saying the units differ"
+    )
+
+
 def test_the_readme_transcripts_print_todays_summary_lines():
     """The `$ argleton --adapter engine:X` transcripts quote summary lines. Each
     quoted line must be what that adapter produces on the current probes — a
