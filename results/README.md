@@ -19,7 +19,7 @@ built. The older sections below were produced on fewer: read each
 section's family count rather than this page's.
 
 - **A 0.00 means a system did not fail silently *on these probes*.** Not that it
-  is correct, not that it is safe, and not that it would survive the five
+  is correct, not that it is safe, and not that it would survive the four
   families that are named and not yet built — nor the thirty further
   mechanisms a survey of the literature turned up while this run was being
   made.

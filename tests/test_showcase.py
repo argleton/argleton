@@ -503,11 +503,27 @@ def test_every_live_family_count_in_public_markdown_is_current():
     ))
     planned = len(numbered) + len(unbuilt)
     live = re.compile(r"([A-Za-z-]+) families of ([a-z-]+) are implemented")
+    # The SAME paragraph states the leftover a second time, in a shape the
+    # sentence above does not match: "would survive the five families that are
+    # named and not yet built", four bullets under a guarded sentence saying
+    # twenty-nine of thirty-three. Third time this class has landed -- FAMILIES.md
+    # lost four sentences the same way on 2026-09-02 -- and every time the
+    # guarded sentence was updated and its unguarded neighbour was not. Wrapping
+    # is why `\s+`: the count and its noun sat on different lines, so a pattern
+    # with a literal space would have matched nothing and checked nothing.
+    unbuilt_live = re.compile(r"([A-Za-z-]+)\s+families that are named and not yet built")
     checked = 0
     for page in public_markdown():
-        for stated, out_of in live.findall(page.read_text(encoding="utf-8")):
+        text = page.read_text(encoding="utf-8")
+        for stated, out_of in live.findall(text):
             assert NUMBER_WORDS[stated.lower()] == implemented, f"{page.name}: implemented count"
             assert NUMBER_WORDS[out_of] == planned, f"{page.name}: planned count"
+            checked += 1
+        for stated in unbuilt_live.findall(text):
+            assert NUMBER_WORDS[stated.lower()] == len(unbuilt), (
+                f"{page.name}: says {stated} families are named and not yet built, "
+                f"FAMILIES.md names {len(unbuilt)} under Planned"
+            )
             checked += 1
     assert checked, (
         "no live family count found in public markdown — the caveat that stops a 0.00 "
