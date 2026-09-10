@@ -176,6 +176,7 @@ numbers do not say](results/).
 | MapSmith (main) | 0.00 | 1.00 | 31 | 0 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
 | whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
 | naive composition | 0.9355 | 1.00 | 31 | 0 |
 
@@ -185,6 +186,21 @@ must not be able to look better than one that faced all of them. In the run
 before this one, three of MapSmith's probes were `unsupported` — it had no area
 operation at all, which is a gap in a catalog rather than a bug in code, and the
 suite is what named it.
+
+**gis-mcp is the first row here that is not ours to fix, and it is written so a
+reader can tell whose limit each number is.** The 0.20 is four wrong answers out
+of twenty traps attempted, every one returned with `status: "success"`: 4 wells
+where the file holds 31, an NDVI of 0.25 where the declared calibration gives
+0.3333, a latitude 74 m out, and a parcel four times its own area. The
+twenty-two not applicable are eleven traps and their eleven clean twins, on
+which our adapter found no composition of gis-mcp's tools that answers the
+question — a limit of its tool surface as our adapter reads it, and our bug to
+fix if a composition exists and we missed it. Its maintainer was told first, in
+[an issue filed on 4 September](https://github.com/mahdin75/gis-mcp/issues/45)
+and again before this was published, and neither message has been answered; the
+denominator has moved four times without gis-mcp changing a line, lowering the
+rate each time. [The full section](results/#2026-09-10--the-first-system-here-whose-defects-are-not-ours-to-fix)
+gives every one of those numbers with its provenance.
 
 Three findings frame everything here, one per run. From the first run:
 **MapSmith scored 0.00 and its verification had nothing to do with it** — on

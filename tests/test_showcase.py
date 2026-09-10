@@ -596,6 +596,55 @@ def test_relative_links_resolve(page: Path):
         assert resolved.exists(), f"{page.name}: broken link {target}"
 
 
+def slug(heading: str) -> str:
+    """GitHub's heading anchor, derived rather than typed.
+
+    Lowercase, drop everything that is not a word character, a space or a
+    hyphen -- which is what removes the em dash in our dated headings and
+    leaves the double space behind it -- then spaces become hyphens.
+    """
+    kept = re.sub(r"[^\w\- ]", "", heading.strip().lower(), flags=re.UNICODE)
+    return kept.replace(" ", "-")
+
+
+@pytest.mark.parametrize("page", public_markdown(), ids=lambda p: str(p.relative_to(ROOT)))
+def test_link_fragments_resolve_to_a_heading(page: Path):
+    """A `…#fragment` that matches no heading scrolls nowhere and says nothing.
+
+    `test_relative_links_resolve` splits the fragment off and checks only the
+    file, which is the right check for the file and no check at all for the
+    fragment. The gap showed the day the root README grew a deep link into
+    `results/README.md`: the file existed, so the suite was content, and
+    whether the anchor pointed at the section it names was nobody's business.
+    It is the shape this repository keeps finding in itself -- a guard that
+    cannot fail on the thing it was written for -- so the anchor is derived
+    from the target's own headings and drifts the moment one is reworded.
+    """
+    text = page.read_text(encoding="utf-8")
+    for target in re.findall(r"\]\(([^)\s]+)\)", text):
+        if target.startswith(("http://", "https://", "mailto:")) or "#" not in target:
+            continue
+        path, _, fragment = target.partition("#")
+        if not fragment:
+            continue
+        destination = (page.parent / path).resolve() if path else page
+        if not destination.is_relative_to(ROOT) or not destination.exists():
+            continue  # already the other test's job
+        if destination.is_dir():
+            destination = destination / "README.md"
+            if not destination.exists():
+                continue
+        headings = {
+            slug(line.lstrip("#").strip())
+            for line in destination.read_text(encoding="utf-8").splitlines()
+            if line.startswith("#")
+        }
+        assert fragment.lower() in headings, (
+            f"{page.name}: {target} names no heading in "
+            f"{destination.relative_to(ROOT)}"
+        )
+
+
 # Vendor names this project does not write in public, at all: no note, no
 # provenance line, no comparison. A suite that measures systems has to be
 # careful here in a way a product does not: naming a vendor next to a silent

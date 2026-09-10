@@ -46,8 +46,105 @@ section's family count rather than this page's.
 
 Nobody is notified before publication as long as nothing here is a new claim
 about a third party: the Whitebox defect was reported upstream first, and the
-rest is documented behaviour. That changes the moment a result says something a
-maintainer has not already been told.
+rest is documented behaviour. That clause has now been exercised once. The
+gis-mcp results published on 2026-09-10 are a new claim about a third party, so
+its maintainer had them first: [filed in full on 4 September](https://github.com/mahdin75/gis-mcp/issues/45),
+with the reproduction for each finding, and updated there before anything was
+pushed here. Being told first is the obligation. Being answered is not something
+we can require, and that run's section says plainly what happened instead.
+
+## 2026-09-10 — the first system here whose defects are not ours to fix
+
+Published run: [`2026-09-10-gis-mcp/`](2026-09-10-gis-mcp/).
+Engine tier, `spec_commit` [`d3b45e7`](../../../commit/d3b45e7), thirty-one traps
+and thirty-one clean cases across twenty-nine families.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith (main) | **0.00** | 1.00 | 31 | 0 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9355 | 1.00 | 31 | 0 |
+
+Every other row on this page is a library we can file a patch against, or our
+own. This one is a running MCP server, and the numbers below are the first
+result here that somebody else has to decide what to do about.
+
+**The 0.20 is four wrong answers out of twenty traps attempted, each returned
+with `status: "success"`** — no exception, no warning attached to the result, no
+field saying the answer might not mean what it appears to mean:
+
+| family | it answered | the truth is |
+|---|---|---|
+| `ambiguous-layer` | 4 wells | 31; the container's default layer answers a question nobody asked |
+| `radiometric-scale-offset` | NDVI 0.25 | 0.3333; the declared offset is dropped, which was harmless until Sentinel-2 made it non-zero in 2022 |
+| `datum-ballpark` | latitude 45.5 | 45.500669074, so 74 m out, with the longitude right and the output CRS right |
+| `hidden-configuration` | 160000 m² | 40000; a sidecar georeferences the same raster and wins by documented precedence |
+
+None of the four crashes and none is absurd, which is the admission criterion of
+this whole suite: an error that announces itself is not the class being measured.
+
+**Twenty-two "not applicable" is eleven traps and their eleven clean twins, and
+whose limit that is belongs in the sentence.** For eleven of the thirty-one
+traps — spread over nine families, among them `tabular-join`, `polygon-holes`,
+`z-dimension` and `grid-registration` — our adapter found no composition of
+gis-mcp's published tools that answers the question, so it did not ask. Scoring
+a system on questions it was never posed is precisely what the last two columns
+of this table exist to prevent, in either direction: it would be as wrong to
+count those eleven as failures as to let a rate over twenty read like a rate
+over thirty-one. The limit is in gis-mcp's tool surface *as our adapter reads
+it*, and that qualifier is load-bearing — if a composition exists and we missed
+it, the defect is in [`adapters/gis_mcp.py`](../adapters/gis_mcp.py), we will fix
+it and republish, and that offer is written into the issue below rather than
+kept as a private intention.
+
+**The maintainer had all of this before this page did.** The four findings were
+filed as [mahdin75/gis-mcp#45](https://github.com/mahdin75/gis-mcp/issues/45) on
+4 September, each with the reproduction, and a second comment went up on
+9 September — before anything here was pushed — reporting that the denominator
+had grown and the rate had therefore fallen. Neither has been answered.
+
+**The figure moved four times in two days and gis-mcp never changed a line.**
+Every one of those movements was our instrument, and the first draft of our own
+report was wrong against them:
+
+| what we had | rate | what changed |
+|---|---|---|
+| 6 wrong of 18 traps | 0.3333 | the first draft, sent to nobody |
+| 3 wrong of 18 traps | 0.1667 | **three of the six were ours** — on those our adapter had composed gis-mcp's tools naively where it composed them carefully elsewhere; with `project_geometry` and `make_valid`, gis-mcp answers all three correctly |
+| 4 wrong of 19 traps | 0.2105 | the same review found a failure we had been **hiding**: `radiometric-scale-offset` was scored "not applicable" although `compute_ndvi` exists and gets it wrong |
+| 4 wrong of 20 traps | **0.20** | slope wired up, which gis-mcp passes |
+
+Three of the four moved in gis-mcp's favour; the one that did not was our suite
+no longer concealing a failure that was already there. A rate that moves while
+the measured system stands still is a fact about the instrument, and it is here
+because a reader who saw only the last number would credit gis-mcp with an
+improvement it never made — flattering, and false.
+
+Of those four figures the first two never left this project: they were drafts,
+and the review that killed them is the reason the issue says what it says. The
+third, 4 of 19, is the number in the issue as filed. The fourth is the one
+published here, and the maintainer was told it before this page went up. They
+are all set out because the number a reader can check is worth more with its
+history than as a standalone verdict — and because the draft that blamed gis-mcp
+for three of our own failures is the strongest reason we have to say that if a
+finding here is unfair, we will withdraw it.
+
+**The silence is not indifference: there is nobody there.** The last commit
+pushed to gis-mcp is from 21 August, twenty days before this run; a pull request
+opened by a third party on 18 August is still open with no comment. Waiting
+longer would not have produced a correction. It would only have delayed a
+measurement its maintainer has already been handed twice, in full, with
+everything needed to reproduce or refute it.
+
+One note on the wall clock, which here as everywhere on this page is not a
+benchmark: gis-mcp's forty probes cost 12.2 s against MapSmith's 10.1 s over
+sixty-two, but 5.9 s of that is its first probe alone — process start and
+library import, before any geoprocessing happens. The medians, 23.4 ms against
+108.1 ms, are two adapters doing different amounts of work on different subsets
+of the suite. `METHOD.md` §9b is the full statement.
 
 ## 2026-09-02 (later) — twenty-nine families, and one that was aimed at the wrong engine
 
