@@ -2,7 +2,7 @@
 
 Thirty-three families are on the list — twelve from the original design, the rest
 added from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty-nine are implemented.** As of 2026-09-02 the
+themselves warn about. **Twenty-nine are implemented.** As of 2026-09-10 the
 published run covers all twenty-nine; the remaining four are named under
 [Planned](#planned) and not yet built. This page exists so that
 a number from Argleton can never be read as broader than it is: a low

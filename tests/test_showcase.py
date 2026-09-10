@@ -376,6 +376,171 @@ def test_the_prose_around_the_family_tables_counts_the_family_tables():
         )
 
 
+# Every word-number in FAMILIES.md's prose is either a count this repository can
+# derive or a declared non-count, and THIS LIST IS CLOSED. That is the whole
+# difference from the three attempts before it: they enumerated sentence shapes,
+# so a count in a shape nobody had thought of was invisible, and three times
+# running the next false sentence arrived one form of words later. Here an
+# unanticipated word-number fails by default and someone has to say which of the
+# two it is.
+#
+# Keyed on (a distinctive fragment of the line, the word). Rewording an exempted
+# sentence therefore fails too — deliberately: on the one page whose stated job
+# is that "a number from Argleton can never be read as broader than it is", a
+# human confirming a reworded number is the cheap half of the deal.
+FAMILIES_NON_COUNTS = {
+    ("twelve from the original design", "twelve"):
+        "Historical. The twelve families of the 2026-08-23 design: a fact about "
+        "that day, not a count of anything in the checkout, so nothing can "
+        "derive it and nothing should try.",
+    ("so one family with ten probes", "one"):
+        "Illustrative. 'One family with ten probes' is the shape of the "
+        "argument, not a number of families.",
+    ("so one family with ten probes", "ten"):
+        "Illustrative, same sentence.",
+    ("cannot read as ten independent findings", "ten"):
+        "Illustrative, the second half of the same sentence.",
+    ("was in the original twelve", "twelve"):
+        "Historical, as above.",
+    ("one: a count, where 9 and 5", "one"):
+        "Prose. 'The quiet one' is a formulation of a trap, not a quantity.",
+    ("Two of them are not geometric at all", "two"):
+        "The sentence names both families in the same breath "
+        "(`aggregation-weighting`, `tabular-join`), so it cannot go stale "
+        "without the names going stale with it. If a third non-geometric family "
+        "is ever added this exemption is what has to be revisited, and that is "
+        "written here because nothing can derive 'non-geometric' from the repo.",
+    ("At least one trap and one clean twin", "one"):
+        "The admission criterion's minimum, twice in one sentence. A floor, not "
+        "a count of anything that exists.",
+    ("were the last four of the original twelve", "four"):
+        "The sentence names all four inline (families 2, 5, 8 and 10), so the "
+        "number and its referents age together.",
+    ("were the last four of the original twelve", "twelve"):
+        "Historical, as above.",
+    ("Three of them had been", "three"):
+        "A subset of the four families named in the previous sentence.",
+    ("In all four the wrong answer", "four"):
+        "The same four families, referred back to.",
+    ("and in three of them every", "three"):
+        "A subset of those four.",
+    ("which of two arguments came first", "two"):
+        "Prose. Two arguments of an operation, not two of anything counted here.",
+    ("the fastest way to improve this suite is to bring one", "one"):
+        "Prose. 'Bring one' means bring a family, singular.",
+    ("same survey that produced the last nine", "nine"):
+        "Historical, and the honest note is that it is NOT derivable: which "
+        "families came out of the 2026 survey is not recorded anywhere a test "
+        "can read. It is exempted rather than checked, and saying so is better "
+        "than a guard that looks like it covers this and does not.",
+}
+
+
+def test_every_word_number_in_families_md_prose_is_derived_or_declared():
+    """The strong form: an unexplained word-number in FAMILIES.md is a failure.
+
+    `test_the_prose_around_the_family_tables_counts_the_family_tables` pins four
+    sentences to four derived values, which is the right check for those four
+    and no check at all for a fifth. This is the net under it. Every cardinal in
+    the prose must be a value the repository can compute, or carry a written
+    reason in `FAMILIES_NON_COUNTS` for why no computation applies.
+
+    Exemptions are consulted BEFORE the derived values, on purpose. Were it the
+    other way round, "in all four the wrong answer" would pass merely because
+    four families happen to be unbuilt today, and would start failing the day
+    that becomes three — a check that fires on the wrong sentence teaches people
+    to silence it.
+
+    Tables are skipped: the numbers there live inside probe slugs
+    (`c022-two-gauges`) and are guarded by the tests that read the rows.
+    """
+    families_md = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
+    words = sorted(NUMBER_WORDS, key=len, reverse=True)
+    # `(?!-)` so that "twenty" is not read out of the ordinal "twenty-fifth",
+    # while the composite alternatives still match "twenty-nine" whole.
+    cardinal = re.compile(
+        r"\b(" + "|".join(re.escape(w) for w in words) + r")\b(?!-)", re.IGNORECASE
+    )
+
+    import importlib.util
+
+    location = importlib.util.spec_from_file_location(
+        "argleton_site_build", ROOT / "site" / "build.py"
+    )
+    builder = importlib.util.module_from_spec(location)
+    location.loader.exec_module(builder)
+    _, data = latest_run()
+    _, run_families = builder.run_coverage(list(data.values()))
+
+    implemented = len({p.family for p in discover(ROOT) if p.population == "trap"})
+    unbuilt = len(_unbuilt_families(families_md))
+    conditions = len(re.findall(
+        r"^(\d+)\.\s+\*\*",
+        families_md.split("## What a family needs before it counts", 1)[-1]
+        .split("\n## ", 1)[0],
+        re.MULTILINE,
+    ))
+    assert conditions, (
+        "the numbered admission conditions no longer parse, so 'the same four "
+        "conditions' has nothing to be checked against"
+    )
+    derived = {
+        "families implemented": implemented,
+        "families not yet built": unbuilt,
+        "families in the published run": run_families,
+        "families on the list": implemented + unbuilt,
+        "admission conditions": conditions,
+    }
+
+    unexplained = []
+    for number, line in enumerate(families_md.splitlines(), 1):
+        if line.lstrip().startswith("|"):
+            continue
+        for found in cardinal.finditer(line):
+            word = found.group(1).lower()
+            if any(fragment in line and word == exempt
+                   for fragment, exempt in FAMILIES_NON_COUNTS):
+                continue
+            if NUMBER_WORDS[word] in derived.values():
+                continue
+            unexplained.append(f"line {number}: {word!r} in {line.strip()[:70]!r}")
+    assert not unexplained, (
+        "word-numbers in FAMILIES.md that no derivation explains: "
+        + "; ".join(unexplained)
+        + f". The derived counts are {derived}. Either the number is one of "
+        "those and the page is wrong, or it is not a count at all — in which "
+        "case add it to FAMILIES_NON_COUNTS with the reason, which is the "
+        "sentence a future reader needs and the whole point of the list."
+    )
+
+
+def test_families_md_dates_its_coverage_claim_to_the_published_run():
+    """The one sentence on that page carrying a date, and nothing read it.
+
+    It said "As of 2026-09-02 the published run covers all twenty-nine" while
+    the published run was 2026-09-10. The count was right, so every count check
+    was green, and the date pointed at a superseded run — the defect
+    `docs/benchmarks.md` had on the same day, where a stale pointer under a
+    correct number is worse than a stale number because it looks verified.
+    """
+    run_name, _ = latest_run()
+    families_md = (ROOT / "docs" / "FAMILIES.md").read_text(encoding="utf-8")
+    # `\s+` because the sentence wraps: the date ends one line and "published
+    # run" begins the next, which is why the first version of this pattern
+    # matched nothing and the anti-vacuity assertion below caught it.
+    stated = re.search(
+        r"As of (20\d\d-\d\d-\d\d)\s+the\s+published\s+run", families_md
+    )
+    assert stated, (
+        "FAMILIES.md no longer dates its coverage claim in a shape this test "
+        "can read. Reword the pattern with the sentence, or the check goes quiet."
+    )
+    assert stated.group(1) == run_name[:10], (
+        f"FAMILIES.md dates its coverage claim to {stated.group(1)}, "
+        f"the published run is {run_name}"
+    )
+
+
 def test_the_site_template_has_no_hand_typed_count_and_no_orphan_placeholder():
     """Counts on the page come from placeholders the build fills; a literal
     number word in the template is the "nine more" defect waiting to recur."""
