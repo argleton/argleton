@@ -55,13 +55,50 @@ def build_fixtures(probe: Probe, workdir: Path) -> None:
     builder = probe.directory / "build.py"
     if not builder.exists():
         return
-    proc = subprocess.run(
-        [sys.executable, str(builder), str(workdir)],
-        capture_output=True, text=True, encoding="utf-8", errors="replace",
-        timeout=300, check=False,
-    )
+    def once():
+        return subprocess.run(
+            [sys.executable, str(builder), str(workdir)],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=300, check=False,
+        )
+
+    proc = once()
     if proc.returncode != 0:
-        raise RuntimeError(f"{probe.id}: build.py failed\n{proc.stdout}\n{proc.stderr}")
+        # ONE retry, said out loud, and only because the failure was measured
+        # rather than guessed at. On 2026-09-10 two consecutive publication
+        # runs died on DIFFERENT probes with rc=3221227274 (0xC000070A,
+        # STATUS_THREADPOOL_HANDLE_EXCEPTION) and empty stdout AND stderr: the
+        # interpreter dies inside Windows' thread pool while loading GDAL's
+        # DLLs, before the builder runs a line. The same builders, on their
+        # own, exited 0 sixty times out of sixty.
+        #
+        # The rate is around one per cent per build, and a published run
+        # builds about 370 fixtures -- sixty-two probes for each of six
+        # adapters. At one per cent that is a 97% chance at least one dies, so
+        # retrying the whole run is not a remedy but a lottery with a 3%
+        # prize. Retrying the one build that died is the smallest thing that
+        # makes a full run possible on Windows at all.
+        #
+        # It is printed, and it is one attempt only. A silent retry would hide
+        # a builder that is genuinely broken -- the opposite defect and the
+        # worse one, because a suite whose fixtures fail sometimes and say
+        # nothing produces numbers nobody can check.
+        print(
+            f"retry build {probe.id}: first attempt died rc={proc.returncode}"
+            f" (0x{proc.returncode & 0xFFFFFFFF:08X}), no output",
+            flush=True,
+        )
+        proc = once()
+    if proc.returncode != 0:
+        # The exit code is IN the message since 2026-09-10. Without it a
+        # process killed by the operating system and a builder that raised
+        # read as the same line of text, and telling the two apart took the
+        # first two hours of chasing this.
+        detail = f"stdout: {proc.stdout!r} stderr: {proc.stderr!r}"
+        raise RuntimeError(
+            f"{probe.id}: build.py failed twice, rc={proc.returncode}"
+            f" (0x{proc.returncode & 0xFFFFFFFF:08X}). {detail}"
+        )
 
 
 def load_adapter(name: str):
