@@ -72,23 +72,37 @@ def build_fixtures(probe: Probe, workdir: Path) -> None:
         # DLLs, before the builder runs a line. The same builders, on their
         # own, exited 0 sixty times out of sixty.
         #
-        # The rate is around one per cent per build, and a published run
-        # builds about 370 fixtures -- sixty-two probes for each of six
-        # adapters. At one per cent that is a 97% chance at least one dies, so
-        # retrying the whole run is not a remedy but a lottery with a 3%
-        # prize. Retrying the one build that died is the smallest thing that
-        # makes a full run possible on Windows at all.
+        # The rate is around one per cent per build. A published run used to
+        # build about 370 fixtures -- sixty-two probes for each of six adapters
+        # -- and one retry took the chance of a doubled failure to roughly one
+        # in a thousand. On 2026-09-14 the table grew to nine adapters, 558
+        # builds, and a publication died on a doubled failure: the arithmetic
+        # had moved under a constant nobody revisited.
         #
-        # It is printed, and it is one attempt only. A silent retry would hide
-        # a builder that is genuinely broken -- the opposite defect and the
-        # worse one, because a suite whose fixtures fail sometimes and say
-        # nothing produces numbers nobody can check.
-        print(
-            f"retry build {probe.id}: first attempt died rc={proc.returncode}"
-            f" (0x{proc.returncode & 0xFFFFFFFF:08X}), no output",
-            flush=True,
-        )
-        proc = once()
+        # So the retry is no longer a count, it is a SIGNATURE. This death has
+        # one: the operating system kills the interpreter before the builder
+        # runs a line, so stdout and stderr are both empty. A builder that is
+        # genuinely broken raises, and a raise has a traceback. Retrying only
+        # the silent death is therefore stricter than what was here before --
+        # a failing builder that says anything now fails on the first attempt
+        # instead of being run twice -- and it can absorb the flake as often as
+        # the flake happens without ever hiding a real defect.
+        #
+        # Every attempt is printed. A silent retry would hide the frequency,
+        # and the frequency is the thing that told us the constant was stale.
+        silenziosa = not proc.stdout.strip() and not proc.stderr.strip()
+        tentativi = 0
+        while silenziosa and tentativi < 3:
+            tentativi += 1
+            print(
+                f"retry build {probe.id} ({tentativi}/3): rc={proc.returncode}"
+                f" (0x{proc.returncode & 0xFFFFFFFF:08X}), no output at all",
+                flush=True,
+            )
+            proc = once()
+            if proc.returncode == 0:
+                break
+            silenziosa = not proc.stdout.strip() and not proc.stderr.strip()
     if proc.returncode != 0:
         # The exit code is IN the message since 2026-09-10. Without it a
         # process killed by the operating system and a builder that raised
@@ -96,7 +110,7 @@ def build_fixtures(probe: Probe, workdir: Path) -> None:
         # first two hours of chasing this.
         detail = f"stdout: {proc.stdout!r} stderr: {proc.stderr!r}"
         raise RuntimeError(
-            f"{probe.id}: build.py failed twice, rc={proc.returncode}"
+            f"{probe.id}: build.py failed, rc={proc.returncode}"
             f" (0x{proc.returncode & 0xFFFFFFFF:08X}). {detail}"
         )
 
