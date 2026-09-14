@@ -112,7 +112,21 @@ def load_adapter(name: str):
 
 
 def run_probe(adapter, probe: Probe, keep: Path | None = None) -> tuple[Outcome, Verdict]:
-    with tempfile.TemporaryDirectory(prefix=f"argleton-{probe.id}-") as tmp:
+    # `ignore_cleanup_errors`, and said out loud rather than left as a default:
+    # a system under test may still hold a file when the measurement is over,
+    # and on Windows an open GeoPackage cannot be deleted. Measured 2026-09-14:
+    # one QGIS MCP server leaves an operation permanently queued when its
+    # algorithm cannot run, and the input layer of that operation stays alive
+    # with it, so the probe's own directory will not go. Without this line the
+    # suite threw away sixty-one finished measurements over one locked file,
+    # which is the harness losing results to its own housekeeping.
+    #
+    # It hides nothing: the measurement is complete before cleanup runs, the
+    # behaviour belongs in that system's notes and is reported upstream, and the
+    # leftover directory stays in the temp folder where it can be seen.
+    with tempfile.TemporaryDirectory(
+        prefix=f"argleton-{probe.id}-", ignore_cleanup_errors=True
+    ) as tmp:
         workdir = Path(keep / probe.id) if keep else Path(tmp)
         workdir.mkdir(parents=True, exist_ok=True)
         # Fixtures are built OUTSIDE the stopwatch. They are our cost, they
