@@ -29,13 +29,16 @@ the engine answers **1000000.0** where the truth is 92903.41, because `$area`
 returns square feet and says nothing about it. That is the shape of every number
 on this row: plausible, confident, and unqualified.
 
-**Two facts about the harness, both measured rather than assumed.** `qgis_process`
-starts in about 65 seconds on a warm cache and in about 3 with `--no-python`,
-which disables the Python-written providers (GRASS, SAGA) and leaves the C++ ones
-(`native:`, `qgis:`, `gdal:`) that every probe here needs; the buffer output was
-byte-identical either way. And QGIS writes its own diagnostics to stdout *before*
-the JSON document — including the transformation warnings a wrapper throws away —
-so this adapter keeps them and reports them as the system's own disclosure.
+**Three facts about the harness, all measured rather than assumed.** Startup has
+two speeds and they are not free of consequence: `--no-python
+--skip-loading-plugins` answers in about 1.5 seconds against about 23 with
+everything loaded, and the buffer output was identical either way — but the
+`gdal:` family is *part of the Processing plugin*, so warping a raster and the
+raster calculator are unreachable through the fast door. Two operations here open
+the slow one and the rest do not, which is why the flag is per call. And QGIS
+writes its own diagnostics to stdout *before* the JSON document — including the
+transformation warnings a wrapper throws away — so this adapter keeps them and
+reports them as the system's own disclosure.
 """
 
 from __future__ import annotations
@@ -98,6 +101,18 @@ def _parse(stdout: str) -> tuple[dict, list[str]]:
     raise RuntimeError(f"qgis_process produced no JSON document. Output: {stdout[-800:]!r}")
 
 
+def _features(path: Path) -> list[dict]:
+    """Read back a layer QGIS just wrote, as plain JSON.
+
+    Reading the engine's own output is not doing the GIS: the numbers and the
+    strings in it are QGIS's, and this only carries them out of the file. Used
+    where the answer is a name or a single attribute rather than a total, which
+    `qgis_process` has no way to hand back as a scalar.
+    """
+    document = json.loads(path.read_text(encoding="utf-8"))
+    return document.get("features", [])
+
+
 class Adapter:
     name = "qgis_process"
 
@@ -120,9 +135,19 @@ class Adapter:
         algorithm: str,
         workdir: Path,
         ellipsoid: str | None = None,
+        providers: str = "core",
         **parameters: object,
     ) -> tuple[dict, list[str]]:
-        """Run one algorithm and return its results plus what QGIS said out loud."""
+        """Run one algorithm and return its results plus what QGIS said out loud.
+
+        `providers="all"` is the slow door and is only opened where an algorithm
+        needs it. Measured on 2026-09-14: the C++ providers alone answer in about
+        1.5 seconds, and loading the Python ones takes about 23 — but the whole
+        `gdal:` family lives in the Processing *plugin*, so warping a raster or
+        running a raster calculator is unreachable through the fast door. The
+        flag is per call rather than per run so that one raster operation does
+        not make sixty vector ones fifteen times slower.
+        """
         if self._executable is None:
             self._executable = _executable()
         # Parameters go in on STDIN as JSON, not as `--KEY=VALUE` arguments, and
@@ -137,8 +162,9 @@ class Adapter:
         payload: dict[str, object] = {"inputs": parameters}
         if ellipsoid is not None:
             payload["ellipsoid"] = ellipsoid
+        speed = [] if providers == "all" else ["--no-python", "--skip-loading-plugins"]
         process = subprocess.run(
-            [self._executable, "--no-python", "--skip-loading-plugins", "run", algorithm, "-"],
+            [self._executable, *speed, "run", algorithm, "-"],
             input=json.dumps(payload),
             cwd=str(workdir),
             capture_output=True,
@@ -175,6 +201,17 @@ class Adapter:
         own route from "a number per feature" to "one number" is a statistics
         run over a calculated field, and that is the route taken here.
         """
+        total, _, log = self._measure_sum(layer, expression, workdir, ellipsoid)
+        return total, log
+
+    def _measure_sum(
+        self,
+        layer: str,
+        expression: str,
+        workdir: Path,
+        ellipsoid: str | None = None,
+    ) -> tuple[float, int, list[str]]:
+        """As `_measure`, but keeping the feature count the statistics also give."""
         calculated = "_measured.gpkg"
         _, calc_log = self._call(
             "native:fieldcalculator",
@@ -185,8 +222,8 @@ class Adapter:
             FORMULA=expression,
             OUTPUT=calculated,
         )
-        total, _, stat_log = self._sum_of(calculated, "m", workdir)
-        return total, calc_log + stat_log
+        total, count, stat_log = self._sum_of(calculated, "m", workdir)
+        return total, count, calc_log + stat_log
 
     # --- vector: area ---------------------------------------------------
 
@@ -327,3 +364,374 @@ class Adapter:
             "native:rasterlayerstatistics", workdir, INPUT=probe.arguments[0], BAND=1
         )
         return Outcome(answer=float(results["MEAN"]), warnings=log)
+
+    def op_mean_slope_degrees(self, probe: Probe, workdir: Path) -> Outcome:
+        _, slope_log = self._call(
+            "native:slope", workdir, INPUT=probe.arguments[0], Z_FACTOR=1, OUTPUT="_slope.tif"
+        )
+        results, log = self._call(
+            "native:rasterlayerstatistics", workdir, INPUT="_slope.tif", BAND=1
+        )
+        return Outcome(answer=float(results["MEAN"]), warnings=slope_log + log)
+
+    def op_raster_ground_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # The extent as the file declares it: columns times rows times the cell.
+        # Which georeferencing QGIS believes when a stale world file sits beside
+        # the GeoTIFF is the question, and this reads back whatever it believed.
+        results, log = self._call(
+            "native:rasterlayerproperties", workdir, INPUT=probe.arguments[0], BAND=1
+        )
+        area = (
+            float(results["WIDTH_IN_PIXELS"])
+            * abs(float(results["PIXEL_WIDTH"]))
+            * float(results["HEIGHT_IN_PIXELS"])
+            * abs(float(results["PIXEL_HEIGHT"]))
+        )
+        return Outcome(answer=area, warnings=log)
+
+    def op_lowest_cell_easting(self, probe: Probe, workdir: Path) -> Outcome:
+        # Every cell becomes a point, the lowest value is found by statistics,
+        # and the point carrying it is extracted. Where QGIS puts that point
+        # inside the cell — centre or corner — is the trap, and it is QGIS's
+        # answer that is read back, not a correction of it.
+        _, points_log = self._call(
+            "native:pixelstopoints",
+            workdir,
+            INPUT_RASTER=probe.arguments[0],
+            RASTER_BAND=1,
+            FIELD_NAME="VALUE",
+            OUTPUT="_cells.gpkg",
+        )
+        stats, stats_log = self._call(
+            "qgis:basicstatisticsforfields", workdir, INPUT_LAYER="_cells.gpkg", FIELD_NAME="VALUE"
+        )
+        lowest = float(stats["MIN"])
+        _, extract_log = self._call(
+            "native:extractbyattribute",
+            workdir,
+            INPUT="_cells.gpkg",
+            FIELD="VALUE",
+            OPERATOR=0,  # equals
+            VALUE=lowest,
+            OUTPUT="_lowest.gpkg",
+        )
+        easting, _, sum_log = self._measure_sum("_lowest.gpkg", "$x", workdir)
+        return Outcome(answer=easting, warnings=points_log + stats_log + extract_log + sum_log)
+
+    def op_class_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # "Put it on a 15 metre grid, then report the area of class 2." Warping
+        # is a `gdal:` algorithm, so this one pays the slow door; the resampling
+        # method is QGIS's own default, which is the subject of the probe.
+        resolution = float(probe.arguments[1].split("=", 1)[1])
+        wanted = float(probe.arguments[2].split("=", 1)[1])
+        _, warp_log = self._call(
+            "gdal:warpreproject",
+            workdir,
+            providers="all",
+            INPUT=probe.arguments[0],
+            TARGET_RESOLUTION=resolution,
+            OUTPUT="_grid.tif",
+        )
+        _, points_log = self._call(
+            "native:pixelstopoints",
+            workdir,
+            INPUT_RASTER="_grid.tif",
+            RASTER_BAND=1,
+            FIELD_NAME="VALUE",
+            OUTPUT="_gridcells.gpkg",
+        )
+        _, extract_log = self._call(
+            "native:extractbyattribute",
+            workdir,
+            INPUT="_gridcells.gpkg",
+            FIELD="VALUE",
+            OPERATOR=0,
+            VALUE=wanted,
+            OUTPUT="_class.gpkg",
+        )
+        cells, _, sum_log = self._measure_sum("_class.gpkg", "1", workdir)
+        return Outcome(
+            answer=cells * resolution * resolution,
+            warnings=warp_log + points_log + extract_log + sum_log,
+        )
+
+    def op_ndvi_mean(self, probe: Probe, workdir: Path) -> Outcome:
+        # (NIR - RED) / (NIR + RED), through the raster calculator, which is a
+        # `gdal:` algorithm and needs the slow door. Whether the bands' declared
+        # scale and offset reach the arithmetic is the whole probe.
+        red = int(probe.arguments[1].split("=", 1)[1])
+        nir = int(probe.arguments[2].split("=", 1)[1])
+        scene = probe.arguments[0]
+        _, calc_log = self._call(
+            "gdal:rastercalculator",
+            workdir,
+            providers="all",
+            INPUT_A=scene,
+            BAND_A=nir,
+            INPUT_B=scene,
+            BAND_B=red,
+            FORMULA="(A.astype(float) - B.astype(float)) / (A.astype(float) + B.astype(float))",
+            OUTPUT="_ndvi.tif",
+        )
+        results, log = self._call(
+            "native:rasterlayerstatistics", workdir, INPUT="_ndvi.tif", BAND=1
+        )
+        return Outcome(answer=float(results["MEAN"]), warnings=calc_log + log)
+
+    # --- vector: joins, location, tables ---------------------------------
+
+    def op_pipe_length_m(self, probe: Probe, workdir: Path) -> Outcome:
+        # `$length` is the length QGIS offers, and it is the one on the map
+        # plane. Whether the pipe's elevations belong in "how many metres of
+        # pipe" is the probe's question, not this adapter's to answer.
+        total, log = self._measure(probe.arguments[0], "$length", workdir)
+        return Outcome(answer=total, warnings=log)
+
+    def op_flooded_farmland_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        _, cut_log = self._call(
+            "native:intersection",
+            workdir,
+            INPUT=probe.arguments[0],
+            OVERLAY=probe.arguments[1],
+            OUTPUT="_flooded.gpkg",
+        )
+        total, log = self._measure("_flooded.gpkg", "$area", workdir)
+        return Outcome(answer=total, warnings=cut_log + log)
+
+    def op_wells_in_districts(self, probe: Probe, workdir: Path) -> Outcome:
+        results, log = self._call(
+            "native:countpointsinpolygon",
+            workdir,
+            POLYGONS=probe.arguments[1],
+            POINTS=probe.arguments[0],
+            FIELD="n",
+            OUTPUT="_wells.gpkg",
+        )
+        total, _, stat_log = self._sum_of(str(results["OUTPUT"]), "n", workdir)
+        return Outcome(answer=int(total), warnings=log + stat_log)
+
+    def op_ships_in_zone(self, probe: Probe, workdir: Path) -> Outcome:
+        # The vessel table names its columns, so they are named here rather than
+        # taken in order — QGIS asks which field is X and which is Y, and giving
+        # it the wrong one would be this file's mistake, not the engine's.
+        _, points_log = self._call(
+            "native:createpointslayerfromtable",
+            workdir,
+            INPUT=probe.arguments[1],
+            XFIELD="longitude",
+            YFIELD="latitude",
+            TARGET_CRS="EPSG:4326",
+            OUTPUT="_ships.gpkg",
+        )
+        results, count_log = self._call(
+            "native:countpointsinpolygon",
+            workdir,
+            POLYGONS=probe.arguments[0],
+            POINTS="_ships.gpkg",
+            FIELD="n",
+            OUTPUT="_shipsinzone.gpkg",
+        )
+        total, _, stat_log = self._sum_of(str(results["OUTPUT"]), "n", workdir)
+        return Outcome(answer=int(total), warnings=points_log + count_log + stat_log)
+
+    def op_district_of_parcel(self, probe: Probe, workdir: Path) -> Outcome:
+        # Centroid, then which district contains it — the route a processing
+        # toolbox offers for "which polygon is this one in". That a centroid can
+        # fall outside its own parcel is the probe's business.
+        _, centroid_log = self._call(
+            "native:centroids", workdir, INPUT=probe.arguments[0], OUTPUT="_centroid.gpkg"
+        )
+        _, join_log = self._call(
+            "native:joinattributesbylocation",
+            workdir,
+            INPUT="_centroid.gpkg",
+            JOIN=probe.arguments[1],
+            PREDICATE=[0],  # intersects
+            JOIN_FIELDS=["district"],
+            METHOD=0,
+            DISCARD_NONMATCHING=False,
+            OUTPUT="_where.geojson",
+        )
+        features = _features(workdir / "_where.geojson")
+        names = [f["properties"].get("district") for f in features]
+        answer = names[0] if len(names) == 1 else names
+        return Outcome(answer=answer, warnings=centroid_log + join_log)
+
+    def op_thiessen_value_mm(self, probe: Probe, workdir: Path) -> Outcome:
+        # Voronoi cells around the gauges, then the cell the site falls in.
+        # COPY_ATTRIBUTES is asked for explicitly: without it the reading would
+        # not travel with its cell, and the pairing is the probe's subject.
+        #
+        # QGIS refuses to build cells from fewer than three points, and with two
+        # gauges the Thiessen answer is simply the nearer one — so the fallback
+        # is a join by nearest, and it is announced in the warnings rather than
+        # done quietly. Falling back is not a correction of the engine: it is
+        # the second algorithm the engine offers for the same question once the
+        # first has said it cannot.
+        field = probe.arguments[2]
+        fallback: list[str] = []
+        try:
+            _, voronoi_log = self._call(
+                "native:voronoipolygons",
+                workdir,
+                INPUT=probe.arguments[0],
+                BUFFER=100,
+                COPY_ATTRIBUTES=True,
+                OUTPUT="_cells.gpkg",
+            )
+            _, join_log = self._call(
+                "native:joinattributesbylocation",
+                workdir,
+                INPUT=probe.arguments[1],
+                JOIN="_cells.gpkg",
+                PREDICATE=[0],
+                JOIN_FIELDS=[field],
+                METHOD=0,
+                DISCARD_NONMATCHING=False,
+                OUTPUT="_site.geojson",
+            )
+        except RuntimeError as refusal:
+            if "at least" not in str(refusal) and "3 point" not in str(refusal):
+                raise
+            fallback = [
+                "voronoi polygons refused the gauge layer, so the nearest gauge was "
+                f"joined instead: {refusal}"
+            ]
+            _, join_log = self._call(
+                "native:joinbynearest",
+                workdir,
+                INPUT=probe.arguments[1],
+                INPUT_2=probe.arguments[0],
+                FIELDS_TO_COPY=[field],
+                NEIGHBORS=1,
+                DISCARD_NONMATCHING=False,
+                OUTPUT="_site.geojson",
+            )
+            voronoi_log = []
+        features = _features(workdir / "_site.geojson")
+        values = [f["properties"].get(field) for f in features]
+        return Outcome(
+            answer=float(values[0]) if len(values) == 1 and values[0] is not None else values,
+            warnings=fallback + voronoi_log + join_log,
+        )
+
+    def op_total_population(self, probe: Probe, workdir: Path) -> Outcome:
+        # Join the table on the code and total the column. Whether the two sides
+        # of the key are the same type after each file is read is the probe.
+        _, join_log = self._call(
+            "native:joinattributestable",
+            workdir,
+            INPUT=probe.arguments[0],
+            FIELD="istat_code",
+            INPUT_2=probe.arguments[1],
+            FIELD_2="istat_code",
+            METHOD=1,
+            DISCARD_NONMATCHING=False,
+            OUTPUT="_joined.gpkg",
+        )
+        total, _, sum_log = self._measure_sum(
+            "_joined.gpkg", 'coalesce(to_real("population"), 0)', workdir
+        )
+        return Outcome(answer=total, warnings=join_log + sum_log)
+
+    def op_sheet_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # The question is the area of the parcels; the owners table is named in
+        # it, so it is joined, which is what makes this a trap: one parcel with
+        # two owners becomes two rows, and the area follows the row.
+        _, join_log = self._call(
+            "native:joinattributestable",
+            workdir,
+            INPUT=probe.arguments[0],
+            FIELD="parcel_id",
+            INPUT_2=probe.arguments[1],
+            FIELD_2="parcel_id",
+            METHOD=1,
+            DISCARD_NONMATCHING=False,
+            OUTPUT="_sheets.gpkg",
+        )
+        total, log = self._measure("_sheets.gpkg", "$area", workdir)
+        return Outcome(answer=total, warnings=join_log + log)
+
+    def op_area_unemployment_rate_pct(self, probe: Probe, workdir: Path) -> Outcome:
+        # The statistics panel answers "the rate of the area" with the mean of
+        # the rate column. Whether that is the rate of the area, or the mean of
+        # three rates that belong to populations of different sizes, is the probe.
+        results, log = self._call(
+            "qgis:basicstatisticsforfields",
+            workdir,
+            INPUT_LAYER=probe.arguments[0],
+            FIELD_NAME="unemployment_rate_pct",
+        )
+        return Outcome(answer=float(results["MEAN"]), warnings=log)
+
+    def op_wgs84_latitude(self, probe: Probe, workdir: Path) -> Outcome:
+        # Reproject to WGS 84 and read the northing back. Which transformation
+        # PROJ picks between the two datums is the probe, and QGIS announces a
+        # non-preferred one on stdout — so the warning travels with the number
+        # here instead of being swallowed, which is the point of keeping the log.
+        _, reproject_log = self._call(
+            "native:reprojectlayer",
+            workdir,
+            INPUT=probe.arguments[0],
+            TARGET_CRS="EPSG:4326",
+            OUTPUT="_wgs84.gpkg",
+        )
+        latitude, _, log = self._measure_sum("_wgs84.gpkg", "$y", workdir)
+        return Outcome(answer=latitude, warnings=reproject_log + log)
+
+    def op_latitude_decimal(self, probe: Probe, workdir: Path) -> Outcome:
+        # The table may keep the latitude already in decimal degrees, or split
+        # across degrees, minutes, seconds and a hemisphere. Which one it is, is
+        # read from the header — the same look a person gives a corner schedule
+        # before choosing a formula — and the arithmetic is then the field
+        # calculator's. The CSV reader hands every column back as text, hence
+        # `to_real`.
+        station = probe.arguments[1].split("=", 1)[1]
+        _, extract_log = self._call(
+            "native:extractbyattribute",
+            workdir,
+            INPUT=probe.arguments[0],
+            FIELD="station_id",
+            OPERATOR=0,
+            VALUE=station,
+            OUTPUT="_station.gpkg",
+        )
+        header = (workdir / probe.arguments[0]).read_text(encoding="utf-8").splitlines()[0]
+        columns = [name.strip().strip('"') for name in header.split(",")]
+        if "lat_deg" in columns:
+            decimal = (
+                '(to_real("lat_deg") + to_real("lat_min") / 60.0 + to_real("lat_sec") / 3600.0)'
+                " * (CASE WHEN upper(\"lat_hem\") = 'S' THEN -1 ELSE 1 END)"
+            )
+        else:
+            decimal = 'to_real("latitude")'
+        total, _, sum_log = self._measure_sum("_station.gpkg", decimal, workdir)
+        return Outcome(answer=total, warnings=extract_log + sum_log)
+
+    def op_parcel_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
+        # A corner schedule becomes points, the points become a closed path, the
+        # path becomes a polygon. The columns are named in the file and named
+        # again here: QGIS asks which is X, and answering "longitude" is reading
+        # the file, not correcting it.
+        _, points_log = self._call(
+            "native:createpointslayerfromtable",
+            workdir,
+            INPUT=probe.arguments[0],
+            XFIELD="longitude",
+            YFIELD="latitude",
+            TARGET_CRS="EPSG:4326",
+            OUTPUT="_corners.gpkg",
+        )
+        _, path_log = self._call(
+            "native:pointstopath",
+            workdir,
+            INPUT="_corners.gpkg",
+            CLOSE_PATH=True,
+            ORDER_EXPRESSION='to_real("corner")',
+            OUTPUT="_ring.gpkg",
+        )
+        _, polygon_log = self._call(
+            "native:polygonize", workdir, INPUT="_ring.gpkg", OUTPUT="_parcel.gpkg"
+        )
+        total, log = self._measure("_parcel.gpkg", "$area", workdir, ellipsoid="WGS84")
+        return Outcome(answer=total, warnings=points_log + path_log + polygon_log + log)

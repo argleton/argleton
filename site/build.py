@@ -41,7 +41,14 @@ FONTS = (
 # a row is, not by how the row scored. Sorting a third party downwards to soften
 # the comparison would be its own kind of dishonesty, and the columns beside the
 # rate already say how many traps each system was asked.
-ORDER = ["MapSmith", "gis-mcp", "rasterio", "GeoPandas", "whitebox", "naive"]
+#
+# `QGIS processing` heads the library block rather than sitting with `gis-mcp`,
+# and the distinction is the reason it was measured at all: it is an engine, not
+# a server, and it is the engine the QGIS MCP servers call. When those servers
+# are measured they belong beside `gis-mcp`, with this row underneath them —
+# that pairing is what lets a reader tell a wrapper's fault from its engine's.
+ORDER = ["MapSmith", "gis-mcp", "QGIS processing", "rasterio", "GeoPandas",
+         "whitebox", "naive"]
 
 
 def latest_run() -> tuple[str, list[dict]]:
