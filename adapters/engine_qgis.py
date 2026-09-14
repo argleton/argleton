@@ -29,6 +29,19 @@ the engine answers **1000000.0** where the truth is 92903.41, because `$area`
 returns square feet and says nothing about it. That is the shape of every number
 on this row: plausible, confident, and unqualified.
 
+**What this row is a row of, stated narrowly, because one measurement made the
+narrowness matter.** `qgis_process` runs with no project, and a project carries
+an ellipsoid. Asked the same algorithms with the same parameters inside a *live*
+QGIS — whose default project sets `EPSG:7030` — the same trap comes back as
+**92899.397** instead of 1000000.0: `$area` is ellipsoidal there and planar here,
+and the two answers differ by a factor of 10.8 (measured 2026-09-14 through the
+QGIS Agent MCP bridge, with the project's ellipsoid read back from
+`project.properties` rather than inferred). Both are still silent errors — 92899.4
+misses a tolerance of 0.5 — but they are not the same number, and a reader who
+takes this row for "what QGIS does" would be wrong by an order of magnitude.
+So: **this row is QGIS processing driven without a project**, which is what a
+headless caller gets, and it is not interchangeable with QGIS inside its desktop.
+
 **Three facts about the harness, all measured rather than assumed.** Startup has
 two speeds and they are not free of consequence: `--no-python
 --skip-loading-plugins` answers in about 1.5 seconds against about 23 with
