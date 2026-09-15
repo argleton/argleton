@@ -1,7 +1,7 @@
 {
   "system": "naive composition",
   "adapter": "engine:naive",
-  "spec_commit": "806344f",
+  "spec_commit": "beab4ba",
   "date": "2026-09-15",
   "silent_error_rate": 0.9355,
   "completion_rate": 1.0,
@@ -10,12 +10,12 @@
   "unsupported": 0,
   "timing": {
     "probes": 62,
-    "total_ms": 1920.9,
-    "median_ms": 13.8,
-    "first_probe_ms": 387.1,
+    "total_ms": 2310.2,
+    "median_ms": 15.2,
+    "first_probe_ms": 346.4,
     "slowest": {
       "probe_id": "c002-projected-area",
-      "ms": 469.7
+      "ms": 662.6
     },
     "adapter_breakdown_ms": null
   },
@@ -149,7 +149,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 387.1,
+      "duration_ms": 346.4,
       "timings": null
     },
     {
@@ -159,7 +159,7 @@
       "verdict": "correct",
       "detail": "1000000.0",
       "answer": 1000000.0,
-      "duration_ms": 469.7,
+      "duration_ms": 662.6,
       "timings": null
     },
     {
@@ -169,7 +169,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 12.3,
+      "duration_ms": 13.6,
       "timings": null
     },
     {
@@ -179,7 +179,7 @@
       "verdict": "correct",
       "detail": "9",
       "answer": 9,
-      "duration_ms": 14.4,
+      "duration_ms": 28.8,
       "timings": null
     },
     {
@@ -189,7 +189,7 @@
       "verdict": "correct",
       "detail": "7600.0",
       "answer": 7600.0,
-      "duration_ms": 7.6,
+      "duration_ms": 9.6,
       "timings": null
     },
     {
@@ -199,7 +199,7 @@
       "verdict": "correct",
       "detail": "17",
       "answer": 17,
-      "duration_ms": 9.9,
+      "duration_ms": 12.0,
       "timings": null
     },
     {
@@ -209,7 +209,7 @@
       "verdict": "correct",
       "detail": "5",
       "answer": 5,
-      "duration_ms": 14.3,
+      "duration_ms": 19.2,
       "timings": null
     },
     {
@@ -219,7 +219,7 @@
       "verdict": "correct",
       "detail": "10000.0",
       "answer": 10000.0,
-      "duration_ms": 13.7,
+      "duration_ms": 19.5,
       "timings": null
     },
     {
@@ -229,7 +229,7 @@
       "verdict": "correct",
       "detail": "900.0",
       "answer": 900.0,
-      "duration_ms": 5.7,
+      "duration_ms": 5.4,
       "timings": null
     },
     {
@@ -239,7 +239,7 @@
       "verdict": "correct",
       "detail": "0.5000000093132254",
       "answer": 0.5000000093132254,
-      "duration_ms": 15.1,
+      "duration_ms": 14.6,
       "timings": null
     },
     {
@@ -249,7 +249,7 @@
       "verdict": "correct",
       "detail": "10000.0",
       "answer": 10000.0,
-      "duration_ms": 11.0,
+      "duration_ms": 8.8,
       "timings": null
     },
     {
@@ -259,7 +259,7 @@
       "verdict": "correct",
       "detail": "20000.0",
       "answer": 20000.0,
-      "duration_ms": 13.0,
+      "duration_ms": 9.6,
       "timings": null
     },
     {
@@ -269,7 +269,7 @@
       "verdict": "correct",
       "detail": "500.0",
       "answer": 500.0,
-      "duration_ms": 11.4,
+      "duration_ms": 10.7,
       "timings": null
     },
     {
@@ -279,7 +279,7 @@
       "verdict": "correct",
       "detail": "A",
       "answer": "A",
-      "duration_ms": 18.5,
+      "duration_ms": 15.1,
       "timings": null
     },
     {
@@ -289,7 +289,7 @@
       "verdict": "correct",
       "detail": "12",
       "answer": 12,
-      "duration_ms": 25.7,
+      "duration_ms": 28.1,
       "timings": null
     },
     {
@@ -299,7 +299,7 @@
       "verdict": "correct",
       "detail": "41.89",
       "answer": 41.89,
-      "duration_ms": 5.3,
+      "duration_ms": 17.3,
       "timings": null
     },
     {
@@ -309,7 +309,7 @@
       "verdict": "correct",
       "detail": "15.0",
       "answer": 15.0,
-      "duration_ms": 11.9,
+      "duration_ms": 10.9,
       "timings": null
     },
     {
@@ -319,7 +319,7 @@
       "verdict": "correct",
       "detail": "100000",
       "answer": 100000,
-      "duration_ms": 20.1,
+      "duration_ms": 21.5,
       "timings": null
     },
     {
@@ -329,7 +329,7 @@
       "verdict": "correct",
       "detail": "30000.0",
       "answer": 30000.0,
-      "duration_ms": 19.5,
+      "duration_ms": 26.0,
       "timings": null
     },
     {
@@ -339,7 +339,7 @@
       "verdict": "correct",
       "detail": "50000.0",
       "answer": 50000.0,
-      "duration_ms": 29.4,
+      "duration_ms": 23.9,
       "timings": null
     },
     {
@@ -349,7 +349,7 @@
       "verdict": "correct",
       "detail": "45.500669073852286",
       "answer": 45.500669073852286,
-      "duration_ms": 22.7,
+      "duration_ms": 36.0,
       "timings": null
     },
     {
@@ -359,7 +359,7 @@
       "verdict": "correct",
       "detail": "305.0",
       "answer": 305.0,
-      "duration_ms": 36.8,
+      "duration_ms": 25.2,
       "timings": null
     },
     {
@@ -369,7 +369,7 @@
       "verdict": "correct",
       "detail": "14042.345991909504",
       "answer": 14042.345991909504,
-      "duration_ms": 2.7,
+      "duration_ms": 8.4,
       "timings": null
     },
     {
@@ -379,7 +379,7 @@
       "verdict": "correct",
       "detail": "412105.0",
       "answer": 412105.0,
-      "duration_ms": 4.6,
+      "duration_ms": 13.7,
       "timings": null
     },
     {
@@ -389,7 +389,7 @@
       "verdict": "correct",
       "detail": "5",
       "answer": 5,
-      "duration_ms": 28.0,
+      "duration_ms": 32.5,
       "timings": null
     },
     {
@@ -399,7 +399,7 @@
       "verdict": "correct",
       "detail": "5.710593137499643",
       "answer": 5.710593137499643,
-      "duration_ms": 4.3,
+      "duration_ms": 15.7,
       "timings": null
     },
     {
@@ -409,7 +409,7 @@
       "verdict": "correct",
       "detail": "2000.0",
       "answer": 2000.0,
-      "duration_ms": 13.0,
+      "duration_ms": 13.4,
       "timings": null
     },
     {
@@ -419,7 +419,7 @@
       "verdict": "correct",
       "detail": "89828.11494971323",
       "answer": 89828.11494971323,
-      "duration_ms": 11.8,
+      "duration_ms": 10.8,
       "timings": null
     },
     {
@@ -429,7 +429,7 @@
       "verdict": "correct",
       "detail": "0.0",
       "answer": 0.0,
-      "duration_ms": 28.2,
+      "duration_ms": 36.5,
       "timings": null
     },
     {
@@ -439,7 +439,7 @@
       "verdict": "correct",
       "detail": "40000.0",
       "answer": 40000.0,
-      "duration_ms": 14.0,
+      "duration_ms": 14.7,
       "timings": null
     },
     {
@@ -449,7 +449,7 @@
       "verdict": "correct",
       "detail": "29000.0",
       "answer": 29000.0,
-      "duration_ms": 45.9,
+      "duration_ms": 79.3,
       "timings": null
     },
     {
@@ -459,7 +459,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 13.5,
+      "duration_ms": 13.8,
       "timings": null
     },
     {
@@ -469,7 +469,7 @@
       "verdict": "silent_error",
       "detail": "expected 92903.41 \u00b1 0.5, got 1000000.0 \u2014 this is the predicted naive failure",
       "answer": 1000000.0,
-      "duration_ms": 13.3,
+      "duration_ms": 13.6,
       "timings": null
     },
     {
@@ -479,7 +479,7 @@
       "verdict": "silent_error",
       "detail": "expected 1000.0 \u00b1 0.001, got 945.005 \u2014 this is the predicted naive failure",
       "answer": 945.005,
-      "duration_ms": 17.9,
+      "duration_ms": 13.2,
       "timings": null
     },
     {
@@ -489,7 +489,7 @@
       "verdict": "silent_error",
       "detail": "expected 12 \u00b1 0.0, got 0 \u2014 this is the predicted naive failure",
       "answer": 0,
-      "duration_ms": 22.4,
+      "duration_ms": 25.7,
       "timings": null
     },
     {
@@ -499,7 +499,7 @@
       "verdict": "silent_error",
       "detail": "expected 5100.0 \u00b1 0.01, got 2400.0 \u2014 this is the predicted naive failure",
       "answer": 2400.0,
-      "duration_ms": 15.1,
+      "duration_ms": 14.0,
       "timings": null
     },
     {
@@ -509,7 +509,7 @@
       "verdict": "silent_error",
       "detail": "expected 31 \u00b1 0.0, got 4 \u2014 this is the predicted naive failure",
       "answer": 4,
-      "duration_ms": 16.3,
+      "duration_ms": 15.3,
       "timings": null
     },
     {
@@ -519,7 +519,7 @@
       "verdict": "silent_error",
       "detail": "expected 3 \u00b1 0.0, got 24 \u2014 this is the predicted naive failure",
       "answer": 24,
-      "duration_ms": 8.7,
+      "duration_ms": 12.0,
       "timings": null
     },
     {
@@ -529,7 +529,7 @@
       "verdict": "silent_error",
       "detail": "expected 6654.0 \u00b1 8.0, got 12000.0 \u2014 this is the predicted naive failure",
       "answer": 12000.0,
-      "duration_ms": 10.8,
+      "duration_ms": 12.3,
       "timings": null
     },
     {
@@ -539,7 +539,7 @@
       "verdict": "silent_error",
       "detail": "expected 0.0 \u00b1 0.0, got 900.0 \u2014 this is the predicted naive failure",
       "answer": 900.0,
-      "duration_ms": 3.4,
+      "duration_ms": 18.5,
       "timings": null
     },
     {
@@ -549,7 +549,7 @@
       "verdict": "silent_error",
       "detail": "expected 0.3333333333 \u00b1 0.0001, got 0.25 \u2014 this is the predicted naive failure",
       "answer": 0.25,
-      "duration_ms": 17.3,
+      "duration_ms": 10.7,
       "timings": null
     },
     {
@@ -559,7 +559,7 @@
       "verdict": "silent_error",
       "detail": "expected 8400.0 \u00b1 0.01, got 11600.0 \u2014 this is the predicted naive failure",
       "answer": 11600.0,
-      "duration_ms": 9.2,
+      "duration_ms": 11.3,
       "timings": null
     },
     {
@@ -569,7 +569,7 @@
       "verdict": "silent_error",
       "detail": "expected 16000.0 \u00b1 0.01, got 20000.0 \u2014 this is the predicted naive failure",
       "answer": 20000.0,
-      "duration_ms": 11.8,
+      "duration_ms": 8.9,
       "timings": null
     },
     {
@@ -579,7 +579,7 @@
       "verdict": "silent_error",
       "detail": "expected 500.0 \u00b1 0.01, got 400.0 \u2014 this is the predicted naive failure",
       "answer": 400.0,
-      "duration_ms": 9.0,
+      "duration_ms": 10.2,
       "timings": null
     },
     {
@@ -589,7 +589,7 @@
       "verdict": "silent_error",
       "detail": "expected A \u00b1 0.0, got B \u2014 this is the predicted naive failure",
       "answer": "B",
-      "duration_ms": 21.4,
+      "duration_ms": 43.2,
       "timings": null
     },
     {
@@ -599,7 +599,7 @@
       "verdict": "silent_error",
       "detail": "expected 12 \u00b1 0.0, got 8 \u2014 this is the predicted naive failure",
       "answer": 8,
-      "duration_ms": 26.9,
+      "duration_ms": 28.7,
       "timings": null
     },
     {
@@ -609,7 +609,7 @@
       "verdict": "silent_error",
       "detail": "expected 41.89 \u00b1 0.0001, got 41.5324 \u2014 this is the predicted naive failure",
       "answer": 41.5324,
-      "duration_ms": 17.7,
+      "duration_ms": 13.3,
       "timings": null
     },
     {
@@ -619,7 +619,7 @@
       "verdict": "silent_error",
       "detail": "expected 1.38 \u00b1 0.005, got 13.666666666666666 \u2014 this is the predicted naive failure",
       "answer": 13.666666666666666,
-      "duration_ms": 12.1,
+      "duration_ms": 10.3,
       "timings": null
     },
     {
@@ -629,7 +629,7 @@
       "verdict": "silent_error",
       "detail": "expected 100000 \u00b1 0.0, got 62000 \u2014 this is the predicted naive failure",
       "answer": 62000,
-      "duration_ms": 17.6,
+      "duration_ms": 21.7,
       "timings": null
     },
     {
@@ -639,7 +639,7 @@
       "verdict": "silent_error",
       "detail": "expected 9000.0 \u00b1 0.01, got 30000.0 \u2014 this is the predicted naive failure",
       "answer": 30000.0,
-      "duration_ms": 20.5,
+      "duration_ms": 25.1,
       "timings": null
     },
     {
@@ -649,7 +649,7 @@
       "verdict": "silent_error",
       "detail": "expected 50000.0 \u00b1 0.01, got 65000.0 \u2014 this is the predicted naive failure",
       "answer": 65000.0,
-      "duration_ms": 11.1,
+      "duration_ms": 23.2,
       "timings": null
     },
     {
@@ -659,7 +659,7 @@
       "verdict": "silent_error",
       "detail": "expected 45.500669074 \u00b1 9e-05, got 45.5 \u2014 this is the predicted naive failure",
       "answer": 45.5,
-      "duration_ms": 29.5,
+      "duration_ms": 20.9,
       "timings": null
     },
     {
@@ -669,7 +669,7 @@
       "verdict": "silent_error",
       "detail": "expected 268.0 \u00b1 0.0, got 554.0 \u2014 this is the predicted naive failure",
       "answer": 554.0,
-      "duration_ms": 20.3,
+      "duration_ms": 25.2,
       "timings": null
     },
     {
@@ -679,7 +679,7 @@
       "verdict": "silent_error",
       "detail": "expected 14047.0 \u00b1 8.0, got 16261.612811923027 \u2014 this is the predicted naive failure",
       "answer": 16261.612811923027,
-      "duration_ms": 3.2,
+      "duration_ms": 10.3,
       "timings": null
     },
     {
@@ -689,7 +689,7 @@
       "verdict": "silent_error",
       "detail": "expected 412090.0 \u00b1 1.0, got 412105.0 \u2014 this is the predicted naive failure",
       "answer": 412105.0,
-      "duration_ms": 4.4,
+      "duration_ms": 14.2,
       "timings": null
     },
     {
@@ -699,7 +699,7 @@
       "verdict": "silent_error",
       "detail": "expected 5 \u00b1 0.0, got 9 \u2014 this is the predicted naive failure",
       "answer": 9,
-      "duration_ms": 9.2,
+      "duration_ms": 32.8,
       "timings": null
     },
     {
@@ -709,7 +709,7 @@
       "verdict": "correct",
       "detail": "5.710593137499643",
       "answer": 5.710593137499643,
-      "duration_ms": 17.8,
+      "duration_ms": 13.5,
       "timings": null
     },
     {
@@ -719,7 +719,7 @@
       "verdict": "silent_error",
       "detail": "expected 2000.0 \u00b1 0.01, got 3000.0 \u2014 this is the predicted naive failure",
       "answer": 3000.0,
-      "duration_ms": 13.1,
+      "duration_ms": 10.5,
       "timings": null
     },
     {
@@ -729,7 +729,7 @@
       "verdict": "silent_error",
       "detail": "expected 89864.0 \u00b1 40.0, got 127143.38102387184 \u2014 this is the predicted naive failure",
       "answer": 127143.38102387184,
-      "duration_ms": 167.4,
+      "duration_ms": 129.6,
       "timings": null
     },
     {
@@ -739,7 +739,7 @@
       "verdict": "silent_error",
       "detail": "expected 160000.0 \u00b1 0.01, got 0.0 \u2014 this is the predicted naive failure",
       "answer": 0.0,
-      "duration_ms": 19.0,
+      "duration_ms": 51.8,
       "timings": null
     },
     {
@@ -749,7 +749,7 @@
       "verdict": "silent_error",
       "detail": "expected 40000.0 \u00b1 1.0, got 160000.0 \u2014 this is the predicted naive failure",
       "answer": 160000.0,
-      "duration_ms": 4.3,
+      "duration_ms": 25.0,
       "timings": null
     },
     {
@@ -759,7 +759,7 @@
       "verdict": "silent_error",
       "detail": "expected 29000.0 \u00b1 0.01, got 31000.0 \u2014 this is the predicted naive failure",
       "answer": 31000.0,
-      "duration_ms": 9.1,
+      "duration_ms": 41.6,
       "timings": null
     }
   ]

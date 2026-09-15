@@ -69,6 +69,8 @@ we can require, and that run's section says plainly what happened instead.
 ## 2026-09-15 — three rows that are the same QGIS, and why that is the finding
 
 Published run: [`2026-09-15-qgis-three-ways/`](2026-09-15-qgis-three-ways/).
+`spec_commit` [`beab4ba`](../../../commit/beab4ba), thirty-one traps and
+thirty-one clean cases across twenty-nine families, nine systems.
 
 Three new systems, all of them QGIS underneath: the processing engine driven
 headless through `qgis_process`, and the two MCP servers that run inside a live

@@ -1,7 +1,7 @@
 {
   "system": "nkarasiak/qgis-mcp 0.14.0 (plugin socket)",
   "adapter": "adapters.qgis_mcp_plugin:Adapter",
-  "spec_commit": "806344f",
+  "spec_commit": "beab4ba",
   "date": "2026-09-15",
   "silent_error_rate": 0.3871,
   "completion_rate": 0.9677,
@@ -10,12 +10,12 @@
   "unsupported": 0,
   "timing": {
     "probes": 62,
-    "total_ms": 11688.6,
-    "median_ms": 135.8,
-    "first_probe_ms": 66.6,
+    "total_ms": 13530.0,
+    "median_ms": 152.4,
+    "first_probe_ms": 81.4,
     "slowest": {
       "probe_id": "c010-physical-values",
-      "ms": 1634.7
+      "ms": 1860.7
     },
     "adapter_breakdown_ms": null
   },
@@ -151,7 +151,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 66.6,
+      "duration_ms": 81.4,
       "timings": null
     },
     {
@@ -161,7 +161,7 @@
       "verdict": "correct",
       "detail": "1000000.0",
       "answer": 1000000.0,
-      "duration_ms": 120.4,
+      "duration_ms": 151.8,
       "timings": null
     },
     {
@@ -171,7 +171,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 37.7,
+      "duration_ms": 49.0,
       "timings": null
     },
     {
@@ -181,7 +181,7 @@
       "verdict": "correct",
       "detail": "9",
       "answer": 9,
-      "duration_ms": 151.2,
+      "duration_ms": 173.7,
       "timings": null
     },
     {
@@ -191,7 +191,7 @@
       "verdict": "correct",
       "detail": "7600.0",
       "answer": 7600.0,
-      "duration_ms": 138.0,
+      "duration_ms": 110.7,
       "timings": null
     },
     {
@@ -201,7 +201,7 @@
       "verdict": "correct",
       "detail": "17",
       "answer": 17,
-      "duration_ms": 108.1,
+      "duration_ms": 128.8,
       "timings": null
     },
     {
@@ -211,7 +211,7 @@
       "verdict": "correct",
       "detail": "5",
       "answer": 5,
-      "duration_ms": 216.2,
+      "duration_ms": 374.1,
       "timings": null
     },
     {
@@ -221,7 +221,7 @@
       "verdict": "correct_with_warning",
       "detail": "the WGS84 ellipsoid the question needs cannot be passed through execute_processing; the open project's ellipsoid applies instead",
       "answer": 10000.00000052154,
-      "duration_ms": 120.4,
+      "duration_ms": 224.4,
       "timings": null
     },
     {
@@ -231,7 +231,7 @@
       "verdict": "correct",
       "detail": "900.0",
       "answer": 900.0,
-      "duration_ms": 334.8,
+      "duration_ms": 449.2,
       "timings": null
     },
     {
@@ -241,7 +241,7 @@
       "verdict": "correct",
       "detail": "0.5",
       "answer": 0.5,
-      "duration_ms": 1634.7,
+      "duration_ms": 1860.7,
       "timings": null
     },
     {
@@ -251,7 +251,7 @@
       "verdict": "correct",
       "detail": "10000.0",
       "answer": 10000.0,
-      "duration_ms": 100.3,
+      "duration_ms": 125.3,
       "timings": null
     },
     {
@@ -261,7 +261,7 @@
       "verdict": "correct",
       "detail": "20000.0",
       "answer": 20000.0,
-      "duration_ms": 224.3,
+      "duration_ms": 232.4,
       "timings": null
     },
     {
@@ -271,7 +271,7 @@
       "verdict": "correct",
       "detail": "500.0",
       "answer": 500.0,
-      "duration_ms": 98.8,
+      "duration_ms": 117.2,
       "timings": null
     },
     {
@@ -281,7 +281,7 @@
       "verdict": "correct",
       "detail": "A",
       "answer": "A",
-      "duration_ms": 135.5,
+      "duration_ms": 144.4,
       "timings": null
     },
     {
@@ -291,7 +291,7 @@
       "verdict": "correct",
       "detail": "12",
       "answer": 12,
-      "duration_ms": 147.5,
+      "duration_ms": 127.7,
       "timings": null
     },
     {
@@ -301,7 +301,7 @@
       "verdict": "correct",
       "detail": "41.89",
       "answer": 41.89,
-      "duration_ms": 125.9,
+      "duration_ms": 159.7,
       "timings": null
     },
     {
@@ -311,7 +311,7 @@
       "verdict": "correct",
       "detail": "15.0",
       "answer": 15.0,
-      "duration_ms": 64.5,
+      "duration_ms": 59.7,
       "timings": null
     },
     {
@@ -321,7 +321,7 @@
       "verdict": "correct",
       "detail": "100000.0",
       "answer": 100000.0,
-      "duration_ms": 165.5,
+      "duration_ms": 157.2,
       "timings": null
     },
     {
@@ -331,7 +331,7 @@
       "verdict": "correct",
       "detail": "30000.0",
       "answer": 30000.0,
-      "duration_ms": 210.1,
+      "duration_ms": 238.5,
       "timings": null
     },
     {
@@ -341,7 +341,7 @@
       "verdict": "correct",
       "detail": "50000.0",
       "answer": 50000.0,
-      "duration_ms": 168.4,
+      "duration_ms": 239.5,
       "timings": null
     },
     {
@@ -351,7 +351,7 @@
       "verdict": "correct",
       "detail": "45.500669073852286",
       "answer": 45.500669073852286,
-      "duration_ms": 216.7,
+      "duration_ms": 237.2,
       "timings": null
     },
     {
@@ -361,7 +361,7 @@
       "verdict": "noisy_failure",
       "detail": "error: execute_processing: {\"status\": \"error\", \"message\": \"Processing error: There were errors executing the algorithm.\"}",
       "answer": null,
-      "duration_ms": 38.7,
+      "duration_ms": 48.5,
       "timings": null
     },
     {
@@ -371,7 +371,7 @@
       "verdict": "correct_with_warning",
       "detail": "the WGS84 ellipsoid the question needs cannot be passed through execute_processing; the open project's ellipsoid applies instead",
       "answer": 14042.345991909504,
-      "duration_ms": 261.0,
+      "duration_ms": 328.5,
       "timings": null
     },
     {
@@ -381,7 +381,7 @@
       "verdict": "correct",
       "detail": "412105.0",
       "answer": 412105.0,
-      "duration_ms": 300.5,
+      "duration_ms": 377.2,
       "timings": null
     },
     {
@@ -391,7 +391,7 @@
       "verdict": "correct",
       "detail": "5",
       "answer": 5,
-      "duration_ms": 189.8,
+      "duration_ms": 207.4,
       "timings": null
     },
     {
@@ -401,7 +401,7 @@
       "verdict": "correct",
       "detail": "5.710593223571777",
       "answer": 5.710593223571777,
-      "duration_ms": 71.2,
+      "duration_ms": 48.8,
       "timings": null
     },
     {
@@ -411,7 +411,7 @@
       "verdict": "correct",
       "detail": "2000.0",
       "answer": 2000.0,
-      "duration_ms": 83.2,
+      "duration_ms": 93.7,
       "timings": null
     },
     {
@@ -421,7 +421,7 @@
       "verdict": "correct",
       "detail": "89828.11494971812",
       "answer": 89828.11494971812,
-      "duration_ms": 103.8,
+      "duration_ms": 154.3,
       "timings": null
     },
     {
@@ -431,7 +431,7 @@
       "verdict": "correct",
       "detail": "0.0",
       "answer": 0.0,
-      "duration_ms": 157.2,
+      "duration_ms": 198.7,
       "timings": null
     },
     {
@@ -441,7 +441,7 @@
       "verdict": "correct",
       "detail": "40000.0",
       "answer": 40000.0,
-      "duration_ms": 36.1,
+      "duration_ms": 22.0,
       "timings": null
     },
     {
@@ -451,7 +451,7 @@
       "verdict": "correct",
       "detail": "29000.0",
       "answer": 29000.0,
-      "duration_ms": 83.8,
+      "duration_ms": 148.7,
       "timings": null
     },
     {
@@ -461,7 +461,7 @@
       "verdict": "correct",
       "detail": "1093.0",
       "answer": 1093.0,
-      "duration_ms": 50.2,
+      "duration_ms": 22.7,
       "timings": null
     },
     {
@@ -471,7 +471,7 @@
       "verdict": "silent_error",
       "detail": "expected 92903.41 \u00b1 0.5, got 1000000.0 \u2014 this is the predicted naive failure",
       "answer": 1000000.0,
-      "duration_ms": 115.3,
+      "duration_ms": 152.9,
       "timings": null
     },
     {
@@ -481,7 +481,7 @@
       "verdict": "correct",
       "detail": "1000.0",
       "answer": 1000.0,
-      "duration_ms": 27.2,
+      "duration_ms": 41.9,
       "timings": null
     },
     {
@@ -491,7 +491,7 @@
       "verdict": "correct",
       "detail": "12",
       "answer": 12,
-      "duration_ms": 99.9,
+      "duration_ms": 149.6,
       "timings": null
     },
     {
@@ -501,7 +501,7 @@
       "verdict": "silent_error",
       "detail": "expected 5100.0 \u00b1 0.01, got 2400.0 \u2014 this is the predicted naive failure",
       "answer": 2400.0,
-      "duration_ms": 103.6,
+      "duration_ms": 92.3,
       "timings": null
     },
     {
@@ -511,7 +511,7 @@
       "verdict": "correct",
       "detail": "31",
       "answer": 31,
-      "duration_ms": 86.3,
+      "duration_ms": 100.5,
       "timings": null
     },
     {
@@ -521,7 +521,7 @@
       "verdict": "silent_error",
       "detail": "expected 3 \u00b1 0.0, got 24 \u2014 this is the predicted naive failure",
       "answer": 24,
-      "duration_ms": 258.7,
+      "duration_ms": 278.8,
       "timings": null
     },
     {
@@ -531,7 +531,7 @@
       "verdict": "correct_with_warning",
       "detail": "the WGS84 ellipsoid the question needs cannot be passed through execute_processing; the open project's ellipsoid applies instead",
       "answer": 6651.335028409958,
-      "duration_ms": 149.6,
+      "duration_ms": 146.2,
       "timings": null
     },
     {
@@ -541,7 +541,7 @@
       "verdict": "correct",
       "detail": "0.0",
       "answer": 0.0,
-      "duration_ms": 353.3,
+      "duration_ms": 383.3,
       "timings": null
     },
     {
@@ -551,7 +551,7 @@
       "verdict": "silent_error",
       "detail": "expected 0.3333333333 \u00b1 0.0001, got 0.25 \u2014 this is the predicted naive failure",
       "answer": 0.25,
-      "duration_ms": 1380.0,
+      "duration_ms": 1635.4,
       "timings": null
     },
     {
@@ -571,7 +571,7 @@
       "verdict": "correct",
       "detail": "16000.0",
       "answer": 16000.0,
-      "duration_ms": 183.2,
+      "duration_ms": 166.7,
       "timings": null
     },
     {
@@ -581,7 +581,7 @@
       "verdict": "silent_error",
       "detail": "expected 500.0 \u00b1 0.01, got 400.0 \u2014 this is the predicted naive failure",
       "answer": 400.0,
-      "duration_ms": 89.7,
+      "duration_ms": 96.0,
       "timings": null
     },
     {
@@ -591,7 +591,7 @@
       "verdict": "silent_error",
       "detail": "expected A \u00b1 0.0, got B \u2014 this is the predicted naive failure",
       "answer": "B",
-      "duration_ms": 136.1,
+      "duration_ms": 130.6,
       "timings": null
     },
     {
@@ -601,7 +601,7 @@
       "verdict": "silent_error",
       "detail": "expected 12 \u00b1 0.0, got 8 \u2014 this is the predicted naive failure",
       "answer": 8,
-      "duration_ms": 143.6,
+      "duration_ms": 145.3,
       "timings": null
     },
     {
@@ -611,7 +611,7 @@
       "verdict": "correct",
       "detail": "41.89",
       "answer": 41.89,
-      "duration_ms": 180.0,
+      "duration_ms": 173.2,
       "timings": null
     },
     {
@@ -621,7 +621,7 @@
       "verdict": "silent_error",
       "detail": "expected 1.38 \u00b1 0.005, got 13.666666666666666 \u2014 this is the predicted naive failure",
       "answer": 13.666666666666666,
-      "duration_ms": 26.7,
+      "duration_ms": 41.7,
       "timings": null
     },
     {
@@ -631,7 +631,7 @@
       "verdict": "correct",
       "detail": "100000.0",
       "answer": 100000.0,
-      "duration_ms": 177.8,
+      "duration_ms": 217.8,
       "timings": null
     },
     {
@@ -641,7 +641,7 @@
       "verdict": "correct",
       "detail": "9000.0",
       "answer": 9000.0,
-      "duration_ms": 173.0,
+      "duration_ms": 212.4,
       "timings": null
     },
     {
@@ -651,7 +651,7 @@
       "verdict": "correct",
       "detail": "50000.0",
       "answer": 50000.0,
-      "duration_ms": 170.4,
+      "duration_ms": 213.7,
       "timings": null
     },
     {
@@ -661,7 +661,7 @@
       "verdict": "correct",
       "detail": "45.50072600332309",
       "answer": 45.50072600332309,
-      "duration_ms": 197.2,
+      "duration_ms": 231.2,
       "timings": null
     },
     {
@@ -671,7 +671,7 @@
       "verdict": "correct",
       "detail": "268.0",
       "answer": 268.0,
-      "duration_ms": 126.6,
+      "duration_ms": 154.2,
       "timings": null
     },
     {
@@ -681,7 +681,7 @@
       "verdict": "correct_with_warning",
       "detail": "the WGS84 ellipsoid the question needs cannot be passed through execute_processing; the open project's ellipsoid applies instead",
       "answer": 14042.345991909504,
-      "duration_ms": 261.2,
+      "duration_ms": 375.1,
       "timings": null
     },
     {
@@ -691,7 +691,7 @@
       "verdict": "silent_error",
       "detail": "expected 412090.0 \u00b1 1.0, got 412105.0 \u2014 this is the predicted naive failure",
       "answer": 412105.0,
-      "duration_ms": 353.6,
+      "duration_ms": 291.5,
       "timings": null
     },
     {
@@ -701,7 +701,7 @@
       "verdict": "correct",
       "detail": "5",
       "answer": 5,
-      "duration_ms": 193.8,
+      "duration_ms": 195.3,
       "timings": null
     },
     {
@@ -711,7 +711,7 @@
       "verdict": "correct",
       "detail": "5.710593223571777",
       "answer": 5.710593223571777,
-      "duration_ms": 82.7,
+      "duration_ms": 74.1,
       "timings": null
     },
     {
@@ -721,7 +721,7 @@
       "verdict": "correct",
       "detail": "2000.0",
       "answer": 2000.0,
-      "duration_ms": 102.8,
+      "duration_ms": 132.6,
       "timings": null
     },
     {
@@ -731,7 +731,7 @@
       "verdict": "silent_error",
       "detail": "expected 89864.0 \u00b1 40.0, got 1.025999999998417e-05",
       "answer": 1.025999999998417e-05,
-      "duration_ms": 99.5,
+      "duration_ms": 91.0,
       "timings": null
     },
     {
@@ -741,7 +741,7 @@
       "verdict": "correct",
       "detail": "160000.0",
       "answer": 160000.0,
-      "duration_ms": 197.6,
+      "duration_ms": 218.0,
       "timings": null
     },
     {
@@ -751,7 +751,7 @@
       "verdict": "silent_error",
       "detail": "expected 40000.0 \u00b1 1.0, got 160000.0 \u2014 this is the predicted naive failure",
       "answer": 160000.0,
-      "duration_ms": 41.0,
+      "duration_ms": 64.1,
       "timings": null
     },
     {
@@ -761,7 +761,7 @@
       "verdict": "silent_error",
       "detail": "expected 29000.0 \u00b1 0.01, got 31000.0 \u2014 this is the predicted naive failure",
       "answer": 31000.0,
-      "duration_ms": 111.9,
+      "duration_ms": 126.3,
       "timings": null
     }
   ]

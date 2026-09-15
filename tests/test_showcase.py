@@ -1214,3 +1214,28 @@ def test_every_published_system_has_a_place_in_the_site_order():
         "these published systems match no entry in site/build.py ORDER, so the "
         f"page sorts them last, under the baseline: {homeless}"
     )
+
+
+def test_the_published_section_names_the_commit_the_run_pinned():
+    """The section for the published run must name that run's `spec_commit`.
+
+    The first line of this page promises that every file here names the commit
+    it ran against, and calls it the pre-registration: whether a tolerance moved
+    after a number was seen is answered by a diff. A section that links the
+    directory without naming the commit leaves the reader to open nine JSON
+    files to learn what the eighteen other sections say in their second line --
+    which is what the section published on 2026-09-15 did, alone among them.
+    """
+    run_name, data = latest_run()
+    pinned = {record["spec_commit"] for record in data.values()}
+    assert len(pinned) == 1, f"the run does not pin one commit: {sorted(pinned)}"
+    commit = pinned.pop()
+    text = (ROOT / "results" / "README.md").read_text(encoding="utf-8")
+    heading = next(
+        (block for block in text.split("\n## ") if f"]({run_name}/)" in block), None
+    )
+    assert heading is not None, f"no section of results/README.md links {run_name}/"
+    assert commit in heading, (
+        f"the section publishing {run_name} never names its spec_commit {commit}, "
+        "which is the one thing that makes the numbers in it checkable"
+    )
