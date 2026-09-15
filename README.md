@@ -168,8 +168,8 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-Engine tier, all twenty-nine families, `spec_commit` pinned — [every run, and what the
-numbers do not say](results/).
+All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
+and what the numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
@@ -189,6 +189,18 @@ must not be able to look better than one that faced all of them. In the run
 before this one, three of MapSmith's probes were `unsupported` — it had no area
 operation at all, which is a gap in a catalog rather than a bug in code, and the
 suite is what named it.
+
+**Three of these rows are the same QGIS, and reading them as three systems is
+the mistake this table is arranged to prevent.** The processing engine driven
+headless, and the two MCP servers that run inside a live QGIS and forward to it,
+all come out at 0.3871 — the wrappers inherit the engine, neither adding a
+correct answer nor losing one. That is only readable because the engine has a
+row of its own, put there first for this reason: without it, three equal numbers
+read as three equally defective servers, and that reading would be wrong. The
+two completion rates below 1.00 are one clean probe that neither wrapper
+answers, and [the section for that run](results/#2026-09-15--three-rows-that-are-the-same-qgis-and-why-that-is-the-finding)
+says which probe, how the two differ in the way they fail, and why part of that
+number is our own error handling rather than theirs.
 
 **gis-mcp is the first row here that is not ours to fix, and it is written so a
 reader can tell whose limit each number is.** The 0.20 is four wrong answers out

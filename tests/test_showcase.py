@@ -1175,3 +1175,42 @@ def test_the_published_doi_is_the_concept_doi():
         f"more than one DOI is published: {sorted(in_readme)}. Only the concept "
         f"DOI belongs in a file that is not rewritten at every release."
     )
+
+
+def test_every_published_system_has_a_place_in_the_site_order():
+    """The site's row order is an editorial rule, and a rule the code does not
+    execute is not a rule.
+
+    `site/build.py` sorts rows by what a system *is* — the product, then servers
+    of the same kind, then the engine those servers call, then libraries, then
+    the baseline — and says so in a comment. A system that matches no entry gets
+    the index past the end of the list and sorts last, silently. On 2026-09-15
+    two third-party MCP servers were published and the list was not extended, so
+    the page put both of them **below `naive composition`**, which is the row
+    that exists to be the worst line on the page, and six rows away from the
+    engine whose rate they had inherited. The comment above that list had named
+    that exact placement as the point of the ordering, two months earlier.
+    """
+    import ast  # noqa: PLC0415
+
+    # Read the list out of the source instead of importing it: `site` is the
+    # name of a standard-library module, so importing `site.build` here picks up
+    # the wrong one or nothing at all, depending on the path. Parsing cannot be
+    # fooled by that and does not run the builder.
+    source = (ROOT / "site" / "build.py").read_text(encoding="utf-8")
+    ORDER = next(
+        ast.literal_eval(node.value)
+        for node in ast.parse(source).body
+        if isinstance(node, ast.Assign)
+        and any(getattr(t, "id", None) == "ORDER" for t in node.targets)
+    )
+
+    _, data = latest_run()
+    homeless = sorted(
+        system for system in data
+        if not any(system.startswith(prefix) for prefix in ORDER)
+    )
+    assert not homeless, (
+        "these published systems match no entry in site/build.py ORDER, so the "
+        f"page sorts them last, under the baseline: {homeless}"
+    )

@@ -28,25 +28,38 @@ section's family count rather than this page's.
   questions must not be able to look better than one that faced all of them.
 - **One family can still move any of these rates a long way**, because most of
   them carry one trap each — treat a difference of one probe as one probe.
-- **Engine tier only.** Every number here comes from an adapter calling a
-  library directly. Nothing on this page measures an agent, and the agent tier
-  will be reported with its variance rather than as a single run.
+- **No agent is measured here.** Every number comes from an adapter driving the
+  system the way that system is meant to be driven: a library's functions called
+  directly, and — for the three MCP servers on this page — their own transport,
+  a socket or a local bridge into a running QGIS for two of them. Nothing here
+  measures an agent choosing what to do, and the agent tier will be reported
+  with its variance rather than as a single run. A row also names what the
+  adapter reached: the tool-facing layer of a server is not the prompt-facing
+  product around it.
 - **The wall clock in every result is not a benchmark.** One observation per
   probe, one machine, no repetition and no warm-up control. Read it for gross
   differences — a factor of ten — and never as a ranking. Two systems that ran
   different subsets of the suite did different work, so `probes` travels with
   the timing; and where an adapter reports a breakdown, most of its wall clock
-  may belong to our harness rather than to the product: the one that spawns a
-  fresh interpreter per probe spends about six seconds per probe importing its
-  library before any geoprocessing happens. `METHOD.md` §9b is the full
-  statement.
-- **These are not verdicts on libraries.** whitebox-workflows fails one trap
-  because of [one open upstream defect](https://github.com/jblindsay/whitebox_next_gen/issues/32)
-  we reported; everything else here is a library behaving exactly as documented.
+  may belong to our harness rather than to the product: the cost of reaching a
+  system at all is paid in its column, and for gis-mcp in the run of 2026-09-10
+  the first probe alone spent 5.9 seconds importing before any geoprocessing
+  happened. `METHOD.md` §9b is the full statement.
+- **These are not verdicts on the systems.** Two rows carry an open defect we
+  reported upstream: whitebox-workflows fails one trap because of
+  [one](https://github.com/jblindsay/whitebox_next_gen/issues/32), and QGIS
+  Agent MCP leaves one clean probe with no terminal status because of
+  [another](https://github.com/Aaa2122/QGIS-MCP/issues/15). The rest of what is
+  on this page is software behaving as documented.
 
 Nobody is notified before publication as long as nothing here is a new claim
 about a third party: the Whitebox defect was reported upstream first, and the
-rest is documented behaviour. That clause has now been exercised once. The
+rest is documented behaviour. That clause has now been exercised twice, and the
+second time it was discharged before the run was published rather than by a
+delay: the QGIS Agent MCP operation that never reaches a terminal status was
+reproduced from a freshly started QGIS and
+[filed upstream](https://github.com/Aaa2122/QGIS-MCP/issues/15) before this
+page named it. The
 gis-mcp results published on 2026-09-10 are a new claim about a third party, so
 its maintainer had them first: [filed in full on 4 September](https://github.com/mahdin75/gis-mcp/issues/45),
 with the reproduction for each finding, and updated there before anything was
@@ -89,37 +102,53 @@ defect this suite has already paid for once, and here it would have been worse:
 a chain that drifted between two adapters would appear in this table as a
 property of the systems.
 
-**Where the two wrappers do differ is one probe, and in opposite directions.**
-Voronoi cells cannot be built from two gauges. `nkarasiak/qgis-mcp` reports the
-failure immediately; QGIS Agent MCP leaves the operation `queued` for ever — no
-terminal status, no error, no event — so a caller polling it waits until its own
-timeout and learns nothing. Reproduced from a freshly started QGIS and reported
-upstream as [Aaa2122/QGIS-MCP#15](https://github.com/Aaa2122/QGIS-MCP/issues/15)
-before this page was written.
+**The two wrappers fail the same probe, with the same verdict, in two different
+ways.** Voronoi cells cannot be built from two gauges, and neither wrapper
+returns an answer: same probe, same `noisy_failure`, same 0.9677. What differs is
+what a caller is left holding. `nkarasiak/qgis-mcp` answers immediately, with
+"There were errors executing the algorithm" — a refusal you can branch on, and
+not a reason. QGIS Agent MCP hands back an operation id and the status is still
+non-terminal when this adapter stops asking, with no error field and no event;
+the wait is a constant of ours, and what was measured is that 120 seconds of
+polling ended in the same state it started in, on an algorithm that when it
+works finishes in tens of milliseconds. Reproduced from a freshly started QGIS
+and reported upstream as
+[Aaa2122/QGIS-MCP#15](https://github.com/Aaa2122/QGIS-MCP/issues/15) before this
+page was written.
 
-**And part of that gap is ours, so it is stated here.** The engine's row completes
-this probe: when `native:voronoipolygons` refuses two gauges it says why, and the
-shared chain falls back to joining the nearest gauge — the second algorithm the
-engine offers for the same question. The fallback fires on the words in the
-engine's refusal, so it cannot fire through a wrapper that does not relay them:
-`nkarasiak/qgis-mcp` returns "There were errors executing the algorithm", which
-is a true statement and not a reason. That is a real property of the wrapper — a
-caller cannot learn from it what the engine already knew — but the completion
-rate of 0.9677 is the two things together, the message the wrapper drops and a
-chain of ours that reads messages.
+**And part of that gap is ours, so it is stated here.** The engine's row is 1.00
+on the same probe, because when `native:voronoipolygons` refuses two gauges it
+says *why*, and the shared chain then falls back to joining the nearest gauge —
+the second algorithm the engine offers for the same question. That fallback
+fires on words in the engine's refusal, so it cannot fire through a wrapper that
+does not carry them. Losing the engine's reason is a real property of the
+wrapper, and it is why a caller there cannot recover what the engine already
+knew. But the 0.9677 is the two things together: what the wrapper drops, and a
+chain of ours that reads error text. A completion rate that depends on our own
+error handling is not wholly a measurement of the system, and that is the kind
+of thing this page exists to say out loud.
 
 **Why no advance notice went to `nkarasiak/qgis-mcp`, unlike gis-mcp.** There we
-had found defects of the wrapper's own — answers returned wrong under a success
-envelope — and publishing without telling would have been an accusation. Here we
-found nothing of its own: its rate is the engine's rate, and on the only probe
-where the two servers diverge it is the one that behaves better. This row
-attributes, it does not accuse.
+had found defects of the wrapper's own — answers returned **wrong** under a
+success envelope — and publishing without telling would have been an accusation.
+Here we found nothing that makes an answer wrong: its silent error rate is the
+engine's, trap for trap. What we did find is the paragraph above, that its error
+text does not carry the engine's reason, and it is written here rather than
+filed there because it costs a caller information, not a correct result — and
+because the page says in the same breath that part of the resulting number is
+our chain's doing. If that judgement is wrong, the fix is an issue, not a
+retraction: this row attributes, it does not accuse.
 
-**One thing this run says about us.** Asked to clip the parcels before buffering
-the river — a legal plan that answers the wrong question — MapSmith runs it and
-marks every step verified. Plan validation here is structural: it reads the shape
-of a plan, not its meaning. The heading in MapSmith's README said "reject wrong
-analyses" until this was measured; it says *malformed* now.
+**One thing found the same week, and it is not in this run.** It belongs here
+anyway, because it is about the system at the top of the table and because the
+suite does not catch it. Asked to clip the parcels before buffering the river —
+a legal plan that answers the wrong question — MapSmith runs it and marks every
+step verified. Plan validation there is structural: it reads the shape of a
+plan, not its meaning. The heading in MapSmith's README said "reject wrong
+analyses" until this was measured on its own worked example; it says *malformed*
+now. No probe on this page would have caught it: every trap here is a single
+step, so a wrong **order** of right operations is a class this suite cannot
+currently reach, and a 0.00 in the first column says nothing about it.
 
 ## 2026-09-10 — the first system here whose defects are not ours to fix
 

@@ -124,6 +124,27 @@ earlier experiment in which the interesting-looking effect was inside the noise.
 - **Anything about families not represented here.** The families are listed in
   `docs/FAMILIES.md` with their current coverage. A family with one probe is one
   probe, and the per-family breakdown in every result says so.
+- **Whether the steps were composed in the right order.** Every trap here is a
+  single operation, so a plan made of individually correct steps arranged to
+  answer a different question is a class this suite cannot currently reach. It
+  is named here rather than left implied, because the system at the top of the
+  table was found doing exactly that in September 2026 and no probe saw it.
+- **A product, when the row is a server.** An adapter reaches the layer that
+  does the work — a plugin's socket, a bridge — not the prompt-facing surface
+  above it. "Measured the plugin" and "measured the MCP server" are two
+  different claims, and a row supports only the first. Each adapter's docstring
+  says which layer it reached and why.
+
+**One thing a row can depend on that is not the system: the environment it runs
+in.** A system that lives inside a desktop application answers with that
+application's open project. In the run of 2026-09-15 four probes on each of the
+two QGIS MCP servers came back `correct_with_warning` saying the ellipsoid the
+question needs cannot be passed in, so the project's applies instead: those
+answers are right because the environment allowed them to be. This suite's
+promise is that fixtures are rebuildable and tolerances pre-registered, and that
+promise is weaker for a row measured through a live desktop than for one
+measured through a library. Where a row has that dependency, the disclosure
+travels with the probe in the result, not only here.
 
 ## 9b. Wall clock, and why it is not a benchmark
 

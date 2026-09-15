@@ -201,9 +201,13 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
     </tbody>
   </table>
   <p class="caption">
-    Read the second column with the first. Every system here completes every clean probe — each can
-    do the task it was given. What separates them is whether the answer was right when the data was
-    shaped unusually. <a href="https://github.com/argleton/argleton/tree/main/results">Full results →</a>
+    Read the second column with the first. It used to read 1.00 for every system on this page, and
+    where it still does, that system did the task it was given and the only question left is whether
+    the answer was right when the data was shaped unusually. Where it is below 1.00, a clean probe
+    came back with no answer at all: the
+    <a href="https://github.com/argleton/argleton/blob/main/results/README.md">results index</a>
+    says which probe and why, for each of them.
+    <a href="https://github.com/argleton/argleton/tree/main/results">Full results →</a>
   </p>
 
   <h3 style="margin-top:2.25rem">What these numbers do not say</h3>
@@ -224,11 +228,13 @@ footer nav { margin-left: auto; display: flex; gap: 1.2rem; }
     be able to look better than one that faced all of them.</li>
     <li><strong>One family can move any of these rates a long way</strong>, because most carry one
     trap each. Treat a difference of one probe as one probe.</li>
-    <li><strong>Engine tier only.</strong> Every number here comes from an adapter calling code
-    directly — a library’s functions, or, for the MCP servers on this page, the functions their
-    tools are made of, in the same process rather than over a transport. Nothing here measures a
-    server end to end, nothing here measures an agent, and an agent wrapping a careful library can
-    still produce a careless answer.</li>
+    <li><strong>No agent is measured here.</strong> Every number comes from an adapter that drives
+    the system the way the system is meant to be driven — a library’s functions called directly, or,
+    for the two QGIS MCP servers, their own transport into a running QGIS: a socket for one, a local
+    bridge for the other, which is what their row labels say. What no row measures is an agent
+    choosing what to do, and an agent wrapping a careful system can still produce a careless answer.
+    The tool-facing layer of a server is also not its prompt-facing layer, so a row names what it
+    reached, not the product around it.</li>
     <li><strong>A pass can be inherited.</strong> Some of them are: an adapter can be right because
     the library underneath happened to undo the problem, which is not the same as the adapter
     knowing about it. The run separates the two where we can tell.</li>

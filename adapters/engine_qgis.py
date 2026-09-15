@@ -32,15 +32,22 @@ on this row: plausible, confident, and unqualified.
 **What this row is a row of, stated narrowly, because one measurement made the
 narrowness matter.** `qgis_process` runs with no project, and a project carries
 an ellipsoid. Asked the same algorithms with the same parameters inside a *live*
-QGIS — whose default project sets `EPSG:7030` — the same trap comes back as
-**92899.397** instead of 1000000.0: `$area` is ellipsoidal there and planar here,
-and the two answers differ by a factor of 10.8 (measured 2026-09-14 through the
-QGIS Agent MCP bridge, with the project's ellipsoid read back from
-`project.properties` rather than inferred). Both are still silent errors — 92899.4
-misses a tolerance of 0.5 — but they are not the same number, and a reader who
-takes this row for "what QGIS does" would be wrong by an order of magnitude.
-So: **this row is QGIS processing driven without a project**, which is what a
-headless caller gets, and it is not interchangeable with QGIS inside its desktop.
+QGIS — whose default project sets `EPSG:7030` — the same trap came back as
+**92899.397** instead of 1000000.0, because `$area` is ellipsoidal there and
+planar here: a factor of 10.8 between two systems that are the same QGIS
+(measured 2026-09-14 through the QGIS Agent MCP bridge, with the project's
+ellipsoid read back from `project.properties` rather than inferred).
+
+That measurement is why the shared chain now asks for `area($geometry)`, which is
+planar wherever it runs, instead of `$area`, which is whatever the open project
+says. **In the published run the three QGIS rows therefore agree on this trap**,
+all at 1000000.0, and the divergence above is not visible in the table — it was
+never a property of the systems, it was a question we were asking two different
+ways. Four probes still carry a warning that the ellipsoid the question wants
+cannot be passed through a live QGIS at all. So: **this row is QGIS processing
+driven without a project**, which is what a headless caller gets, and it is still
+not interchangeable with QGIS inside its desktop — the difference now shows up as
+a disclosed warning rather than as a number nobody could explain.
 
 **Three facts about the harness, all measured rather than assumed.** Startup has
 two speeds and they are not free of consequence: `--no-python

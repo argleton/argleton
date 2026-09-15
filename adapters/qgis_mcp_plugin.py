@@ -16,11 +16,16 @@ only come from the system, never from a chain that drifted.
 **Two things this surface cannot do, and both change what its numbers mean.**
 
 - **The ellipsoid is not a parameter.** `execute_processing` forwards to
-  `processing.run` inside a live QGIS, and `$area` there obeys the *project's*
-  ellipsoid — `EPSG:7030` in a default project. A caller who wants a planar area
-  has nowhere to say so. The headless row, running with no project at all, gets
-  the planar answer instead: on 002-feet-as-metres that is 1000000.0 against
-  92899.397, a factor of 10.8 between two systems that are the same QGIS.
+  `processing.run` inside a live QGIS, and an ellipsoidal measure there obeys the
+  *project's* ellipsoid — `EPSG:7030` in a default project. A caller who wants to
+  choose has nowhere to say so, and four probes in the published run carry a
+  warning saying exactly that. It was measured the hard way on 2026-09-14: with
+  `$area`, whose meaning the project decides, this row answered 92899.397 where
+  the headless row answered 1000000.0, a factor of 10.8 between two systems that
+  are the same QGIS. The shared chain now asks for `area($geometry)`, which is
+  planar wherever it runs, so **in the published run the three QGIS rows agree on
+  that trap** — the fix was to stop asking an ambiguous question, not to make the
+  surface able to answer it.
 - **Every reply is wrapped in `status: "success"`.** That is the envelope, not a
   claim about the answer, and it is the same shape this project reported to
   gis-mcp in its issue #45 — where four of twenty probes came back wrong under

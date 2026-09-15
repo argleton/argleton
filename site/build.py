@@ -42,13 +42,21 @@ FONTS = (
 # the comparison would be its own kind of dishonesty, and the columns beside the
 # rate already say how many traps each system was asked.
 #
-# `QGIS processing` heads the library block rather than sitting with `gis-mcp`,
-# and the distinction is the reason it was measured at all: it is an engine, not
-# a server, and it is the engine the QGIS MCP servers call. When those servers
-# are measured they belong beside `gis-mcp`, with this row underneath them —
-# that pairing is what lets a reader tell a wrapper's fault from its engine's.
-ORDER = ["MapSmith", "gis-mcp", "QGIS processing", "rasterio", "GeoPandas",
-         "whitebox", "naive"]
+# The two QGIS MCP servers sit with `gis-mcp`, and `QGIS processing` sits
+# directly underneath them: it is an engine, not a server, and it is the engine
+# both of them call. That pairing is what lets a reader tell a wrapper's fault
+# from its engine's — three equal rates read as three defective servers when the
+# engine is six rows away, and read as inheritance when it is the next line.
+#
+# This list was written before those servers were measured, saying in the comment
+# above exactly where they would belong, and then they were measured and the list
+# was not changed: on 2026-09-15 both fell to the bottom, under `naive`, because
+# no prefix here matched them. A row that does not match sorts last, so the page
+# put two third-party systems below the baseline that exists to be the worst line
+# on it. An editorial rule stated in a comment and not executed by the code is
+# not a rule, and this one is now covered by a test.
+ORDER = ["MapSmith", "gis-mcp", "nkarasiak/qgis-mcp", "QGIS Agent MCP",
+         "QGIS processing", "rasterio", "GeoPandas", "whitebox", "naive"]
 
 
 def latest_run() -> tuple[str, list[dict]]:

@@ -50,9 +50,15 @@ DATA = (".gpkg", ".geojson", ".tif", ".tiff", ".csv", ".shp", ".json")
 # The states an operation can still LEAVE. Written this way round on purpose: a
 # list of terminal states is a guess that goes stale silently, and it did —
 # `interrupted` was missing from the first version and a failed Voronoi spun the
-# poll for the full ten-minute deadline before anyone saw a result. Inverted, an
-# unknown status ends the wait instead of hanging, which is the safe direction.
+# poll for the whole deadline before anyone saw a result. Inverted, an unknown
+# status ends the wait instead of hanging, which is the safe direction.
 RUNNING = ("queued", "running", "pending")
+# How long a non-terminal status is allowed to last before this adapter gives up
+# and says so. Every operation in this suite that finishes at all finishes in
+# tens of milliseconds, so this is not a performance threshold: it is the line
+# past which "still working" stops being a plausible reading. It is a constant
+# because the number appears in the record, and a number typed twice disagrees.
+PATIENCE_SECONDS = 120
 
 
 class Adapter(QgisChains):
@@ -178,13 +184,25 @@ class Adapter(QgisChains):
         # The key is `status`, not `state`, and it goes from queued to succeeded
         # in tens of milliseconds. Polling `state` — which does not exist — made
         # every operation look like a timeout on 2026-09-14.
-        deadline = time.time() + 120
+        #
+        # The message is BUILT from the same constant it waited on, and it names
+        # the last status seen. Written out by hand it said 600 seconds while
+        # this loop waited 120, and that sentence reached a published record and
+        # an issue filed against somebody else's project: a claim about a third
+        # party, five times larger than the observation behind it. A number that
+        # appears twice gets to disagree with itself exactly once.
+        ultimo = None
+        deadline = time.time() + PATIENCE_SECONDS
         while time.time() < deadline:
             record = self._rpc("operation.control", {"operation_id": operation, "action": "status"})
-            if record.get("status") not in RUNNING:
+            ultimo = record.get("status")
+            if ultimo not in RUNNING:
                 return record
             time.sleep(0.05)
-        raise RuntimeError(f"{algorithm}: still running after 600 seconds")
+        raise RuntimeError(
+            f"{algorithm}: still {ultimo!r} after {PATIENCE_SECONDS} seconds, "
+            "which is not a terminal status and not an error"
+        )
 
 
 def _disclosures(record: dict) -> list[str]:
