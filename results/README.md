@@ -53,6 +53,74 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-09-15 — three rows that are the same QGIS, and why that is the finding
+
+Published run: [`2026-09-15-qgis-three-ways/`](2026-09-15-qgis-three-ways/).
+
+Three new systems, all of them QGIS underneath: the processing engine driven
+headless through `qgis_process`, and the two MCP servers that run inside a live
+QGIS and forward to it — `nkarasiak/qgis-mcp` 0.14.0 over its plugin socket, and
+QGIS Agent MCP 0.5.0 over its local bridge. All three answered **every one of the
+thirty-one traps**, with nothing marked unsupported; before this run no
+third-party system in this table had full coverage.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3871 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3871 | 0.9677 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3871 | 0.9677 | 31 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9355 | 1.00 | 31 | 0 |
+
+**The three identical rates are the result, and they are not three broken
+systems.** The wrappers inherit the engine: neither adds a correct answer and
+neither loses one. That is only readable because the engine has a row of its
+own — without it, three equal numbers would have been read as three equally
+defective servers, and the reading would have been wrong. The engine's row was
+built first for exactly this reason.
+
+The chains are shared by all three adapters, in one file, so a difference
+between the rows can only come from the system. Writing them three times is a
+defect this suite has already paid for once, and here it would have been worse:
+a chain that drifted between two adapters would appear in this table as a
+property of the systems.
+
+**Where the two wrappers do differ is one probe, and in opposite directions.**
+Voronoi cells cannot be built from two gauges. `nkarasiak/qgis-mcp` reports the
+failure immediately; QGIS Agent MCP leaves the operation `queued` for ever — no
+terminal status, no error, no event — so a caller polling it waits until its own
+timeout and learns nothing. Reproduced from a freshly started QGIS and reported
+upstream as [Aaa2122/QGIS-MCP#15](https://github.com/Aaa2122/QGIS-MCP/issues/15)
+before this page was written.
+
+**And part of that gap is ours, so it is stated here.** The engine's row completes
+this probe: when `native:voronoipolygons` refuses two gauges it says why, and the
+shared chain falls back to joining the nearest gauge — the second algorithm the
+engine offers for the same question. The fallback fires on the words in the
+engine's refusal, so it cannot fire through a wrapper that does not relay them:
+`nkarasiak/qgis-mcp` returns "There were errors executing the algorithm", which
+is a true statement and not a reason. That is a real property of the wrapper — a
+caller cannot learn from it what the engine already knew — but the completion
+rate of 0.9677 is the two things together, the message the wrapper drops and a
+chain of ours that reads messages.
+
+**Why no advance notice went to `nkarasiak/qgis-mcp`, unlike gis-mcp.** There we
+had found defects of the wrapper's own — answers returned wrong under a success
+envelope — and publishing without telling would have been an accusation. Here we
+found nothing of its own: its rate is the engine's rate, and on the only probe
+where the two servers diverge it is the one that behaves better. This row
+attributes, it does not accuse.
+
+**One thing this run says about us.** Asked to clip the parcels before buffering
+the river — a legal plan that answers the wrong question — MapSmith runs it and
+marks every step verified. Plan validation here is structural: it reads the shape
+of a plan, not its meaning. The heading in MapSmith's README said "reject wrong
+analyses" until this was measured; it says *malformed* now.
+
 ## 2026-09-10 — the first system here whose defects are not ours to fix
 
 Published run: [`2026-09-10-gis-mcp/`](2026-09-10-gis-mcp/).

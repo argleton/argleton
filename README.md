@@ -177,6 +177,9 @@ numbers do not say](results/).
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
 | gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3871 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3871 | 0.9677 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3871 | 0.9677 | 31 | 0 |
 | whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
 | naive composition | 0.9355 | 1.00 | 31 | 0 |
 
