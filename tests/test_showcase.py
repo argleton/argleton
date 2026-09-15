@@ -1191,7 +1191,7 @@ def test_every_published_system_has_a_place_in_the_site_order():
     engine whose rate they had inherited. The comment above that list had named
     that exact placement as the point of the ordering, two months earlier.
     """
-    import ast  # noqa: PLC0415
+    import ast
 
     # Read the list out of the source instead of importing it: `site` is the
     # name of a standard-library module, so importing `site.build` here picks up
