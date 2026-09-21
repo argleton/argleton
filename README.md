@@ -38,13 +38,13 @@ machine, so there is nothing to download and nothing to take on trust:
 pip install "argleton[fixtures]"
 ```
 
-The probes ship with the runner, so that is the whole setup — release 0.4.0 carries the
-30 traps and 28 families that were in the tree when it was tagged, while **this checkout has 31 traps
-and 29 families** — and the published table further down is a run over all of them, so
-reinstalling the release and rerunning gives one trap fewer and a naive rate of 0.9333 instead
-of 0.9355 — the same systems, a denominator one smaller. This paragraph says so whenever the
-checkout runs ahead of the release, because a reader who cannot reproduce the table on this
-page has been told something untrue.
+The probes ship with the runner, so that is the whole setup — release 0.5.0 carries the
+31 traps and 29 families the published table further down was run over, so installing it and
+rerunning reproduces that table rather than a version of it. This paragraph says so whenever the
+checkout runs ahead of the release, because a reader who cannot reproduce the table on this page
+has been told something untrue: until this release it named thirty traps and twenty-eight
+families, which gave a naive rate of 0.9333 against the 0.9355 on the page — the same systems,
+a denominator one smaller.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:

@@ -1239,3 +1239,33 @@ def test_the_published_section_names_the_commit_the_run_pinned():
         f"the section publishing {run_name} never names its spec_commit {commit}, "
         "which is the one thing that makes the numbers in it checkable"
     )
+
+
+def test_the_package_answers_the_version_it_actually_is():
+    """`argleton.__version__` against the one declaration of it.
+
+    It answered `0.1.0.dev0` while 0.4.0 was on PyPI, through four releases.
+    Nothing inside the package read it, so nothing caught it: the number was
+    written in two places and only one of them was on a release checklist. A
+    suite whose subject is whether software describes itself accurately cannot
+    ship a package that misstates its own version -- and the citation guard
+    beside this one could not see it, because it compares the citation file
+    with `pyproject.toml` and never asks the package.
+
+    `__version__` is derived now, so this checks a derivation rather than a
+    copy. That is still worth a test: the derivation has two branches, one for
+    an installed distribution and one for a checkout, and the checkout branch
+    is the one this repository runs on.
+    """
+    import tomllib
+
+    import argleton
+
+    declared = tomllib.loads(
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    )["project"]["version"]
+    assert argleton.__version__ == declared, (
+        f"the package answers {argleton.__version__} and pyproject.toml declares "
+        f"{declared}; whichever is wrong, a reader asking the package gets the "
+        "wrong answer"
+    )
