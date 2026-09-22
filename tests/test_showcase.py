@@ -108,6 +108,18 @@ def test_the_readme_results_table_is_the_latest_run():
         assert float(cells[1]) == record["completion_rate"], f"{name}: completion rate"
         assert int(cells[2]) == record["traps_run"], f"{name}: traps run"
 
+    # The row at the top of the table is the product whose authors wrote the
+    # suite, and it holds the best score. The site marks it `ours`; this table
+    # did not, so a reader skimming the front page saw the winner and had to
+    # reach "Who wrote this", several screens down, to learn whose it was. The
+    # disclosure is not required on the first screen -- the mark on the row is,
+    # because the row is where the claim is made.
+    mine = [name for name, _ in rows if name.split(" (")[0].strip() == "MapSmith"]
+    assert mine and "ours" in mine[0], (
+        f"the MapSmith row in the README results table reads {mine} and does not "
+        "say it is ours; it is the row with the best number on the page"
+    )
+
 
 def test_the_results_index_has_a_section_for_the_latest_run_and_it_agrees():
     """`results/README.md` must open a dated section for the newest run, and
@@ -1268,4 +1280,116 @@ def test_the_package_answers_the_version_it_actually_is():
         f"the package answers {argleton.__version__} and pyproject.toml declares "
         f"{declared}; whichever is wrong, a reader asking the package gets the "
         "wrong answer"
+    )
+
+
+def test_the_site_claims_an_upstream_report_only_where_there_is_one():
+    """A third-party row on argleton.org may not be given a report it never got.
+
+    The block that puts other people's numbers on the home page was generated
+    from the run, which is right for the numbers and wrong for the sentence
+    beside them: the first version said, of every external row, that its
+    maintainer had been told of every finding with a reproduction. True of
+    gis-mcp. False of whitebox-workflows, where one of the three wrong answers
+    is filed upstream and two are not. Nothing measured it, and the uniform
+    sentence was produced precisely because producing it uniformly was easy --
+    a claim about somebody else, on our most public page, backed by a loop.
+
+    So the claim is declared per system with a link, and this asks the run
+    whether the declaration still covers it. A new row measured wrong, or a row
+    whose name changes, fails here rather than inheriting somebody else's
+    correspondence.
+    """
+    import ast
+
+    source = (ROOT / "site" / "build.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    UPSTREAM = next(
+        ast.literal_eval(node.value)
+        for node in module.body
+        if isinstance(node, ast.Assign)
+        and any(getattr(t, "id", None) == "UPSTREAM" for t in node.targets)
+    )
+
+    _, data = latest_run()
+    wrong_answers = {
+        record["system"].split()[0]: record["verdict_counts"]["silent_error"]
+        for record in data.values()
+        if not record["system"].startswith("MapSmith")
+        and "QGIS" not in record["system"]
+        and "qgis" not in record["system"]
+        and "composition" not in record["system"]
+        and record["verdict_counts"]["silent_error"]
+    }
+    undeclared = sorted(set(wrong_answers) - set(UPSTREAM))
+    assert not undeclared, (
+        f"{undeclared} answer a trap wrongly in the published run and have no "
+        "entry in site/build.py UPSTREAM; the page would say only that we "
+        "measured them, which is honest, but write the sentence deliberately"
+    )
+    stale = sorted(set(UPSTREAM) - set(wrong_answers))
+    assert not stale, (
+        f"site/build.py UPSTREAM claims an upstream report for {stale}, which "
+        "the published run does not measure getting anything wrong: the claim "
+        "is unreachable and will be read as current the day the row returns"
+    )
+    for system, note in UPSTREAM.items():
+        assert "https://github.com/" in note, (
+            f"the note for {system} asserts a report with nothing a reader can "
+            "open; a claim about a third party needs the link that settles it"
+        )
+
+
+def test_no_public_file_carries_a_mangled_character():
+    """UTF-8 read as cp1252 and saved back, on a page somebody reads.
+
+    Found on 2026-09-22 in this README, in the pasted terminal output of the
+    whitebox run: three lines in which a plus-minus sign and two em dashes had
+    each become a short run of Latin-1 punctuation. Public since the block was
+    written, and invisible to every other guard here because the file parsed,
+    the links resolved and the numbers were right. The two engine blocks beside
+    it were clean, which is the tell: only the lines carrying one of those two
+    characters were touched, so the damage arrived through a console capture
+    and not through an editor.
+
+    The markers are derived rather than listed -- each is what cp1252 makes of
+    a character these repositories actually use. A hand-written list would be
+    a finite map of the kind that has already gone stale here twice, and it
+    would also have to contain the damage it looks for, which made the first
+    version of this test fail on its own docstring.
+    """
+    import subprocess
+
+    damage = set()
+    # Written as code points rather than typed: ruff rejects these characters
+    # in a string literal as ambiguous, which they are -- that is the point of
+    # them. Typing them would also put the damage this looks for into the file
+    # that looks for it, which is how the first version of this test failed.
+    suspect = "".join(chr(point) for point in (
+        0x00B1, 0x2014, 0x2013, 0x2018, 0x2019, 0x201C, 0x201D,
+        0x2026, 0x21D2, 0x00E8, 0x00E9, 0x00E0,
+    ))
+    for character in suspect:
+        mangled = character.encode("utf-8").decode("cp1252", errors="replace")
+        if chr(0xFFFD) not in mangled:
+            damage.add(mangled)
+
+    listed = subprocess.run(
+        ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.split()
+    damaged = []
+    for name in listed:
+        path = ROOT / name
+        try:
+            text = path.read_bytes().decode("utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if path.resolve() == Path(__file__).resolve():
+            continue
+        for number, line in enumerate(text.splitlines(), 1):
+            if any(marker in line for marker in damage):
+                damaged.append(f"{name}:{number}")
+    assert not damaged, (
+        "these tracked lines carry cp1252 mojibake, which means a character was "
+        f"written once and saved twice: {damaged[:10]}"
     )

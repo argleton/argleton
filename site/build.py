@@ -187,6 +187,108 @@ def results_table(data: list[dict]) -> str:
     return "\n".join(rows)
 
 
+def third_party_html(data: list[dict]) -> str:
+    """What the suite found in systems that are not ours, derived from the run.
+
+    This page had none of it. Read by skimming -- headings, bold, table cells --
+    argleton.org said: a correctness suite written by the authors of MapSmith,
+    MapSmith first with 0, and the one finding worth telling is about MapSmith.
+    The repository's README has the third-party findings in bold and the site
+    did not, which is the wrong way round: a reader who arrives here and leaves
+    has no reason to believe this measures anybody else.
+
+    Derived rather than written, because these are the numbers most likely to
+    move: a system re-measured, a row added, a rate changing when the
+    denominator grows.
+    """
+    qgis = [d for d in data if "QGIS" in d["system"] or "qgis" in d["system"]]
+    blocks = []
+
+    rates = {d["silent_error_rate"] for d in qgis}
+    if len(qgis) >= 3 and len(rates) == 1:
+        rate = _number(rates.pop())
+        blocks.append(
+            "<p><strong>Three of these rows are the same QGIS, and they score the "
+            f"same.</strong> The processing engine driven headless, and the two MCP "
+            f"servers that run inside a live QGIS and forward to it, all come out at "
+            f"<b>{rate}</b> over {qgis[0]['traps_run']} traps with nothing marked "
+            "unsupported. The wrappers inherit the engine: neither adds a correct "
+            "answer nor loses one. That is only readable because the engine has a row "
+            "of its own, which is why its row was built first — without it, three "
+            "equal numbers read as three equally defective servers, and the reading "
+            "would be wrong.</p>"
+        )
+
+    total = max(d["traps_run"] for d in data)
+    for system in external_systems(data):
+        wrong = system["verdict_counts"]["silent_error"]
+        attempted = system["traps_run"]
+        blocks.append(
+            f'<p><strong>{html.escape(system["system"])} is a row that is not ours '
+            f'to fix.</strong> {_number(system["silent_error_rate"])} — '
+            f"{wrong} wrong answers out of the {attempted} traps of {total} it "
+            f"answers at all, every one of them returned as a success. "
+            f"{UPSTREAM.get(_family_of(system['system']), UNREPORTED)}</p>"
+        )
+    return "\n".join(blocks)
+
+
+def external_systems(data: list[dict]) -> list[dict]:
+    """The rows that are somebody else's software and got an answer wrong.
+
+    A function rather than a comprehension because a test needs the same list:
+    the page claims an upstream report for each of these, and the claim has to
+    be checkable against what is actually in UPSTREAM.
+    """
+    return [
+        d for d in data
+        if not d["system"].startswith("MapSmith")
+        and "QGIS" not in d["system"]
+        and "qgis" not in d["system"]
+        and "composition" not in d["system"]
+        and d["verdict_counts"]["silent_error"]
+    ]
+
+
+def _family_of(system: str) -> str:
+    return system.split()[0]
+
+
+# What can be said about a third-party row beyond its number, and where the
+# claim can be checked. Written rather than derived, because "its maintainer
+# was told" is a fact about correspondence and no number in a run implies it.
+# The sentence that carries the numbers stays derived; this one carries only
+# what a link can settle.
+#
+# This block replaced a generated sentence that said, of every external row,
+# that its maintainer had been told of every finding with a reproduction. True
+# of gis-mcp. False of whitebox-workflows, where one of the three wrong answers
+# is reported upstream and two are not -- a claim about somebody else that no
+# measurement supported, generated uniformly because generating it was easy.
+UPSTREAM = {
+    "gis-mcp": (
+        "Its maintainer had every one of them before this page did: "
+        '<a href="https://github.com/mahdin75/gis-mcp/issues/45">filed on 4 '
+        "September</a> with the reproduction for each, and updated there before "
+        "anything was published. Unanswered since, while the denominator moved "
+        "four times without gis-mcp changing a line — three of those moves made "
+        "our own instrument more honest in its favour."
+    ),
+    "whitebox-workflows": (
+        "One of the three is an upstream defect we reported and can point at: "
+        '<a href="https://github.com/jblindsay/whitebox_next_gen/issues/32">a '
+        "TIFF predictor left undone on read</a>, which returns terrain that is "
+        "plausible and wrong. The other two have not been filed, and that is a "
+        "debt of ours rather than a finding against them."
+    ),
+}
+
+UNREPORTED = (
+    "Nothing has been filed upstream about these, so read them as measurements "
+    "and not as reports."
+)
+
+
 def families_table(probe_list: list[dict]) -> str:
     rows = []
     for p in sorted(probe_list, key=lambda p: p["id"]):
@@ -345,6 +447,7 @@ def main(destination: Path) -> int:
 
     replacements = {
         "{{RESULTS_ROWS}}": results_table(data),
+        "{{THIRD_PARTY}}": third_party_html(data),
         "{{FAMILY_ROWS}}": families_table(probe_list),
         "{{RUN_TRAPS}}": str(run_traps),
         "{{RUN_FAMILIES}}": str(run_families),

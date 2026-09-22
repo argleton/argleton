@@ -13,7 +13,8 @@ exact version you measured against, take the version DOI from the
 [Zenodo record](https://doi.org/10.5281/zenodo.22206349) — which is the same reason every run
 here pins its `spec_commit`.
 
-That second half is the whole point. Existing benchmarks for geospatial agents
+The second half of that first sentence — a *wrong* answer that looks fine — is
+the whole point. Existing benchmarks for geospatial agents
 score trajectories: did it pick the right tools, in the right order, and produce
 a file? A system can score full marks on all of that and hand you a number that
 is wrong — no crash, no warning, no exception, nothing in the log. Nobody
@@ -40,11 +41,9 @@ pip install "argleton[fixtures]"
 
 The probes ship with the runner, so that is the whole setup — release 0.5.0 carries the
 31 traps and 29 families the published table further down was run over, so installing it and
-rerunning reproduces that table rather than a version of it. This paragraph says so whenever the
-checkout runs ahead of the release, because a reader who cannot reproduce the table on this page
-has been told something untrue: until this release it named thirty traps and twenty-eight
-families, which gave a naive rate of 0.9333 against the 0.9355 on the page — the same systems,
-a denominator one smaller.
+rerunning reproduces that table rather than a version of it. Whenever the checkout here runs
+ahead of the release, this paragraph says so and gives both counts, because a reader who cannot
+reproduce the table on this page has been told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
@@ -78,10 +77,10 @@ ok   clean c001-raster-mean               correct        1093.0
 ok   clean c003-raster-mean-nodata        correct        1000.0
 ok   clean c024-pixel-is-area             correct        412105.0
 ok   clean c026-north-up-grid             correct        5.56521959900856
-FAIL trap  001-tiff-predictor             silent_error   expected 1093.0 Â± 0.001, got 36.09375 â€” this is the
+FAIL trap  001-tiff-predictor             silent_error   expected 1093.0 ± 0.001, got 36.09375 — this is the
 ok   trap  003-nodata-in-statistics       correct        1000.0
-FAIL trap  024-pixel-is-point             silent_error   expected 412090.0 Â± 1.0, got 412120.0
-FAIL trap  026-south-up-grid              silent_error   expected 5.64 Â± 0.2, got 43.99398475646973 â€” this is
+FAIL trap  024-pixel-is-point             silent_error   expected 412090.0 ± 1.0, got 412120.0
+FAIL trap  026-south-up-grid              silent_error   expected 5.64 ± 0.2, got 43.99398475646973 — this is
 silent_error_rate 0.75 over 4 traps  |  completion_rate 1.0 over 4 clean
 ```
 
@@ -173,7 +172,7 @@ and what the numbers do not say](results/).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) | 0.00 | 1.00 | 31 | 0 |
+| MapSmith (main) — **ours** | 0.00 | 1.00 | 31 | 0 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
 | gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
