@@ -228,9 +228,72 @@ def third_party_html(data: list[dict]) -> str:
             f'to fix.</strong> {_number(system["silent_error_rate"])} — '
             f"{wrong} wrong answers out of the {attempted} traps of {total} it "
             f"answers at all, every one of them returned as a success. "
-            f"{UPSTREAM.get(_family_of(system['system']), UNREPORTED)}</p>"
+            f"{reporting_sentence(system)}</p>"
         )
     return "\n".join(blocks)
+
+
+def failed_probes(system: dict) -> list[str]:
+    """The probe ids a system got wrong and reported as a success."""
+    return sorted(
+        record["probe_id"] for record in system["per_probe"]
+        if record.get("verdict") == "silent_error"
+    )
+
+
+def reporting_sentence(system: dict) -> str:
+    """What this page may say about telling the system's maintainer, counted.
+
+    Every number here comes from the run and from REPORTED, so the sentence
+    cannot say "one of the three" while the map holds two. It said exactly that
+    for a day: written by hand on 2026-09-22 to replace a generated sentence
+    that had claimed a report for every finding, and wrong in the other
+    direction -- whitebox's south-up-grid defect was filed as issue 36 a week
+    before that sentence called it unreported. Correcting a claim about a third
+    party by writing another unchecked claim about ourselves, in the same commit
+    that added a test against the first, is the reason this is counted now.
+    """
+    reported = REPORTED.get(_family_of(system["system"]), {})
+    wrong = failed_probes(system)
+    filed = [probe for probe in wrong if probe in reported]
+    unfiled = [probe for probe in wrong if probe not in reported]
+
+    if not filed:
+        return (
+            "None of them has been filed upstream, so read them as measurements "
+            "of ours and not as reports to anybody."
+        )
+
+    issues = {reported[probe] for probe in filed}
+    if len(issues) == 1:
+        links = f'<a href="{issues.pop()}">one issue</a>'
+    else:
+        links = ", ".join(
+            f'<a href="{reported[probe]}">{html.escape(_reported_as(probe))}</a>'
+            for probe in filed
+        )
+
+    coda = CODA.get(_family_of(system["system"]), "")
+    if not unfiled:
+        count = "Every one of them was" if len(filed) > 1 else "It was"
+        return (
+            f"{count} filed upstream, in {links}, before this page named a "
+            f"number. Being told first is the obligation; being answered is not "
+            f"something we can require.{coda}"
+        )
+    return (
+        f"{len(filed)} of the {len(wrong)} "
+        f"{'is' if len(filed) == 1 else 'are'} filed upstream and can be pointed "
+        f"at: {links}. The "
+        f"{'other one has' if len(unfiled) == 1 else f'other {len(unfiled)} have'} "
+        f"no issue yet, and that is a debt of ours rather than a finding against "
+        f"them.{coda}"
+    )
+
+
+def _reported_as(probe: str) -> str:
+    """The short name an upstream issue goes by on this page."""
+    return REPORT_TITLES[probe]
 
 
 def external_systems(data: list[dict]) -> list[dict]:
@@ -254,39 +317,51 @@ def _family_of(system: str) -> str:
     return system.split()[0]
 
 
-# What can be said about a third-party row beyond its number, and where the
-# claim can be checked. Written rather than derived, because "its maintainer
-# was told" is a fact about correspondence and no number in a run implies it.
-# The sentence that carries the numbers stays derived; this one carries only
-# what a link can settle.
+# Which finding was reported where: probe id -> the upstream issue that reports
+# it, per system. This is the one thing on the page that no run can imply --
+# telling a maintainer is correspondence, not measurement -- so it is written by
+# hand and everything said about it is counted from here against the run.
 #
-# This block replaced a generated sentence that said, of every external row,
-# that its maintainer had been told of every finding with a reproduction. True
-# of gis-mcp. False of whitebox-workflows, where one of the three wrong answers
-# is reported upstream and two are not -- a claim about somebody else that no
-# measurement supported, generated uniformly because generating it was easy.
-UPSTREAM = {
+# It replaced two sentences that were wrong in opposite directions within a day.
+# The first was generated for every external row and claimed a report for every
+# finding: true of gis-mcp, false of whitebox-workflows. The second was written
+# by hand to correct it and said one of whitebox's three was filed, when two
+# were -- the south-up-grid defect had been issue 36 for a week. Neither could
+# fail, because neither was counted against anything.
+REPORTED = {
+    "gis-mcp": {
+        "006-default-layer": "https://github.com/mahdin75/gis-mcp/issues/45",
+        "010-scale-offset": "https://github.com/mahdin75/gis-mcp/issues/45",
+        "021-ballpark-datum": "https://github.com/mahdin75/gis-mcp/issues/45",
+        "030-sidecar-georeferencing": "https://github.com/mahdin75/gis-mcp/issues/45",
+    },
+    "whitebox-workflows": {
+        "001-tiff-predictor": "https://github.com/jblindsay/whitebox_next_gen/issues/32",
+        "026-south-up-grid": "https://github.com/jblindsay/whitebox_next_gen/issues/36",
+    },
+}
+
+# What is worth adding about a system once the counting is done. Nothing here
+# may state a count or a rate: those come from the run. It says what happened
+# after the report, which no run can see.
+CODA = {
     "gis-mcp": (
-        "Its maintainer had every one of them before this page did: "
-        '<a href="https://github.com/mahdin75/gis-mcp/issues/45">filed on 4 '
-        "September</a> with the reproduction for each, and updated there before "
-        "anything was published. Unanswered since, while the denominator moved "
-        "four times without gis-mcp changing a line — three of those moves made "
-        "our own instrument more honest in its favour."
-    ),
-    "whitebox-workflows": (
-        "One of the three is an upstream defect we reported and can point at: "
-        '<a href="https://github.com/jblindsay/whitebox_next_gen/issues/32">a '
-        "TIFF predictor left undone on read</a>, which returns terrain that is "
-        "plausible and wrong. The other two have not been filed, and that is a "
-        "debt of ours rather than a finding against them."
+        " Unanswered since, while the denominator moved four times without "
+        "gis-mcp changing a line — three of those moves made our own instrument "
+        "more honest in its favour, and one stopped it hiding a fall of theirs."
     ),
 }
 
-UNREPORTED = (
-    "Nothing has been filed upstream about these, so read them as measurements "
-    "and not as reports."
-)
+# How each reported finding is named where the page links it. Short enough to
+# read inside a sentence, and specific enough that the link is worth following.
+REPORT_TITLES = {
+    "006-default-layer": "a multi-layer file resolved to its default layer",
+    "010-scale-offset": "a declared calibration ignored",
+    "021-ballpark-datum": "a datum shift skipped, 74 m out",
+    "030-sidecar-georeferencing": "a sidecar preferred with no way to tell",
+    "001-tiff-predictor": "a TIFF predictor left undone on read",
+    "026-south-up-grid": "the georeferencing of a south-up grid discarded",
+}
 
 
 def families_table(probe_list: list[dict]) -> str:

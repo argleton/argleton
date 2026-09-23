@@ -1283,61 +1283,88 @@ def test_the_package_answers_the_version_it_actually_is():
     )
 
 
-def test_the_site_claims_an_upstream_report_only_where_there_is_one():
-    """A third-party row on argleton.org may not be given a report it never got.
+def test_the_site_counts_upstream_reports_instead_of_asserting_them():
+    """What argleton.org says about telling a maintainer must be countable.
 
-    The block that puts other people's numbers on the home page was generated
-    from the run, which is right for the numbers and wrong for the sentence
-    beside them: the first version said, of every external row, that its
-    maintainer had been told of every finding with a reproduction. True of
-    gis-mcp. False of whitebox-workflows, where one of the three wrong answers
-    is filed upstream and two are not. Nothing measured it, and the uniform
-    sentence was produced precisely because producing it uniformly was easy --
-    a claim about somebody else, on our most public page, backed by a loop.
+    This sentence has now been wrong twice in two days, in opposite directions,
+    and neither version could fail:
 
-    So the claim is declared per system with a link, and this asks the run
-    whether the declaration still covers it. A new row measured wrong, or a row
-    whose name changes, fails here rather than inheriting somebody else's
-    correspondence.
+    - generated for every external row, claiming a report for every finding.
+      True of gis-mcp, false of whitebox-workflows.
+    - written by hand to correct that, saying one of whitebox's three was filed
+      when two were: the south-up-grid defect had been issue 36 for a week. That
+      correction shipped in the same commit as a test against the first version
+      -- a test that checked a note existed and carried a link, never that the
+      note was true.
+
+    So the page no longer holds a sentence about reporting. It holds a map from
+    probe id to upstream issue, and counts it against the probes the published
+    run says each system got wrong. This asks whether that map still describes
+    the run: an entry for a probe a system no longer fails is a claim nobody can
+    reach, and a system that fails a probe nobody filed has to be visible here
+    rather than in prose.
     """
     import ast
 
     source = (ROOT / "site" / "build.py").read_text(encoding="utf-8")
     module = ast.parse(source)
-    UPSTREAM = next(
-        ast.literal_eval(node.value)
-        for node in module.body
-        if isinstance(node, ast.Assign)
-        and any(getattr(t, "id", None) == "UPSTREAM" for t in node.targets)
-    )
+
+    def literal(name: str):
+        return next(
+            ast.literal_eval(node.value)
+            for node in module.body
+            if isinstance(node, ast.Assign)
+            and any(getattr(t, "id", None) == name for t in node.targets)
+        )
+
+    REPORTED = literal("REPORTED")
+    REPORT_TITLES = literal("REPORT_TITLES")
 
     _, data = latest_run()
-    wrong_answers = {
-        record["system"].split()[0]: record["verdict_counts"]["silent_error"]
-        for record in data.values()
-        if not record["system"].startswith("MapSmith")
-        and "QGIS" not in record["system"]
-        and "qgis" not in record["system"]
-        and "composition" not in record["system"]
-        and record["verdict_counts"]["silent_error"]
-    }
-    undeclared = sorted(set(wrong_answers) - set(UPSTREAM))
-    assert not undeclared, (
-        f"{undeclared} answer a trap wrongly in the published run and have no "
-        "entry in site/build.py UPSTREAM; the page would say only that we "
-        "measured them, which is honest, but write the sentence deliberately"
-    )
-    stale = sorted(set(UPSTREAM) - set(wrong_answers))
-    assert not stale, (
-        f"site/build.py UPSTREAM claims an upstream report for {stale}, which "
-        "the published run does not measure getting anything wrong: the claim "
-        "is unreachable and will be read as current the day the row returns"
-    )
-    for system, note in UPSTREAM.items():
-        assert "https://github.com/" in note, (
-            f"the note for {system} asserts a report with nothing a reader can "
-            "open; a claim about a third party needs the link that settles it"
+    wrong = {}
+    for record in data.values():
+        name = record["system"]
+        if (
+            name.startswith("MapSmith")
+            or "QGIS" in name or "qgis" in name
+            or "composition" in name
+        ):
+            continue
+        failed = {
+            probe["probe_id"] for probe in record["per_probe"]
+            if probe.get("verdict") == "silent_error"
+        }
+        if failed:
+            wrong[name.split()[0]] = failed
+
+    for system, filed in REPORTED.items():
+        assert system in wrong, (
+            f"site/build.py REPORTED names {system}, which the published run "
+            "does not measure getting anything wrong: the entry is unreachable "
+            "and will be read as current the day that row returns"
         )
+        stale = sorted(set(filed) - wrong[system])
+        assert not stale, (
+            f"REPORTED says {stale} were filed upstream for {system}, and the "
+            "published run does not have it failing them -- so the page would "
+            "count a report for a finding it no longer makes"
+        )
+        for probe, url in filed.items():
+            assert url.startswith("https://github.com/"), (
+                f"{system}/{probe} claims an upstream report with nothing a "
+                "reader can open"
+            )
+            assert probe in REPORT_TITLES, (
+                f"{system}/{probe} is reported upstream and has no short name, "
+                "so the page cannot name it in the sentence that links it"
+            )
+
+    undeclared = sorted(set(wrong) - set(REPORTED))
+    assert not undeclared, (
+        f"{undeclared} get an answer wrong in the published run and have no "
+        "entry in REPORTED at all; the page will say nothing was filed, which "
+        "is a claim about our own conduct -- write it deliberately"
+    )
 
 
 def test_no_public_file_carries_a_mangled_character():
