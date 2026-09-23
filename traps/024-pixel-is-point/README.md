@@ -68,12 +68,35 @@ and both this probe and its clean twin come out right. The information is
 available, acting on it is cheap, and the failure is that nothing prompts you
 to. That is what makes this the caller's error and not the library's.
 
-Whitebox is the other case, and it is worse. It reacts to the tag — its reported
-grid origin shifts on this file where it does not on the twin — but in the
-direction that makes a caller who then adds the usual half cell for a centre
-land one full cell out. An engine that half-honours a convention is harder to be
-careful with than one that ignores it, because the correction that fixes the
-second breaks on the first.
+Whitebox is the other case, and it is worse — for a reason this page got wrong
+until 2026-09-23. It read as though whitebox *reacted* to the tag, because its
+reported grid origin shifts on this file and not on the twin. It does not react
+to it. The origin shifts because **the two files do not carry the same tie
+point**: GDAL writes `AREA_OR_POINT=Point` by moving the tie point half a cell
+south-east, so that the tie point names the centre of pixel (0, 0) as the
+GeoTIFF standard requires. Measured on the two fixtures' bytes — `412015,
+5107985` here against `412000, 5108000` on the twin, and geokey 1025 set to 2
+against 1.
+
+Whitebox then takes that tie point for a cell **corner**, because it never reads
+geokey 1025 at all. In the open `whitebox-tools` source the flag that would
+carry it, `configs.pixel_is_area`, is assigned in exactly four places, all of
+them copying another raster's configs; it defaults to `true`, and every read of
+it is on the GeoTIFF *write* path, where it decides whether to emit the key as 1
+or 2. `geokeys.rs` maps the key to the strings `RasterPixelIsArea` and
+`RasterPixelIsPoint` and nothing consumes the result.
+
+That accounts for the number exactly: corner 412015, so the centre of pixel
+(0, 0) is 412030, so the centre of pixel (2, 3) is 412030 + 90 = **412120**, one
+full cell from the truth. Half of that error is the tag it did not read; the
+other half is the half-cell it correctly adds to reach a centre. Which is why
+the uniform +0.5 shift somebody always proposes is not a fix: it is right on the
+twin and doubles the error here.
+
+*(Source read on `jblindsay/whitebox-tools` at master, which is the CLI. The row
+in the results table is `whitebox-workflows` 2.0.6, a different package whose
+source is not public — there, ignoring the key is what the measured 412120
+predicts uniquely, not something we have read.)*
 
 ## Why fifteen metres is the dangerous amount
 

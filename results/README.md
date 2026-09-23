@@ -52,10 +52,11 @@ section's family count rather than this page's.
   and QGIS Agent MCP leaves one clean probe with no terminal status because of
   [another](https://github.com/Aaa2122/QGIS-MCP/issues/15). The third trap
   whitebox-workflows fails, `024-pixel-is-point`, has no upstream issue yet: it
-  half-honours `AREA_OR_POINT=Point` in the direction that lands a careful
-  caller a whole cell out, which [the trap's own
-  page](../traps/024-pixel-is-point/README.md) argues is worse than ignoring the
-  tag. Filing it is a debt of ours. The rest of what is on this page is software
+  never reads GeoTIFF's raster-type key, so it takes the tie point of a
+  `RasterPixelIsPoint` file — which GDAL has already moved half a cell to name a
+  pixel centre — for a cell corner, and lands a whole cell out. [The trap's own
+  page](../traps/024-pixel-is-point/README.md) has the bytes and the arithmetic.
+  Filing it is a debt of ours. The rest of what is on this page is software
   behaving as documented.
 
 Nobody is notified before publication as long as nothing here is a new claim
