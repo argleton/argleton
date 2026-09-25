@@ -1,7 +1,7 @@
 id         = "024-pixel-is-point"
 population = "trap"
 family     = "grid-registration"
-title      = "A grid that says its values are at the nodes, read as if they filled the cells"
+title      = "A grid that says its values are at the nodes, read by an engine that does not look"
 surface    = ["engine", "agent"]
 
 [task]
@@ -13,73 +13,75 @@ file declares. Answer with the number."""
 
 [truth]
 kind      = "scalar"
-value     = 412090.0
+value     = 412105.0
 tolerance = 1.0
 derivation = """
-The file declares AREA_OR_POINT=Point, which is GeoTIFF's RasterPixelIsPoint:
-each value is a sample AT a grid node, not an average over a cell around it.
-Under that reading the tie point in the header IS the position of the value in
-pixel (0, 0), so the value in pixel (row r, column c) sits at
+CORRECTED on 2026-09-25. Until then this derivation gave 412090, from a premise
+about the file that its own bytes contradict; see the README. The file has not
+changed. Its reading has.
 
-  easting  = 412000 + 30 c
-  northing = 5108000 - 30 r
+The file declares AREA_OR_POINT=Point, which is GeoTIFF's RasterPixelIsPoint:
+each value is a sample AT a grid node, and the model tie point names the
+position of the sample of pixel (0, 0) (GeoTIFF 1.0, section 2.5.2.2). The tie
+point stored in hollow.tif is
+
+  (412015, 5107985)
+
+-- the builder hands rasterio a geotransform with its corner at (412000,
+5108000), and GDAL, writing a PixelIsPoint file, moves the tie point half a
+cell to name the first sample (GDAL RFC 33; read it with
+GTIFF_POINT_GEO_IGNORE=TRUE). So the sample in pixel (row r, column c) is at
+
+  easting  = 412015 + 30 c
+  northing = 5107985 - 30 r
 
 The surface is z = 300 + 0.5 ((c - 3)^2 + (r - 2)^2) over 8 x 8 nodes at 30 m
 spacing, so the minimum is at r = 2, c = 3, it is 300.0 m, and it is strict: the
-next lowest value anywhere on the grid is 300.5 m. Which cell is lowest is
-therefore not a matter of interpolation, rounding or tie-breaking — it is one
-cell, by half a metre.
+next lowest value anywhere on the grid is 300.5 m.
 
-  easting = 412000 + 30 * 3 = 412090
+  easting = 412015 + 30 * 3 = 412105
 
-No interpolation enters the question at all. That is deliberate: a probe that
-asked for a VALUE at a position could be answered correctly by either nearest
-neighbour or bilinear, and those two disagree wherever a half-cell shift would
-show. Asking for a POSITION isolates the registration and nothing else, which is
-why the tolerance can be 1 m rather than a band that admits several methods.
+A reader going through GDAL gets this without doing anything: GDAL shifts the
+tie point back on read, its geotransform stays area-oriented, and the centre of
+its cell (2, 3) is the sample. That is the same number the clean twin gives, and
+it has to be: the two files hold the same samples in the same places, and differ
+only in what they say a value represents.
 
-The failure below is 15 m out, which is 15 tolerances."""
+Asking for a POSITION rather than a value isolates the registration and nothing
+else, which is why the tolerance can be 1 m. Both failures below are 15 m out,
+which is 15 tolerances."""
 
 [naive_failure]
 description = """
-Read the array, take argmin, convert the index back to a coordinate with the
-library's own helper:
+Correct the half cell a second time. Read the tag, see Point, remember that
+under PixelIsPoint "the tie point is the node", and subtract half a cell from
+the centre the library returned:
 
     with rasterio.open(path) as src:
         a = src.read(1)
         row, col = np.unravel_index(np.argmin(a), a.shape)
-        easting, northing = src.xy(row, col)
+        easting, _ = src.xy(row, col)
+        if src.tags().get("AREA_OR_POINT") == "Point":
+            easting -= src.transform.a / 2      # 412090.0
 
-`src.xy` returns the centre of the cell under the pixel-is-AREA reading, always.
-Measured on rasterio 1.5.1 against this file: 412105.0, where the node is at
-412090.0. Half a cell east and half a cell south, on a file whose own metadata
-says the values are at the nodes.
+GDAL has already made that correction, on write and on read, so the second one
+lands half a cell north-west of the sample. This is not a hypothetical: it is
+what this suite's own careful rasterio adapter did, what MapSmith shipped, and
+what this probe's truth said, from 2026-08-30 to 2026-09-25 -- all three written
+from a sentence claiming GDAL "leaves the geotransform alone", which its RFC 33
+documents the other way.
 
-The tag is not hidden and it is not lost. `src.tags()["AREA_OR_POINT"]` returns
-"Point" from the same open dataset, in the same breath — GDAL reads the GeoTIFF
-raster-type key faithfully, exposes it, and documents that it does not adjust
-the geotransform for it. So the information survives all the way to the caller
-and is discarded in the last line, by a helper whose name gives no hint that it
-has taken a side.
-
-That is what makes this the caller's error rather than the library's, and the
-suite shows it: the careful rasterio adapter reads the tag, subtracts the half
-cell, and answers both this probe and its clean twin correctly. Four lines. The
-information is there and acting on it is cheap — the failure is that nothing
-prompts you to.
-
-Whitebox 2.0.6 is the other case, and it is worse. It reacts to the tag — its
-reported grid origin shifts on this file where it does not on the twin — but in
-the direction that makes a caller who then adds the usual half cell for a centre
-land a WHOLE cell out, at 412120. An engine that half-honours a convention is
-harder to be careful with than one that ignores it, because the correction that
-fixes the second breaks on the first."""
-observed_value = 412105.0
+The other failure is the engine's default. whitebox-workflows 2.0.6 never reads
+the raster-type key and takes the stored tie point for a cell CORNER, so it puts
+the centre of pixel (0, 0) at 412030 and the lowest cell at 412120: half a cell
+east of the sample, in the opposite direction."""
+observed_value = 412090.0
 plausible      = true
 why_plausible  = """
 An easting that differs in its last two digits. There is nothing to notice: the
-number has the right magnitude, the right number of digits, lands inside the
-raster, and inside the depression. Plotted, the point falls in the hollow.
+number has the right magnitude, lands inside the raster and inside the
+depression, and it comes from code that read the metadata and acted on it --
+which is what a careful person looks for when checking somebody else's work.
 
 Fifteen metres is the dangerous size for exactly the reason a hundred metres is
 not. It is smaller than the error of the handheld GPS somebody will use to walk
@@ -89,19 +91,19 @@ that matters afterwards: a borehole, a pole, a service trench, a property corner
 the cell of any 10 m grid this gets joined to.
 
 And it is systematic rather than random. Every position derived from this DEM
-moves the same way, so nothing looks inconsistent — the whole analysis is
-internally coherent and uniformly fifteen metres from the ground. Two datasets
-built this way agree with each other perfectly and disagree with the world."""
+moves the same way, so nothing looks inconsistent -- the whole analysis is
+internally coherent and uniformly fifteen metres from the ground."""
 derivation = """
-The pixel-is-area reading places the tie point at the upper-left CORNER of pixel
-(0, 0), so cell centres are at
+The second correction subtracts half a cell from the sample position:
 
-  easting  = 412000 + 30 c + 15
-  northing = 5108000 - 30 r - 15
+  412105 - 15 = 412090
 
-and the lowest cell, still (2, 3), is reported at 412105.0. The difference from
-the truth is exactly half the cell size, 15 m, in each axis — not an
-approximation, and not dependent on the values in the grid."""
+and the engine that reads the stored tie point as a corner adds one:
+
+  (412015 + 15) + 30 * 3 = 412120
+
+Each is exactly half the cell size from the truth, in opposite directions, and
+neither depends on the values in the grid."""
 
 [refusal]
 accept_if_mentions = ["area_or_point", "pixel is point", "pixelispoint", "pixel-is-point", "registration", "half a cell", "half-cell", "grid registration", "cell centre", "cell center", "node", "raster type"]
@@ -109,26 +111,26 @@ accept_if_mentions = ["area_or_point", "pixel is point", "pixelispoint", "pixel-
 [provenance]
 source = """
 The GeoTIFF specification defines two raster types: RasterPixelIsArea, where a
-value describes the cell it fills, and RasterPixelIsPoint, where it is a sample
-at a grid node. They differ by half a pixel in each axis, and the choice is
-recorded in the file (GeoTIFF 1.1, GTRasterTypeGeoKey; OGC 19-008r4).
+value describes the cell it fills and the tie point is that cell's corner, and
+RasterPixelIsPoint, where a value is a sample at a grid node and the tie point
+names the sample (GeoTIFF 1.1, GTRasterTypeGeoKey; OGC 19-008r4).
 
-GDAL reads that key and exposes it as the AREA_OR_POINT metadata item, and its
-documentation is explicit that the geotransform is NOT adjusted for it: the
-value is reported and the caller decides. rasterio inherits that behaviour, so
-`src.tags()` tells you the convention and `src.xy()` ignores it, from the same
-dataset object.
+GDAL keeps one convention internally. Its Raster Data Model says AREA_OR_POINT
+"is not intended to influence interpretation of georeferencing which remains
+area oriented", and since RFC 33 the GTiff driver shifts a PixelIsPoint tie
+point by half a pixel on read and on write (GTIFF_POINT_GEO_IGNORE, FALSE by
+default, restores the pre-2010 behaviour). So a reader that goes through GDAL
+gets sample positions right with no correction at all, and a reader that
+bypasses GDAL, or corrects on top of it, does not.
 
-This is not a legacy corner. USGS elevation products — the 3DEP/NED lineage — are
-pixel-is-point, and so are many national DEMs; some widely used ASCII grid
-formats are area-registered by convention and GMT grids can be either. Reprojecting or
-resampling one into the other without accounting for the half cell is a standard
-way to acquire a fifteen-metre systematic shift on a 30 m grid.
+This is not a legacy corner. USGS elevation products -- the 3DEP/NED lineage --
+and the Copernicus DEM are pixel-is-point.
 
-Measured for this probe on 2026-08-30: rasterio 1.5.1 reports the tag as "Point"
-and returns the area-registered centre from `xy()`; whitebox-workflows 2.0.6
-places its contours on this file a full cell from where a correction calibrated
-on an area-registered DEM expects them. Both engines answer, neither warns."""
+Measured for this probe: rasterio 1.5.1 returns the sample position from
+`xy()` (412105); whitebox-workflows 2.0.6 places the lowest cell at 412120.
+Corrected on 2026-09-25, when a Copernicus DEM -- whose documentation puts its
+samples on whole arc-seconds -- came back from MapSmith half a cell north-west
+of where GDAL and the product agree they are."""
 found_by = "mapsmith"
 date     = "2026-08-30"
 

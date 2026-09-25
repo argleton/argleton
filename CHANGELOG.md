@@ -12,7 +12,19 @@ the suite itself.
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **Trap 024's truth was wrong, from 2026-08-30.** It said the lowest cell of
+  `hollow.tif` is at 412090; the file says 412105. The premise was a sentence
+  that GDAL "leaves the geotransform alone" for a PixelIsPoint file, which GDAL
+  documents the other way (RFC 33): it moves the stored tie point half a cell on
+  write and on read. Systems that answered correctly -- the naive composition,
+  and the three QGIS rows -- were scored `silent_error`; MapSmith and the rasterio
+  adapter, which corrected the half cell a second time, were scored `correct`.
+  The fixture is unchanged. The truth, the README, the clean twin's derivation
+  and `FAMILIES.md` are corrected; the rasterio adapter no longer corrects
+  twice; the published runs are left as they were, with an erratum in
+  `results/README.md` recounting them.
 
 ## [0.5.0] - 2026-09-21
 

@@ -67,7 +67,7 @@ ok   trap  001-tiff-predictor           correct                1093.0
 ok   trap  003-nodata-in-statistics     correct                1000.0
 ok   trap  009-resampled-classes        correct                0.0
 ok   trap  010-scale-offset             correct                0.3333333333333334
-ok   trap  024-pixel-is-point           correct                412090.0
+ok   trap  024-pixel-is-point           correct                412105.0
 ok   trap  026-south-up-grid            correct                5.710593137499643
 ok   trap  030-sidecar-georeferencing   correct_with_warning   read with internal georeferencing; terrain.tif.aux.x
 silent_error_rate 0.0 over 7 traps  |  completion_rate 1.0 over 7 clean
@@ -79,7 +79,7 @@ ok   clean c024-pixel-is-area             correct        412105.0
 ok   clean c026-north-up-grid             correct        5.56521959900856
 FAIL trap  001-tiff-predictor             silent_error   expected 1093.0 ± 0.001, got 36.09375 — this is the
 ok   trap  003-nodata-in-statistics       correct        1000.0
-FAIL trap  024-pixel-is-point             silent_error   expected 412090.0 ± 1.0, got 412120.0
+FAIL trap  024-pixel-is-point             silent_error   expected 412105.0 ± 1.0, got 412120.0
 FAIL trap  026-south-up-grid              silent_error   expected 5.64 ± 0.2, got 43.99398475646973 — this is
 silent_error_rate 0.75 over 4 traps  |  completion_rate 1.0 over 4 clean
 ```
@@ -94,20 +94,24 @@ silently wrong (the 0.75).
 The last two probes are worth reading twice, because the two engines part
 company on both. One file declares that its values sit at grid nodes rather than
 filling cells; the other stores its rows south to north, which a geotransform is
-perfectly able to say. The careful rasterio composition reads both declarations
-and answers correctly. whitebox reacts to the first in the direction that lands
-a whole cell out — 412120 where the truth is 412090 — and cannot express the
-second at all, discarding the georeferencing and reading the grid as metre cells
+perfectly able to say. The rasterio composition answers both correctly — the
+first because GDAL has already applied it to the geotransform, which this page
+got wrong until 2026-09-25 ([erratum](results/README.md#erratum-2026-09-25-trap-024)).
+whitebox never reads the first and lands half a cell out — 412120 where the
+sample is at 412105 — and cannot express the second at all, discarding the georeferencing and reading the grid as metre cells
 at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
 clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
 report it — and it is the most useful one here. In the published run it scores **0.9355 / 1.0**:
 it answers every clean probe correctly, falls into twenty-nine of the thirty-one traps, and
-**passes the other two**. 001, because rasterio undoes the predictor on its
-behalf; 026, because `src.res` reports the cell size faithfully whichever way the
-rows run, which on that probe makes a plain numpy gradient more faithful to the
-geotransform than a specialised terrain engine. Careless code is not uniformly wrong. It is correct until the data stops
+**passes the other two**. 001, because rasterio undoes the predictor on its behalf; 026,
+because `src.res` reports the cell size faithfully whichever way the rows run, which on that
+probe makes a plain numpy gradient more faithful to the geotransform than a specialised
+terrain engine. One of the twenty-nine was never a fall: on 024 the naive answer was right
+and the truth was wrong ([erratum](results/README.md#erratum-2026-09-25-trap-024)).
+Rescored it is 0.9032, and 024 is a third pass, because GDAL has already folded
+PixelIsPoint into the geotransform. Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
 see.
 
@@ -161,7 +165,7 @@ rate means a system did not fail silently *on these probes*.
 | `mixed-geometry` | 3000 m of pipe instead of 2000 | one GeoPackage layer holds the pipes and the treatment plant, and the length of a polygon is its perimeter |
 | `geographic-crs` | 12.7 ha instead of 8.99 | area in square degrees converted with 111320², which is right for latitude and right for longitude only at the equator |
 | `empty-result` | 0 m² workable instead of 160000 | difference is not commutative, and an empty result reads as a finding rather than a failure |
-| `grid-registration` | easting 412105 instead of 412090 | the file declares `AREA_OR_POINT=Point` and the library reports the tag from the same object whose coordinate helper ignores it; half a cell on a 30 m DEM is 15 m, systematic, and inside the GPS error of anyone sent to check |
+| `grid-registration` | easting 412120, or 412090, instead of 412105 | the file declares `AREA_OR_POINT=Point`; GDAL has already folded it into the geotransform, so an engine that reads the raw tie point lands half a cell one way and code that corrects a second time lands half a cell the other. 15 m on a 30 m DEM, systematic, inside the GPS error of anyone sent to check. The truth here was wrong until 2026-09-25 ([erratum](results/README.md#erratum-2026-09-25-trap-024)) |
 | `hidden-configuration` | 160000 m² instead of 40000 | a sidecar georeferences the same raster and wins by documented precedence; both readings are the library behaving as written, and no answer says which one it used |
 | `ring-role-by-winding` | 31000 m² instead of 29000 | a shapefile carries no nesting, so which ring is a hole is decided by the direction it is wound and by nothing else; an inner ring wound like its parent reads as a second shell and its area is added, flattering the owner by 6.9% |
 
@@ -169,6 +173,13 @@ rate means a system did not fail silently *on these probes*.
 
 All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
+
+**This table is the run as published, and six of its rows are wrong.** It was scored
+against a wrong truth on trap 024, in every run since 2026-08-30
+([erratum](results/README.md#erratum-2026-09-25-trap-024)). Rescored: MapSmith 0.0323
+rather than 0.00, rasterio 0.1429 rather than 0.00, the three QGIS rows 0.3548 rather than
+0.3871, the naive composition 0.9032. The error ran against the systems that were right.
+The next published run is scored against the corrected truth.
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
@@ -192,7 +203,7 @@ suite is what named it.
 **Three of these rows are the same QGIS, and reading them as three systems is
 the mistake this table is arranged to prevent.** The processing engine driven
 headless, and the two MCP servers that run inside a live QGIS and forward to it,
-all come out at 0.3871 — the wrappers inherit the engine, neither adding a
+all come out at the same rate — the wrappers inherit the engine, neither adding a
 correct answer nor losing one. That is only readable because the engine has a
 row of its own, put there first for this reason: without it, three equal numbers
 read as three equally defective servers, and that reading would be wrong. The

@@ -187,6 +187,82 @@ def results_table(data: list[dict]) -> str:
     return "\n".join(rows)
 
 
+def _verdicts(record: dict) -> list[dict]:
+    """Every per-probe verdict in one system's record, wherever it is nested."""
+    found: list[dict] = []
+
+    def walk(node) -> None:
+        if isinstance(node, dict):
+            if "probe_id" in node and "verdict" in node:
+                found.append(node)
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(record)
+    return found
+
+
+def erratum_html(data: list[dict]) -> str:
+    """The published run rescored against the truths in the tree, or nothing.
+
+    Exists because trap 024's truth was wrong for 26 days (see the erratum in
+    `results/README.md`) and this page renders a run scored against it: the
+    table is the run as published, and a reader who sees MapSmith at 0.00 there
+    is reading a number that was never true. Derived, not written: every answer
+    in the run is scored again against the probe's CURRENT truth, and the
+    paragraph appears only where a verdict no longer holds -- so it vanishes by
+    itself the day a run scored against the corrected truth is published.
+    """
+    sys.path.insert(0, str(ROOT))
+    from argleton.model import discover
+
+    truths = {p.id: (p.truth.value, p.truth.tolerance) for p in discover(ROOT)}
+    rows, moved_probes = [], set()
+    for record in data:
+        silent = round(record["silent_error_rate"] * record["traps_run"])
+        recount = silent
+        for v in _verdicts(record):
+            truth = truths.get(v["probe_id"])
+            answer = v.get("answer")
+            if truth is None or not isinstance(answer, (int, float)) or isinstance(truth[0], str):
+                continue
+            if v["verdict"] not in ("correct", "correct_with_warning", "silent_error"):
+                continue
+            right_now = abs(answer - truth[0]) <= truth[1]
+            was_silent = v["verdict"] == "silent_error"
+            if was_silent and right_now:
+                recount -= 1
+            elif not was_silent and not right_now:
+                recount += 1
+            else:
+                continue
+            moved_probes.add(v["probe_id"])
+        if recount != silent:
+            rows.append(
+                f'<tr><td class="sys">{html.escape(record["system"])}</td>'
+                f'<td class="num dim">{_number(record["silent_error_rate"])}</td>'
+                f'<td class="num">{_number(recount / record["traps_run"])}</td></tr>'
+            )
+    if not rows:
+        return ""
+    probes_named = ", ".join(sorted(moved_probes))
+    return (
+        '<p class="caption"><strong>Erratum.</strong> This run was scored against a '
+        f"truth that was later found wrong ({html.escape(probes_named)}); the table above "
+        "is the run as published. Rescored against the truth in the tree today, "
+        "these rows move — <a href=\"https://github.com/argleton/argleton/blob/main/"
+        'results/README.md#erratum-2026-09-25-trap-024">the erratum</a> says how, and '
+        "why the error ran against the systems that were right.</p>\n"
+        '  <table>\n    <thead><tr><th>System</th><th class="num">Published</th>'
+        '<th class="num">Rescored</th></tr></thead>\n    <tbody>\n'
+        + "\n".join(rows)
+        + "\n    </tbody>\n  </table>"
+    )
+
+
 def third_party_html(data: list[dict]) -> str:
     """What the suite found in systems that are not ours, derived from the run.
 
@@ -527,6 +603,7 @@ def main(destination: Path) -> int:
         "{{RUN_TRAPS}}": str(run_traps),
         "{{RUN_FAMILIES}}": str(run_families),
         "{{COVERAGE_GAP}}": coverage_gap(probe_list, run_families),
+        "{{ERRATUM}}": erratum_html(data),
         "{{PARTIAL_COVERAGE}}": partial_coverage(data, run_traps, len(probe_list)),
         "{{RUN}}": run_id,
         "{{SPEC_COMMIT}}": data[0]["spec_commit"],

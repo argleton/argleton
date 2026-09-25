@@ -1,102 +1,92 @@
 # 024 — pixel is point
 
-**A grid whose own metadata says its values sit at the nodes, read by the
-coordinate helpers as if they filled the cells.**
+**A grid whose own metadata says its values sit at the nodes, read by an engine
+that does not look — and by code that corrects it twice.**
 
 `hollow.tif` is an 8×8 digital elevation model at 30 m spacing, a shallow
 depression with exactly one lowest cell. The question is where that cell is.
 
-The right answer is an easting of **412090**. The composition almost everyone
-writes says **412105**, half a cell east. Whitebox says **412120**, a whole cell.
-Nothing warns either time — and a caller who reads one extra line of metadata
-gets it right, which is what makes this the caller's error rather than the
-library's.
+The right answer is an easting of **412105**. Whitebox says **412120**, half a
+cell east. Code that "handles" pixel-is-point by subtracting half a cell says
+**412090**, half a cell west. Nothing warns either time.
+
+## Corrected on 2026-09-25: this page had the answer wrong for 26 days
+
+From 2026-08-30 to 2026-09-25 this probe's truth was **412090**, and every
+published run scored it that way. That was wrong, and the error ran in the worst
+direction for a suite like this one: systems that answered **412105** — the naive
+composition, QGIS, and the two QGIS MCP servers in the 2026-09-15 run — were
+marked `silent_error` for the right answer, and the two that answered 412090 —
+this suite's own careful rasterio adapter and MapSmith, the product this suite
+was built beside — were marked `correct` for a wrong one.
+
+The premise was a sentence, never measured: that GDAL exposes the tag "and
+leaves the geotransform alone, which is documented". It is documented the other
+way. Since [RFC 33](https://gdal.org/en/stable/development/rfc/rfc33_gtiff_pixelispoint.html)
+the GTiff driver shifts a PixelIsPoint tie point by half a pixel on write and on
+read, so GDAL's geotransform is always area-oriented; its Raster Data Model says
+the tag "is not intended to influence interpretation of georeferencing which
+remains area oriented". This page even recorded the evidence two days before
+the correction — that GDAL moves the tie point "so that the tie point names the
+centre of pixel (0, 0) as the GeoTIFF standard requires" — and kept a truth
+that contradicted it.
+
+What caught it was a real DEM. The Copernicus DEM is pixel-is-point and its
+documentation puts the samples on whole arc-seconds; GDAL put them there, and
+MapSmith, following this probe, put them half a cell north-west. The file has
+not changed. Its bytes always said 412105. The results of the runs published
+before the correction stay as they were, with an
+[erratum](../../results/README.md#erratum-2026-09-25-trap-024) beside them.
 
 ## Why the file is not wrong
 
 GeoTIFF defines two raster types, and they differ by half a pixel in each axis:
 
 - **`RasterPixelIsArea`** — a value describes the cell it fills, and the tie
-  point is that cell's upper-left corner. The default, and what most data ships
-  as.
+  point is that cell's upper-left corner. The default.
 - **`RasterPixelIsPoint`** — a value is a *sample at a grid node*, and the tie
-  point is the node itself.
+  point names the sample of pixel (0, 0).
 
-`hollow.tif` declares the second. That is not exotic: the USGS elevation
-products — the 3DEP/NED lineage — are pixel-is-point, and so are many national
-DEMs. GDAL reads the key faithfully and exposes it as the `AREA_OR_POINT`
-metadata item, and its documentation is explicit that it does **not** adjust the
-geotransform for it. The value is reported; the caller decides.
+`hollow.tif` declares the second, and its stored tie point is **412015,
+5107985**: the builder gives rasterio a geotransform cornered at 412000, 5108000,
+and GDAL, writing a PixelIsPoint file, moves the tie point half a cell to name
+the first sample. Read it with `GTIFF_POINT_GEO_IGNORE=TRUE` and that is what
+comes back. The sample of pixel (2, 3) is therefore at 412015 + 3·30 = **412105**.
 
-So the file is right, the library is right, and the position moves in the line
-that joins them.
+That is not exotic data. The USGS elevation products — the 3DEP/NED lineage — and
+the Copernicus DEM are pixel-is-point.
 
-## The defect
-
-```python
-with rasterio.open(path) as src:
-    values = src.read(1)
-    row, col = np.unravel_index(np.argmin(values), values.shape)
-    easting, northing = src.xy(row, col)      # 412105.0
-```
-
-`xy` returns the centre of the cell under the area reading, always. There is no
-argument on it that mentions registration and nothing in its name suggests it
-has taken a side.
-
-The tag is one call away on the same object:
-
-```python
-src.tags()["AREA_OR_POINT"]                   # 'Point'
-```
-
-Same open dataset, same breath. The information survives all the way to the
-caller and is discarded in the last line.
-
-## Three compositions, three answers
+## Two ways to get it wrong, in opposite directions
 
 | engine | answer | how far |
 |---|---|---|
-| truth | 412090 | — |
-| naive composition | 412105 | half a cell east |
-| rasterio, carefully | **412090** | correct |
-| whitebox-workflows | 412120 | a *whole* cell east |
+| truth | **412105** | — |
+| anything that asks GDAL (`src.xy`) | 412105 | correct |
+| whitebox-workflows 2.0.6 | 412120 | half a cell east |
+| a second correction on top of GDAL's | 412090 | half a cell west |
 
-**The careful rasterio adapter passes**, and that row is the point of the
-family. Four lines — read the tag, subtract half a cell when it says `Point` —
-and both this probe and its clean twin come out right. The information is
-available, acting on it is cheap, and the failure is that nothing prompts you
-to. That is what makes this the caller's error and not the library's.
+**Whitebox** never reads the raster-type key. In the open `whitebox-tools`
+source the flag that would carry it, `configs.pixel_is_area`, is assigned in
+exactly four places, all copying another raster's configs; it defaults to
+`true`, and every read of it is on the GeoTIFF *write* path. So the engine takes
+the stored tie point, 412015, for a cell **corner**, puts the centre of pixel
+(0, 0) at 412030, and the lowest cell at 412030 + 90 = 412120. *(Source read on
+`jblindsay/whitebox-tools` at master, which is the CLI; the row is
+`whitebox-workflows` 2.0.6, whose source is not public — there, ignoring the key
+is what the measured 412120 predicts uniquely, not something we have read.)*
 
-Whitebox is the other case, and it is worse — for a reason this page got wrong
-until 2026-09-23. It read as though whitebox *reacted* to the tag, because its
-reported grid origin shifts on this file and not on the twin. It does not react
-to it. The origin shifts because **the two files do not carry the same tie
-point**: GDAL writes `AREA_OR_POINT=Point` by moving the tie point half a cell
-south-east, so that the tie point names the centre of pixel (0, 0) as the
-GeoTIFF standard requires. Measured on the two fixtures' bytes — `412015,
-5107985` here against `412000, 5108000` on the twin, and geokey 1025 set to 2
-against 1.
+**The second correction** is the careful person's error, and it is the one this
+suite made. Read the tag, see `Point`, remember that under PixelIsPoint "the tie
+point is the node", and subtract half a cell from what `xy` returned:
 
-Whitebox then takes that tie point for a cell **corner**, because it never reads
-geokey 1025 at all. In the open `whitebox-tools` source the flag that would
-carry it, `configs.pixel_is_area`, is assigned in exactly four places, all of
-them copying another raster's configs; it defaults to `true`, and every read of
-it is on the GeoTIFF *write* path, where it decides whether to emit the key as 1
-or 2. `geokeys.rs` maps the key to the strings `RasterPixelIsArea` and
-`RasterPixelIsPoint` and nothing consumes the result.
+```python
+easting, _ = src.xy(row, col)                 # 412105.0 -- already the sample
+if src.tags().get("AREA_OR_POINT") == "Point":
+    easting -= src.transform.a / 2           # 412090.0 -- corrected twice
+```
 
-That accounts for the number exactly: corner 412015, so the centre of pixel
-(0, 0) is 412030, so the centre of pixel (2, 3) is 412030 + 90 = **412120**, one
-full cell from the truth. Half of that error is the tag it did not read; the
-other half is the half-cell it correctly adds to reach a centre. Which is why
-the uniform +0.5 shift somebody always proposes is not a fix: it is right on the
-twin and doubles the error here.
-
-*(Source read on `jblindsay/whitebox-tools` at master, which is the CLI. The row
-in the results table is `whitebox-workflows` 2.0.6, a different package whose
-source is not public — there, ignoring the key is what the measured 412120
-predicts uniquely, not something we have read.)*
+It looks like diligence, which is what makes it dangerous: a reviewer checking
+the code finds the metadata read and acted on.
 
 ## Why fifteen metres is the dangerous amount
 
@@ -114,21 +104,18 @@ other perfectly and disagree with the ground.
 
 ## The clean twin
 
-[`c024-pixel-is-area`](../../clean/c024-pixel-is-area/) is the same surface, the
-same tie point, the same spacing, the same lowest node, and one different tag.
-Its correct answer is **412105** — precisely the number that is wrong here.
+[`c024-pixel-is-area`](../../clean/c024-pixel-is-area/) is the same surface on
+the same geotransform with the other tag. Its answer is also **412105**: the two
+files hold the same samples in the same places and differ only in what they say
+a value represents. A system that gets the twin right and this probe wrong is
+reacting to the tag — whitebox by what it reads, the second correction by what
+it does.
 
-That pairing is the point. A system that has learned about pixel-is-point and
-now subtracts half a cell everywhere passes this trap and fails the twin. A
-system that never heard of it passes the twin and fails this. Only one that
-reads the tag answers both.
+## How it was found, and how it was found to be wrong
 
-## How it was found
-
-Writing a contour operation. The engine placed every contour half a cell from
-where the elevation it named actually occurred, which was noticed by checking
-the output against the input rather than by reading the documentation — sample
-the DEM where the line says it is, and the elevation has to match. Asking how
-far that generalised produced the raster-type key, and a convention that is
-declared in the file, reported faithfully by every library, and honoured by none
-of the coordinate helpers built on top of them.
+Found writing a contour operation: the engine placed every contour half a cell
+from where the elevation it named occurred, noticed by sampling the DEM where
+the line says it is. The generalisation from that — "the coordinate helpers
+ignore the tag" — was the wrong one, and it went unmeasured for 26 days. Found
+wrong by a Copernicus DEM, a check on real data with a documented answer, which
+is the kind of check a suite of planted fixtures cannot give itself.

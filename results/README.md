@@ -73,6 +73,45 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## Erratum 2026-09-25: trap 024
+
+**Every run published from 2026-08-30 to 2026-09-15 scored trap
+[`024-pixel-is-point`](../traps/024-pixel-is-point/) against a wrong truth.**
+It said 412090; the file says 412105. The error ran in the worst direction:
+systems that answered correctly were marked `silent_error`, and the two that
+did not — MapSmith, the product this suite was built beside, and this suite's
+own rasterio adapter — were marked `correct`.
+
+The premise was one sentence, never measured: that GDAL reports a
+PixelIsPoint file's tag "and leaves the geotransform alone". Since
+[RFC 33](https://gdal.org/en/stable/development/rfc/rfc33_gtiff_pixelispoint.html)
+GDAL moves the stored tie point half a cell, on write and on read, so its
+geotransform is always area-oriented and `xy` already returns the sample. The
+trap's file stores its first sample at 412015; its lowest at 412105. A
+Copernicus DEM caught it — its documentation puts the samples on whole
+arc-seconds, and MapSmith, following this trap, put them half a cell away. The
+trap's own README is rewritten with the whole account.
+
+The runs below are left exactly as published. Recounted against the corrected
+truth, the latest one reads:
+
+| system | 024 answered | published | corrected |
+|---|---|---|---|
+| MapSmith | 412090 | **0.00** | **0.0323** (1 of 31) |
+| QGIS, QGIS Agent MCP, qgis-mcp | 412105 | 0.3871 | 0.3548 (11 of 31) |
+| naive composition | 412105 | 0.9355 | 0.9032 (28 of 31) |
+| rasterio | 412090 | 0.00 | 0.1429 (1 of 7) |
+| whitebox | 412120 | 0.75 | 0.75 — wrong under both truths |
+
+The same holds for every run since `2026-08-30-grid-registration`: MapSmith's
+**0.00 was one silent error in each of them**, and the naive composition's rate
+was one trap too high. The three QGIS rows were published on 2026-09-15 with one
+error they did not make; they are the systems this erratum owes the most to.
+
+MapSmith's defect is fixed on its `main` (it no longer corrects the half cell a
+second time), and the suite's rasterio adapter no longer does either. The next
+published run is scored against the corrected truth.
+
 ## 2026-09-15 — three rows that are the same QGIS, and why that is the finding
 
 Published run: [`2026-09-15-qgis-three-ways/`](2026-09-15-qgis-three-ways/).

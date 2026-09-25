@@ -53,21 +53,17 @@ class Adapter:
         import numpy as np
         import rasterio
 
-        # `ds.xy` returns the centre of the cell under the pixel-is-AREA
-        # reading, always, and there is no argument on it that mentions
-        # registration. The correction is not obscure and it is not a
-        # workaround: the file says which convention it uses and rasterio hands
-        # that over on the same open dataset.
-        #
-        # Under pixel-is-POINT the value is a sample AT the node, so the tie
-        # point IS the position of pixel (0, 0) and every cell centre `xy`
-        # computes is half a cell too far east and south.
+        # `ds.xy` returns the sample position under either registration:
+        # GDAL has already moved a PixelIsPoint tie point half a cell so that
+        # its geotransform is area-oriented (RFC 33). Until 2026-09-25 this
+        # adapter read the tag and subtracted half a cell as well -- the
+        # correction made twice, which is now one of the two failures trap 024
+        # measures. It was scored `correct` for it, against a truth with the
+        # same error.
         with rasterio.open(workdir / probe.arguments[0]) as ds:
             values = ds.read(1, masked=True)
             row, column = np.unravel_index(np.argmin(values), values.shape)
             easting, _ = ds.xy(int(row), int(column))
-            if ds.tags().get("AREA_OR_POINT") == "Point":
-                easting -= ds.transform.a / 2.0
         return Outcome(answer=float(easting))
 
 

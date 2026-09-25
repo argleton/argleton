@@ -10,10 +10,12 @@ and the position of the lowest value is the centre of the lowest cell:
 
     412000 + 3 * 30 + 15 = 412105
 
-which is precisely the answer that is WRONG on the trap. That is the point of
-the pair. A system that hard-codes either convention answers one of the two and
-fails the other, and a silent-error rate measured on the trap alone could not
-tell that apart from a system that simply cannot read a DEM.
+which is the trap's answer too (corrected 2026-09-25: this docstring called it
+the answer that is wrong there). GDAL writes the trap's tie point half a cell
+in, at its first sample, so both files have their samples in the same places.
+A system right here and wrong on the trap is reacting to the tag, and a
+silent-error rate measured on the trap alone could not tell that apart from a
+system that simply cannot read a DEM.
 
 A shallow bowl, 8 by 8 cells at 30 m spacing, with exactly one lowest point at
 node (row 2, column 3). The elevation model is

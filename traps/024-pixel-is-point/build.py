@@ -10,13 +10,18 @@ question "where is the bottom of this hollow" has one answer and no argument
 about it.
 
 The one thing that matters is the tag. `AREA_OR_POINT=Point` says the value of
-a pixel is a sample AT the tie point of that pixel, not an average over the cell
-around it. Under that reading the tie point (412000, 5108000) is the position of
-the value in pixel (0, 0) itself, so the value in pixel (2, 3) sits at
+a pixel is a sample at a grid node, not an average over the cell around it.
 
-    412000 + 3 * 30 = 412090,  5108000 - 2 * 30 = 5107940
+CORRECTED on 2026-09-25. This docstring said the tie point (412000, 5108000)
+is the position of the first sample, so the lowest one sits at 412090. It is
+not: the geotransform handed to rasterio below is GDAL's, area-oriented, and
+GDAL writes a PixelIsPoint file by moving the stored tie point half a cell in,
+to (412015, 5107985) -- the first sample (RFC 33). The lowest sample is at
 
-and not half a cell south-east of there. Fifteen metres, in a file that says so.
+    412015 + 3 * 30 = 412105,  5107985 - 2 * 30 = 5107925
+
+which is where GDAL's `xy` puts it. The file is unchanged; its reading was
+wrong.
 
 30 m spacing and `Point` together are not a contrivance: they are what the USGS
 elevation products have used for decades, which is where most people meet this.
@@ -66,9 +71,9 @@ def main(destination: Path) -> int:
     ) as dst:
         dst.write(surface.astype("float32"), 1)
         # The whole trap, in one line of metadata. GeoTIFF calls it
-        # RasterPixelIsPoint; GDAL surfaces it as this tag and leaves the
-        # geotransform alone, which is documented and is exactly why the caller
-        # has to do something about it.
+        # RasterPixelIsPoint. GDAL does NOT leave the geotransform alone, as
+        # this comment claimed until 2026-09-25: it moves the stored tie point
+        # half a cell to name the first sample, and moves it back on read.
         dst.update_tags(AREA_OR_POINT="Point")
 
     return 0
