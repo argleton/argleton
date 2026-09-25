@@ -90,19 +90,19 @@ def build_fixtures(probe: Probe, workdir: Path) -> None:
         #
         # Every attempt is printed. A silent retry would hide the frequency,
         # and the frequency is the thing that told us the constant was stale.
-        silenziosa = not proc.stdout.strip() and not proc.stderr.strip()
-        tentativi = 0
-        while silenziosa and tentativi < 3:
-            tentativi += 1
+        silent = not proc.stdout.strip() and not proc.stderr.strip()
+        attempts = 0
+        while silent and attempts < 3:
+            attempts += 1
             print(
-                f"retry build {probe.id} ({tentativi}/3): rc={proc.returncode}"
+                f"retry build {probe.id} ({attempts}/3): rc={proc.returncode}"
                 f" (0x{proc.returncode & 0xFFFFFFFF:08X}), no output at all",
                 flush=True,
             )
             proc = once()
             if proc.returncode == 0:
                 break
-            silenziosa = not proc.stdout.strip() and not proc.stderr.strip()
+            silent = not proc.stdout.strip() and not proc.stderr.strip()
     if proc.returncode != 0:
         # The exit code is IN the message since 2026-09-10. Without it a
         # process killed by the operating system and a builder that raised

@@ -163,9 +163,9 @@ def discover(root: Path) -> list[Probe]:
     """
     folders = {"trap": root / "traps", "clean": root / "clean"}
     found = [
-        load_probe(contratto.parent)
+        load_probe(contract_file.parent)
         for folder in folders.values()
-        for contratto in sorted(folder.rglob(CONTRACT))
+        for contract_file in sorted(folder.rglob(CONTRACT))
     ]
     duplicates = {p.id for p in found if [q.id for q in found].count(p.id) > 1}
     if duplicates:
