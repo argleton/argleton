@@ -314,12 +314,13 @@ thing it evaluates is easy to dismiss in one line — but pretending at
 independence we do not have would be worse than the problem. The defence is not
 the org chart: it is that every fixture is regenerable, every tolerance is in
 git history, and every headline finding in [results](results/) so far has cost
-MapSmith something. **Six defects have gone back to it**: a 0.00 its own
+MapSmith something. **Seven defects have gone back to it**: a 0.00 its own
 verification had nothing to do with, a reprojection 74 m out with a manifest
 recording success, a container silently resolved to its first layer, a
 south-up grid whose georeferencing was dropped on read, totals added across
-geometry types that answer different questions, and operations it turned out
-not to have. They are listed on
+geometry types that answer different questions, operations it turned out
+not to have, and a grid registration corrected twice because this suite's own
+truth on trap 024 was wrong ([erratum](results/README.md#erratum-2026-09-25-trap-024)). They are listed on
 [MapSmith's own page](https://github.com/mapsmith-ai/MapSmith#roadmap), where
 the list is kept.
 
