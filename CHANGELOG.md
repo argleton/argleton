@@ -12,7 +12,12 @@ the suite itself.
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **The links on the PyPI page resolve.** PyPI renders the README with nothing
+  to resolve a relative link against, so the erratum, `FAMILIES.md` and every
+  link into `results/` answered 404 there. The build now rewrites them to GitHub
+  URLs pinned to the release tag; on GitHub the README is unchanged.
 
 ## [0.6.0] - 2026-09-26
 

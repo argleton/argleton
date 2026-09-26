@@ -845,6 +845,46 @@ def _tracked_text_files() -> list[Path]:
     ]
 
 
+def test_the_pypi_page_has_no_relative_link():
+    """PyPI renders the README with nothing to resolve a relative link against,
+    so the erratum, FAMILIES.md and every results link were 404s on pypi.org
+    until 2026-09-26. The build rewrites them to GitHub URLs pinned to the
+    release tag (pyproject.toml, hatch-fancy-pypi-readme). This applies the
+    configured substitutions the way the hook does -- Python `re`, in order, the
+    version interpolated afterwards -- and fails on any target still relative,
+    or rewritten to a file the tag would not have."""
+    import tomllib
+
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    version = metadata["project"]["version"]
+    assert "readme" in metadata["project"].get("dynamic", []), (
+        "the readme is static again, so the build ships the relative links as they are"
+    )
+    hook = metadata["tool"]["hatch"]["metadata"]["hooks"]["fancy-pypi-readme"]
+    assert [f.get("path") for f in hook["fragments"]] == ["README.md"], (
+        "the PyPI description is no longer exactly the README; this test reads the wrong text"
+    )
+    text = README
+    for rule in hook["substitutions"]:
+        text = re.sub(rule["pattern"], rule["replacement"], text)
+    text = text.replace("$HFPR_VERSION", version)
+
+    targets = re.findall(r"\]\(([^)\s]+)\)", text)
+    relative = [t for t in targets if not re.match(r"https?://|mailto:|#", t)]
+    assert not relative, f"these links are still relative on pypi.org: {relative}"
+
+    pinned = re.compile(
+        r"https://(?:raw\.githubusercontent\.com/argleton/argleton/"
+        r"|github\.com/argleton/argleton/(?:blob|tree)/)v"
+        + re.escape(version)
+        + r"/([^#)]*)"
+    )
+    rewritten = [m.group(1) for t in targets if (m := pinned.match(t))]
+    assert rewritten, "no link was rewritten to the tag, so the substitutions matched nothing"
+    missing = sorted({p for p in rewritten if not (ROOT / p).exists()})
+    assert not missing, f"rewritten to paths the repository does not have: {missing}"
+
+
 def test_no_vendor_is_named_in_public():
     """Silence about a named vendor is a decision, so it needs a check.
 
