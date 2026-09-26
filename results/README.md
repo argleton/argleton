@@ -110,7 +110,41 @@ error they did not make; they are the systems this erratum owes the most to.
 
 MapSmith's defect is fixed on its `main` (it no longer corrects the half cell a
 second time), and the suite's rasterio adapter no longer does either. The next
-published run is scored against the corrected truth.
+published run is scored against the corrected truth: it is the one directly
+below, and it agrees with this recount row for row.
+
+## 2026-09-26 — the same nine systems, scored against trap 024's corrected truth
+
+Published run: [`2026-09-26-trap-024-corrected/`](2026-09-26-trap-024-corrected/).
+`spec_commit` [`56423ed`](../../../commit/56423ed), thirty-one traps and
+thirty-one clean cases across twenty-nine families, nine systems. MapSmith is
+0.7.0, the release that stopped correcting the half cell twice.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3548 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3548 | 0.9677 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3548 | 0.9677 | 31 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9032 | 1.00 | 31 | 0 |
+
+**Every row matches the erratum's recount of the previous run**, which is the
+check that the correction was one change and not several: nothing else moved
+between `beab4ba` and `56423ed` that changes a verdict. The three QGIS rows
+answer trap 024 correctly and are scored so for the first time; the naive
+composition does too, because `xy` was right all along. whitebox still answers
+412120 — half a cell east, reading the stored tie point as a corner — and is the
+one system here that fails the trap for the reason it was built to find.
+
+MapSmith's 0.00 is earned on the probe that took it away, and not inherited:
+0.7.0 reads positions from GDAL's geotransform and hands the terrain engine an
+area-registered copy instead of refusing the DEM. The run before this one scored
+it 0.00 for the wrong answer; this one scores it 0.00 for the right one. The
+difference is the whole reason the erratum above exists.
 
 ## 2026-09-15 — three rows that are the same QGIS, and why that is the finding
 

@@ -103,15 +103,14 @@ at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
 clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. In the published run it scores **0.9355 / 1.0**:
-it answers every clean probe correctly, falls into twenty-nine of the thirty-one traps, and
-**passes the other two**. 001, because rasterio undoes the predictor on its behalf; 026,
+report it — and it is the most useful one here. In the published run it scores **0.9032 / 1.0**:
+it answers every clean probe correctly, falls into twenty-eight of the thirty-one traps, and
+**passes the other three**. 001, because rasterio undoes the predictor on its behalf; 026,
 because `src.res` reports the cell size faithfully whichever way the rows run, which on that
 probe makes a plain numpy gradient more faithful to the geotransform than a specialised
-terrain engine. One of the twenty-nine was never a fall: on 024 the naive answer was right
-and the truth was wrong ([erratum](results/README.md#erratum-2026-09-25-trap-024)).
-Rescored it is 0.9032, and 024 is a third pass, because GDAL has already folded
-PixelIsPoint into the geotransform. Careless code is not uniformly wrong. It is correct until the data stops
+terrain engine; and 024, because GDAL has already folded PixelIsPoint into the
+geotransform — which this suite scored as a failure until 2026-09-25
+([erratum](results/README.md#erratum-2026-09-25-trap-024)). Careless code is not uniformly wrong. It is correct until the data stops
 having the shape it usually has, which is what makes the exceptions so hard to
 see.
 
@@ -174,12 +173,10 @@ rate means a system did not fail silently *on these probes*.
 All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-**This table is the run as published, and six of its rows are wrong.** It was scored
-against a wrong truth on trap 024, in every run since 2026-08-30
-([erratum](results/README.md#erratum-2026-09-25-trap-024)). Rescored: MapSmith 0.0323
-rather than 0.00, rasterio 0.1429 rather than 0.00, the three QGIS rows 0.3548 rather than
-0.3871, the naive composition 0.9032. The error ran against the systems that were right.
-The next published run is scored against the corrected truth.
+The run of 2026-09-26, the first scored against trap 024's corrected truth. The runs
+before it, from 2026-08-30 on, scored that trap against a wrong truth — against the systems
+that were right — and are recounted in an [erratum](results/README.md#erratum-2026-09-25-trap-024);
+this table agrees with the recount row for row.
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
@@ -187,11 +184,11 @@ The next published run is scored against the corrected truth.
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
 | gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
-| QGIS processing 3.44.12 (via qgis_process) | 0.3871 | 1.00 | 31 | 0 |
-| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3871 | 0.9677 | 31 | 0 |
-| QGIS Agent MCP 0.5.0 (local bridge) | 0.3871 | 0.9677 | 31 | 0 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3548 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3548 | 0.9677 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3548 | 0.9677 | 31 | 0 |
 | whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
-| naive composition | 0.9355 | 1.00 | 31 | 0 |
+| naive composition | 0.9032 | 1.00 | 31 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question
