@@ -193,8 +193,8 @@ this table agrees with the recount row for row.
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question
-must not be able to look better than one that faced all of them. In the run
-before this one, three of MapSmith's probes were `unsupported` — it had no area
+must not be able to look better than one that faced all of them. In the
+six-family run of 2026-08-25, three of MapSmith's probes were `unsupported` — it had no area
 operation at all, which is a gap in a catalog rather than a bug in code, and the
 suite is what named it.
 
