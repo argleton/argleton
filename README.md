@@ -39,9 +39,10 @@ machine, so there is nothing to download and nothing to take on trust:
 pip install "argleton[fixtures]"
 ```
 
-The probes ship with the runner, so that is the whole setup — release 0.5.0 carries the
-31 traps and 29 families the published table further down was run over, so installing it and
-rerunning reproduces that table rather than a version of it. Whenever the checkout here runs
+The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
+31 traps and 29 families the published table further down was run over, with trap 024's
+corrected truth, so installing it and rerunning reproduces that table rather than a version of
+it. (0.5.0 carries the old truth and would not.) Whenever the checkout here runs
 ahead of the release, this paragraph says so and gives both counts, because a reader who cannot
 reproduce the table on this page has been told something untrue.
 

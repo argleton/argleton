@@ -12,6 +12,17 @@ the suite itself.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.6.0] - 2026-09-26
+
+A correction release. Trap 024's truth was wrong from 2026-08-30, in favour of
+the systems that corrected a half cell twice and against the ones that were
+right; this release carries the corrected truth, the erratum, and the first run
+scored against it (`2026-09-26-trap-024-corrected`). A result computed with
+0.5.0 on trap 024 is not comparable with one computed now, which is why this is
+a minor version and not a patch.
+
 ### Fixed
 
 - **Trap 024's truth was wrong, from 2026-08-30.** It said the lowest cell of
