@@ -106,7 +106,12 @@ Each is exactly half the cell size from the truth, in opposite directions, and
 neither depends on the values in the grid."""
 
 [refusal]
-accept_if_mentions = ["area_or_point", "pixel is point", "pixelispoint", "pixel-is-point", "registration", "half a cell", "half-cell", "grid registration", "cell centre", "cell center", "node", "raster type"]
+# Narrowed on 2026-09-25 with the truth. The file has one answer for a reader
+# that goes through GDAL, so a refusal that says only "pixel is point" or
+# "registration" is hedging on a file that is not ambiguous. It is correct only
+# when it names what actually goes wrong: an engine that reads the stored tie
+# point without GDAL's shift, or a correction applied on top of GDAL's.
+accept_if_mentions = ["raw tie point", "tie point as a corner", "tiepoint as a corner", "gtiff_point_geo_ignore", "rfc 33", "corrected twice", "double correction", "already shifted", "shifted twice"]
 
 [provenance]
 source = """

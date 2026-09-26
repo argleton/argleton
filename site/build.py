@@ -218,8 +218,17 @@ def erratum_html(data: list[dict]) -> str:
     """
     sys.path.insert(0, str(ROOT))
     from argleton.model import discover
+    from argleton.score import within_tolerance
 
-    truths = {p.id: (p.truth.value, p.truth.tolerance) for p in discover(ROOT)}
+    # Traps only: the rescored column is the silent-error rate, whose
+    # denominator is the traps run. A clean probe whose truth moved would move
+    # the completion rate instead, which this table does not show -- so it is
+    # left out rather than counted into the wrong number.
+    truths = {
+        p.id: (p.truth.value, p.truth.tolerance)
+        for p in discover(ROOT)
+        if p.population == "trap"
+    }
     rows, moved_probes = [], set()
     for record in data:
         silent = round(record["silent_error_rate"] * record["traps_run"])
@@ -227,11 +236,13 @@ def erratum_html(data: list[dict]) -> str:
         for v in _verdicts(record):
             truth = truths.get(v["probe_id"])
             answer = v.get("answer")
-            if truth is None or not isinstance(answer, (int, float)) or isinstance(truth[0], str):
+            if truth is None or answer is None:
                 continue
             if v["verdict"] not in ("correct", "correct_with_warning", "silent_error"):
                 continue
-            right_now = abs(answer - truth[0]) <= truth[1]
+            # The runner's own comparison, not a copy of it: sequences,
+            # booleans and strings are judged the way the run judged them.
+            right_now = within_tolerance(answer, *truth)
             was_silent = v["verdict"] == "silent_error"
             if was_silent and right_now:
                 recount -= 1

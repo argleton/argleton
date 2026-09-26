@@ -24,7 +24,12 @@ the suite itself.
   The fixture is unchanged. The truth, the README, the clean twin's derivation
   and `FAMILIES.md` are corrected; the rasterio adapter no longer corrects
   twice; the published runs are left as they were, with an erratum in
-  `results/README.md` recounting them.
+  `results/README.md` recounting them. The trap's accepted refusals are
+  narrowed with it: the file has one answer, so a refusal counts only when it
+  names what goes wrong (a raw tie point read as a corner, or a correction made
+  twice), not when it says "pixel is point". argleton.org rescores the published
+  run against the truths in the tree with the runner's own comparison, traps
+  only, and says nothing once a run agrees with them.
 
 ## [0.5.0] - 2026-09-21
 
