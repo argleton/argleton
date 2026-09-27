@@ -121,6 +121,20 @@ def _parse(stdout: str) -> tuple[dict, list[str]]:
     raise RuntimeError(f"qgis_process produced no JSON document. Output: {stdout[-800:]!r}")
 
 
+def _json_log(entry) -> list[str]:
+    """Every message in the document's `log`, whatever its nesting (a dict of lists
+    or a plain list), as strings. Empty on the runs measured so far."""
+    if not entry:
+        return []
+    if isinstance(entry, str):
+        return [entry.strip()] if entry.strip() else []
+    if isinstance(entry, dict):
+        return [line for value in entry.values() for line in _json_log(value)]
+    if isinstance(entry, (list, tuple)):
+        return [line for value in entry for line in _json_log(value)]
+    return [str(entry)]
+
+
 class Adapter(QgisChains):
     name = "qgis_process"
 
@@ -177,5 +191,13 @@ class Adapter(QgisChains):
             detail = (process.stdout or process.stderr or "")[-800:]
             raise RuntimeError(f"{algorithm} failed (rc={process.returncode}): {detail.strip()}")
         document, log = _parse(process.stdout)
+        # Two more places QGIS says things, both read since 2026-09-27: the
+        # document's own `log` (where an algorithm's pushWarning/reportError
+        # land with --json) and stderr, which carries PROJ's notices even when
+        # the run succeeds. Dropping either would throw away the system's own
+        # disclosure, which this adapter exists to keep.
+        log = log + _json_log(document.get("log")) + [
+            line.strip() for line in (process.stderr or "").splitlines() if line.strip()
+        ]
         return document.get("results", {}), [line for line in log if not line.startswith(_NOISE)]
 

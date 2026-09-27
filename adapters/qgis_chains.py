@@ -130,7 +130,14 @@ class QgisChains:
         return Outcome(answer=total, warnings=log)
 
     def op_field_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
-        total, log = self._measure(probe.arguments[0], "area($geometry)", workdir)
+        # "How large is it on the ground, in square metres?" -- a ground area,
+        # so answered as `ground_area_m2` is: `$area` with the ellipsoid QGIS
+        # offers. Until 2026-09-27 this asked `area($geometry)`, planar in the
+        # layer's degrees, which is not what the engine does when asked this
+        # question the way it offers to be asked: the row measured this file's
+        # manners, which the module docstring promises it never does (found by
+        # a triage of the QGIS row before reporting anything upstream).
+        total, log = self._measure(probe.arguments[0], "$area", workdir, ellipsoid="WGS84")
         return Outcome(answer=total, warnings=log)
 
     def op_buildable_area_m2(self, probe: Probe, workdir: Path) -> Outcome:
@@ -353,6 +360,13 @@ class QgisChains:
         # (NIR - RED) / (NIR + RED), through the raster calculator, which is a
         # `gdal:` algorithm and needs the slow door. Whether the bands' declared
         # scale and offset reach the arithmetic is the whole probe.
+        #
+        # Checked on 2026-09-27, because a triage called this choice an adapter
+        # error: QGIS 3.44 also has `native:rastercalc`, which applies scale and
+        # offset and answers 0.3333 -- but it is marked deprecated, hidden from
+        # the Processing toolbox and from `qgis_process list`, where the only
+        # raster calculator offered is this one. The row measures the tool a
+        # user of the engine is handed, so the choice stands.
         red = int(probe.arguments[1].split("=", 1)[1])
         nir = int(probe.arguments[2].split("=", 1)[1])
         scene = probe.arguments[0]
