@@ -174,10 +174,12 @@ rate means a system did not fail silently *on these probes*.
 All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-The run of 2026-09-26, the first scored against trap 024's corrected truth. The runs
-before it, from 2026-08-30 on, scored that trap against a wrong truth — against the systems
-that were right — and are recounted in an [erratum](results/README.md#erratum-2026-09-25-trap-024);
-this table agrees with the recount row for row.
+The run of 2026-09-27. Two errata stand behind it, both errors of this suite and not of the
+systems measured: from 2026-08-30 to 2026-09-15 trap 024 was scored against a wrong truth —
+against the systems that were right ([erratum](results/README.md#erratum-2026-09-25-trap-024)) —
+and until 2026-09-26 the three QGIS rows counted trap 028 as a silent error that was the
+adapter asking for square degrees where the question asked for a ground area
+([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows)).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
@@ -185,9 +187,9 @@ this table agrees with the recount row for row.
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
 | gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
-| QGIS processing 3.44.12 (via qgis_process) | 0.3548 | 1.00 | 31 | 0 |
-| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3548 | 0.9677 | 31 | 0 |
-| QGIS Agent MCP 0.5.0 (local bridge) | 0.3548 | 0.9677 | 31 | 0 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3226 | 0.9677 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
 | whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
 | naive composition | 0.9032 | 1.00 | 31 | 0 |
 

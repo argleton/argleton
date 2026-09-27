@@ -73,6 +73,59 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## Erratum 2026-09-27: trap 028 on the three QGIS rows
+
+**The three QGIS rows published on 2026-09-15 and 2026-09-26 counted one silent
+error that was this suite's adapter, not QGIS.** Trap
+[`028-degrees-as-metres`](../traps/028-degrees-as-metres/) asks for a parcel's
+area on the ground, in square metres, in WGS 84. The adapters' own rule is to
+pass the ellipsoid for a ground area — they did for trap 008 — and for 028 they
+asked `area($geometry)` instead: planar, in square degrees, 1.03e-05. Asked the
+way QGIS offers to be asked (`$area` with the WGS84 ellipsoid), the engine
+answers 89900.02, inside the tolerance. The two MCP transports cannot pass an
+ellipsoid; they now say so in a warning, as they already did for 008.
+
+Found while triaging the QGIS row before reporting anything upstream. The same
+triage called trap 010 an adapter error too, and that one stands: the raster
+calculator QGIS offers in its toolbox and in `qgis_process list` is
+`gdal:rastercalculator`; the native one that honours scale and offset is
+deprecated and hidden. The reason is now written in the adapter. Of the ten
+silent errors that remain, none is a QGIS defect in the sense of contradicting
+its documentation: they are documented defaults answering a question they were
+not built for, which is what this suite measures.
+
+| system | published 2026-09-26 | corrected |
+|---|---|---|
+| QGIS processing 3.44.12 (via qgis_process) | 0.3548 (11 of 31) | 0.3226 (10 of 31) |
+| nkarasiak/qgis-mcp 0.14.0 | 0.3548 | 0.3226 |
+| QGIS Agent MCP 0.5.0 | 0.3548 | 0.3226 |
+
+No other row moves. The runs below are left exactly as published.
+
+## 2026-09-27 — the QGIS rows answer a ground area with the ellipsoid
+
+Published run: [`2026-09-27-qgis-ground-area/`](2026-09-27-qgis-ground-area/).
+`spec_commit` [`8e0151b`](../../../commit/8e0151b), thirty-one traps and
+thirty-one clean cases across twenty-nine families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith (main) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3226 | 0.9677 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9032 | 1.00 | 31 | 0 |
+
+**Every row matches the erratum above**: the three QGIS rows are one trap
+lower, and nothing else moved between `56423ed` and `8e0151b` that changes a
+verdict. The QGIS engine adapter also keeps, from this run on, the warnings
+`qgis_process` writes to its JSON log and to stderr on a successful run; on
+these thirty-one traps they were empty.
+
 ## Erratum 2026-09-25: trap 024
 
 **Every run published from 2026-08-30 to 2026-09-15 scored trap

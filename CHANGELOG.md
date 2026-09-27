@@ -14,6 +14,16 @@ the suite itself.
 
 ### Fixed
 
+- **The three QGIS rows count one silent error fewer, and it was ours.** Trap
+  028 asks for a ground area in square metres; the QGIS adapters asked
+  `area($geometry)`, planar in square degrees, although their own rule is to
+  pass the ellipsoid for a ground area and they did for trap 008. With the
+  ellipsoid the engine answers inside the tolerance: 0.3226 (10 of 31) where
+  0.3548 was published. Erratum and run `2026-09-27-qgis-ground-area` in
+  `results/`. Trap 010 was examined for the same reason and stands, with the
+  reason in the adapter. The QGIS engine adapter also keeps the warnings
+  `qgis_process` writes to its JSON log and stderr on a successful run.
+
 - **The links on the PyPI page resolve.** PyPI renders the README with nothing
   to resolve a relative link against, so the erratum, `FAMILIES.md` and every
   link into `results/` answered 404 there. The build now rewrites them to GitHub
