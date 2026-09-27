@@ -1031,6 +1031,48 @@ def test_the_readme_names_the_release_that_reproduces_the_results():
     )
 
 
+def test_a_run_made_on_code_the_release_does_not_carry_is_declared():
+    """Counting traps is not enough: an adapter can move a row between tags.
+
+    On 2026-09-27 the published run was made at `8e0151b`, which changed the
+    QGIS adapters after 0.6.0 was tagged, while the README still said that
+    installing 0.6.0 "reproduces that table rather than a version of it". The
+    trap count matched, so the guard above was green; three rows would have come
+    out one trap higher. The adapters ship in the wheel, so they are part of
+    what "reproduces" promises.
+    """
+    import subprocess
+
+    shipped = re.search(
+        r'^version = "([^"]+)"',
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        re.MULTILINE,
+    ).group(1)
+    _, records = latest_run()
+    commits = {r["spec_commit"] for r in records.values()}
+    assert len(commits) == 1, f"the published run names several spec_commits: {commits}"
+    commit = commits.pop()
+    try:
+        diff = subprocess.run(
+            ["git", "diff", "--quiet", f"v{shipped}", commit, "--",
+             "adapters/", "argleton/", "traps/", "clean/", "schema/"],
+            cwd=ROOT, capture_output=True, text=True, timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        pytest.skip("git is not available")
+    if diff.returncode == 0:
+        return
+    if diff.returncode != 1:
+        # The tag or the commit is not in this checkout (release not cut yet,
+        # shallow clone): unknowable, and not a defect in the README.
+        pytest.skip(f"cannot compare v{shipped} with {commit}")
+    assert re.search(r"checkout here is ahead of it", README), (
+        f"the published run was made at {commit}, whose shipped code differs from "
+        f"v{shipped}, and the README does not say so. A reader who installs "
+        f"{shipped} and reruns will not get the table on this page."
+    )
+
+
 def test_the_archive_metadata_uses_a_licence_identifier_zenodo_resolves():
     """SPDX and Zenodo disagree about case, and the disagreement is invisible.
 

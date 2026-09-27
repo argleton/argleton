@@ -41,8 +41,12 @@ pip install "argleton[fixtures]"
 
 The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
 31 traps and 29 families the published table further down was run over, with trap 024's
-corrected truth, so installing it and rerunning reproduces that table rather than a version of
-it. (0.5.0 carries the old truth and would not.) Whenever the checkout here runs
+corrected truth. The checkout here is ahead of it by one adapter change, and that change moves
+three rows: the QGIS adapters now ask trap 028 for a ground area with the ellipsoid
+([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows)). Rerun with
+0.6.0, every row of that table reproduces except those three, which come out one trap higher,
+as they were published before the erratum. (0.5.0 carries the old truth of trap 024 and
+reproduces less.) Whenever the checkout here runs
 ahead of the release, this paragraph says so and gives both counts, because a reader who cannot
 reproduce the table on this page has been told something untrue.
 
