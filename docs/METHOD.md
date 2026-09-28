@@ -104,6 +104,29 @@ then observed exactly.
 
 This is the only form of pre-registration that does not require trusting us.
 
+**Adapters too, and git history alone does not settle it.** The adapters are in
+the repository, so the commit a result names does fix the code that produced it.
+What a commit cannot show is whether an adapter was extended *after* its
+verdicts were read — and an adapter widened until the number looks right is a
+tolerance widened without the diff. The denominator of one system moved five
+times in three days in September 2026, every time because of our adapter and
+never because of the system. So:
+
+- **An adapter is extended in one pass, before the verdicts are read**, for a
+  stated set of probes, and is then frozen for that run. A later extension is a
+  new run with its own date and `spec_commit`, and its section in
+  [`results/README.md`](../results/README.md) says which probes it wired.
+- **After a verdict, an adapter changes only to fix a defect of its own**: a
+  place where it contradicts the rule it states. Every adapter here follows one
+  rule -- compose what the system offers as its own, the way a careful user of
+  it would, and add nothing it does not do -- and most state a narrower one in
+  their docstring. That change is published as an erratum, as the one on trap
+  028 in the three QGIS rows was. Changing a composition because another one would give
+  a better or a worse number is not a defect, and is not done.
+- **The rule binds every adapter**, the one for the product whose authors wrote
+  this suite included: the suite's composition rule is symmetric, and an
+  exception for our own row would break it exactly where it matters most.
+
 ## 8. Repetition and noise
 
 The engine tier is deterministic: one run is the answer.
