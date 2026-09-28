@@ -14,6 +14,13 @@ the suite itself.
 
 ### Fixed
 
+- **An `unsupported` verdict keeps the adapter's reason.** "Does not implement"
+  covers two findings -- the system has no such operation, or this installation
+  of it is not licensed for one -- and only the adapter knows which. The runner
+  wrote the same generic sentence for both and dropped the adapter's warnings,
+  so a result file could not tell them apart even when the adapter did. The
+  detail now carries them; scores are unchanged.
+
 - **The three QGIS rows count one silent error fewer, and it was ours.** Trap
   028 asks for a ground area in square metres; the QGIS adapters asked
   `area($geometry)`, planar in square degrees, although their own rule is to

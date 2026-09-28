@@ -77,7 +77,15 @@ def judge(probe: Probe, outcome: Outcome) -> Verdict:
         return Verdict(probe.id, probe.population, probe.family, name, detail, outcome.answer)
 
     if outcome.unsupported:
-        return verdict("unsupported", "the adapter does not implement this operation")
+        # The adapter's reason, when it gives one, is kept. "Does not implement"
+        # covers two different facts -- the system has no such operation, or
+        # this installation of it is not licensed for one -- and only the
+        # adapter knows which. Until 2026-09-28 the reason was dropped here, so
+        # a result file could not tell them apart even when the adapter did.
+        detail = "the adapter does not implement this operation"
+        if outcome.warnings:
+            detail += ": " + "; ".join(outcome.warnings)
+        return verdict("unsupported", detail)
     if outcome.error is not None:
         # A crash is a failure, but a *loud* one: someone sees it. It is counted
         # apart from silent errors because conflating them would let a system

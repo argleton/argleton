@@ -122,6 +122,18 @@ def test_refusing_everything_does_not_win():
     assert summary["completion_rate"] == 0.0
 
 
+def test_an_unsupported_outcome_keeps_the_adapters_reason():
+    # "The system has no such operation" and "this licence does not include it"
+    # are different findings; the result file must be able to carry which.
+    probe = PROBES[0]
+    reason = "unsupported (licence): requires an extension this installation lacks"
+    kept = judge(probe, Outcome(unsupported=True, warnings=[reason]))
+    assert kept.verdict == "unsupported"
+    assert reason in kept.detail
+    bare = judge(probe, Outcome(unsupported=True))
+    assert bare.detail == "the adapter does not implement this operation"
+
+
 def test_an_outcome_cannot_be_two_things_at_once():
     with pytest.raises(ValueError, match="exactly one of"):
         Outcome(answer=1.0, refusal="but also this")
