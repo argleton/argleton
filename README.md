@@ -41,9 +41,11 @@ pip install "argleton[fixtures]"
 
 The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
 31 traps and 29 families the published table further down was run over, with trap 024's
-corrected truth. The checkout here is ahead of it by one adapter change, and that change moves
-three rows: the QGIS adapters now ask trap 028 for a ground area with the ellipsoid
-([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows)). Rerun with
+corrected truth. The checkout here is ahead of it by one adapter change that moves three rows: the QGIS
+adapters now ask trap 028 for a ground area with the ellipsoid
+([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows)). It is also
+ahead by two changes that move no score: result files keep an adapter's reason on an
+`unsupported` verdict, and [METHOD](docs/METHOD.md) says when an adapter stops being extended. Rerun with
 0.6.0, every row of that table reproduces except those three, which come out one trap higher,
 as they were published before the erratum. (0.5.0 carries the old truth of trap 024 and
 reproduces less.) Whenever the checkout here runs
@@ -325,8 +327,8 @@ south-up grid whose georeferencing was dropped on read, totals added across
 geometry types that answer different questions, operations it turned out
 not to have, and a grid registration corrected twice because this suite's own
 truth on trap 024 was wrong ([erratum](results/README.md#erratum-2026-09-25-trap-024)). They are listed on
-[MapSmith's own page](https://github.com/mapsmith-ai/MapSmith#roadmap), where
-the list is kept.
+[MapSmith's own page](https://github.com/mapsmith-ai/MapSmith#what-the-suite-found-in-mapsmith),
+where the list is kept.
 
 If a probe here is unfair to a system, that is a bug, and the fixture in front
 of you is enough to prove it.
