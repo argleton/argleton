@@ -79,6 +79,12 @@ operation first. The one-liner takes the other one.
 | GeoPandas + Shapely, careful composition | 45.500669074 | correct, with the ballpark disclosed |
 | MapSmith 0.2.2+ | 45.5 | **silent error** |
 
+*Observed when the trap was written. Measured since, on 2026-10-08:* from the run of
+2026-08-27 MapSmith answers 45.500726, as the careful GeoPandas composition does today:
+the one operation that states a bound for EPSG:4806, valid in Sardinia, applied in Piedmont
+-- 6.3 m off, inside the tolerance. From MapSmith 0.9.0 it answers 45.500669074, through
+the datum's Greenwich twin, EPSG:4265, whose published 4 m operation covers the station.
+
 The two failures are the same failure reached two ways: `to_crs` is one line and
 it hands the pair to `Transformer.from_crs`, which is also the line under
 MapSmith's `reproject_layer`.
