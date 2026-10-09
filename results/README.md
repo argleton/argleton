@@ -73,6 +73,45 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-10-09 — MapSmith 0.9.0, named by release and commit
+
+Published run: [`2026-10-09-mapsmith-release/`](2026-10-09-mapsmith-release/).
+`spec_commit` [`dc31bf1`](../../../commit/dc31bf1), thirty-one traps and
+thirty-one clean cases across twenty-nine families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.9.0 (main @ 6d178bf) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3226 | 1.00 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9032 | 1.00 | 31 | 0 |
+
+**Why this run exists.** The previous one measured MapSmith's `main` between
+0.7.1 and 0.8.0 under the label "MapSmith (main)", and a label that names a
+branch goes out of date on its own: a reader of that table after 2026-10-08
+would have taken it for 0.9.0, which changes what `reproject_layer` writes on
+the input of trap 021. The MapSmith row now names the release and the commit
+it ran. `6d178bf` is 0.9.0 plus one fix to an operation no probe here calls, so
+on these probes it answers what 0.9.0 answers. MapSmith scores 0.00 again,
+with the same verdict on every probe.
+
+**One row moved, and it moved because the system changed.** nkarasiak/qgis-mcp
+went from 0.14.0 to 0.15.1 between the two runs, and the clean probe
+`c022-two-gauges` went from `noisy_failure` to `correct_with_warning`. QGIS
+refuses a Voronoi diagram over fewer than three points; 0.14.0 returned only
+"There were errors executing the algorithm.", while 0.15.1 also returns QGIS's
+reason ("Input layer should contain at least 3 points"). Our adapter recognises
+that refusal and joins each point to its nearest gauge instead, as it already
+did for the engine row, and the answer is right. Its completion rate goes from
+0.9677 to 1.00. QGIS Agent MCP still leaves that probe `queued` after 120
+seconds ([upstream](https://github.com/Aaa2122/QGIS-MCP/issues/15)), so its
+row does not move. Every other row matches the 2026-09-27 run probe by probe.
+
 ## Erratum 2026-09-27: trap 028 on the three QGIS rows
 
 **The three QGIS rows published on 2026-09-15 and 2026-09-26 counted one silent

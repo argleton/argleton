@@ -114,7 +114,9 @@ def test_the_readme_results_table_is_the_latest_run():
     # reach "Who wrote this", several screens down, to learn whose it was. The
     # disclosure is not required on the first screen -- the mark on the row is,
     # because the row is where the claim is made.
-    mine = [name for name, _ in rows if name.split(" (")[0].strip() == "MapSmith"]
+    # `startswith`, as in site/build.py: the row is named "MapSmith 0.9.0 (main @ ...)"
+    # since the run of 2026-10-09, and matching "MapSmith (" found no row at all.
+    mine = [name for name, _ in rows if name.startswith("MapSmith")]
     assert mine and "ours" in mine[0], (
         f"the MapSmith row in the README results table reads {mine} and does not "
         "say it is ours; it is the row with the best number on the page"

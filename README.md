@@ -180,7 +180,8 @@ rate means a system did not fail silently *on these probes*.
 All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-The run of 2026-09-27. Two errata stand behind it, both errors of this suite and not of the
+The run of 2026-10-09, the first to name the MapSmith release and commit it measured. Two errata
+stand behind it, both errors of this suite and not of the
 systems measured: from 2026-08-30 to 2026-09-15 trap 024 was scored against a wrong truth —
 against the systems that were right ([erratum](results/README.md#erratum-2026-09-25-trap-024)) —
 and until 2026-09-26 the three QGIS rows counted trap 028 as a silent error that was the
@@ -189,12 +190,12 @@ adapter asking for square degrees where the question asked for a ground area
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith (main) — **ours** | 0.00 | 1.00 | 31 | 0 |
+| MapSmith 0.9.0 (main @ 6d178bf) — **ours** | 0.00 | 1.00 | 31 | 0 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
 | gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
 | QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
-| nkarasiak/qgis-mcp 0.14.0 (plugin socket) | 0.3226 | 0.9677 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3226 | 1.00 | 31 | 0 |
 | QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
 | whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
 | naive composition | 0.9032 | 1.00 | 31 | 0 |
@@ -213,10 +214,12 @@ all come out at the same rate — the wrappers inherit the engine, neither addin
 correct answer nor losing one. That is only readable because the engine has a
 row of its own, put there first for this reason: without it, three equal numbers
 read as three equally defective servers, and that reading would be wrong. The
-two completion rates below 1.00 are one clean probe that neither wrapper
-answers, and [the section for that run](results/#2026-09-15--three-rows-that-are-the-same-qgis-and-why-that-is-the-finding)
-says which probe, how the two differ in the way they fail, and why part of that
-number is our own error handling rather than theirs.
+completion rate below 1.00 is one clean probe that QGIS Agent MCP does not
+answer. Until 2026-09-27 nkarasiak/qgis-mcp missed it too; from 0.15.1 it passes
+on the reason QGIS gives for refusing, and [the section for this run](results/#2026-10-09--mapsmith-090-named-by-release-and-commit)
+says what that changed. [The section for 2026-09-15](results/#2026-09-15--three-rows-that-are-the-same-qgis-and-why-that-is-the-finding)
+says which probe it is and why part of that number is our own error handling
+rather than theirs.
 
 **gis-mcp is the first row here that is not ours to fix, and it is written so a
 reader can tell whose limit each number is.** The 0.20 is four wrong answers out
