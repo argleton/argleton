@@ -4,6 +4,9 @@ title: "Argleton: a correctness suite for geospatial systems"
 type: software
 authors:
   - name: "The Argleton project"
+  - family-names: Caporossi
+    given-names: Gianluca
+    orcid: "https://orcid.org/0009-0006-4966-1856"
 repository-code: "https://github.com/argleton/argleton"
 doi: "10.5281/zenodo.22206349"
 identifiers:

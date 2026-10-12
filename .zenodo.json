@@ -3,7 +3,8 @@
   "title": "Argleton: a correctness suite for geospatial systems",
   "version": "0.6.0",
   "creators": [
-    {"name": "The Argleton project"}
+    {"name": "The Argleton project"},
+    {"name": "Caporossi, Gianluca", "orcid": "0009-0006-4966-1856"}
   ],
   "license": "apache-2.0",
   "access_right": "open",
