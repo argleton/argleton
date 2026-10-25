@@ -73,6 +73,35 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-10-25 — MapSmith 0.10.0, and nothing else moved
+
+Published run: [`2026-10-25-mapsmith-v0-10-0/`](2026-10-25-mapsmith-v0-10-0/).
+`spec_commit` [`2ad4efd`](../../../commit/2ad4efd), thirty-one traps and
+thirty-one clean cases across twenty-nine families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.10.0 (main @ 1cab9f4) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3226 | 1.00 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9032 | 1.00 | 31 | 0 |
+
+**Why this run exists.** MapSmith 0.10.0 changes how the operations that bring
+a vector input onto another CRS choose the datum transformation, so a row
+naming 0.9.0 no longer described what `uvx mapsmith` installs. The MapSmith row
+now names 0.10.0 and the commit it ran, `1cab9f4`, which is the release itself.
+
+**All 558 verdicts are the same as on 2026-10-09** -- sixty-two probes for each
+of the nine systems, compared probe by probe, MapSmith's included. The suite
+moved from `dc31bf1` to `2ad4efd` without touching a trap: the commits between
+them publish the previous run, credit the author and wrap a line. No other
+system changed version between the two runs.
+
 ## 2026-10-09 — MapSmith 0.9.0, named by release and commit
 
 Published run: [`2026-10-09-mapsmith-release/`](2026-10-09-mapsmith-release/).
