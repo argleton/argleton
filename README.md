@@ -180,8 +180,9 @@ rate means a system did not fail silently *on these probes*.
 All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-The run of 2026-10-25, which measures MapSmith 0.10.0 by release and commit; every one of its
-558 verdicts matches the run of 2026-10-09, the first to name the release it measured. Two errata
+The run of 2026-10-26, which measures MapSmith 0.10.1 by release and commit; every one of its
+558 verdicts matches the runs of 2026-10-25 and 2026-10-09, the first to name the release it
+measured. Two errata
 stand behind it, both errors of this suite and not of the
 systems measured: from 2026-08-30 to 2026-09-15 trap 024 was scored against a wrong truth —
 against the systems that were right ([erratum](results/README.md#erratum-2026-09-25-trap-024)) —
@@ -191,7 +192,7 @@ adapter asking for square degrees where the question asked for a ground area
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith 0.10.0 (main @ 1cab9f4) — **ours** | 0.00 | 1.00 | 31 | 0 |
+| MapSmith 0.10.1 (main @ 8ef0f40) — **ours** | 0.00 | 1.00 | 31 | 0 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
 | gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |

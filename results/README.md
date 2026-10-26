@@ -73,6 +73,30 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-10-26 — MapSmith 0.10.1, the same 558 verdicts
+
+Published run: [`2026-10-26-mapsmith-v0-10-1/`](2026-10-26-mapsmith-v0-10-1/).
+`spec_commit` [`85287cd`](../../../commit/85287cd), thirty-one traps and
+thirty-one clean cases across twenty-nine families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.10.1 (main @ 8ef0f40) | 0.00 | 1.00 | 31 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
+| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3226 | 1.00 | 31 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
+| naive composition | 0.9032 | 1.00 | 31 | 0 |
+
+**Why this run exists.** MapSmith 0.10.1 is a security release: under a
+workspace it reads the coordinate system of every dataset format it accepts
+before GDAL opens the file. The MapSmith row names the release and its commit,
+`8ef0f40`. All 558 verdicts match the run of 2026-10-25 probe by probe. The
+suite moved from `2ad4efd` to `85287cd` only to publish that run.
+
 ## 2026-10-25 — MapSmith 0.10.0, and nothing else moved
 
 Published run: [`2026-10-25-mapsmith-v0-10-0/`](2026-10-25-mapsmith-v0-10-0/).
