@@ -14,11 +14,11 @@ exact version you measured against, take the version DOI from the
 here pins its `spec_commit`.
 
 The second half of that first sentence — a *wrong* answer that looks fine — is
-the whole point. Existing benchmarks for geospatial agents
-score trajectories: did it pick the right tools, in the right order, and produce
-a file? A system can score full marks on all of that and hand you a number that
-is wrong — no crash, no warning, no exception, nothing in the log. Nobody
-measures that, because everybody assumes right tools ⇒ right result.
+the whole point. Benchmarks for geospatial agents commonly score trajectories:
+did the system pick the right tools, in the right order, and produce a file? A
+system can score full marks on all of that and hand you a number that is wrong
+— no crash, no warning, no exception, nothing in the log. This suite measures
+that outcome directly, with a right answer known by construction.
 
 ## The failure this measures
 
@@ -41,16 +41,14 @@ pip install "argleton[fixtures]"
 
 The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
 31 traps and 29 families the published table further down was run over, with trap 024's
-corrected truth. The checkout here is ahead of it by one adapter change that moves three rows: the QGIS
-adapters now ask trap 028 for a ground area with the ellipsoid
-([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows)). It is also
-ahead by two changes that move no score: result files keep an adapter's reason on an
-`unsupported` verdict, and [METHOD](docs/METHOD.md) says when an adapter stops being extended. Rerun with
-0.6.0, every row of that table reproduces except those three, which come out one trap higher,
-as they were published before the erratum. (0.5.0 carries the old truth of trap 024 and
-reproduces less.) Whenever the checkout here runs
-ahead of the release, this paragraph says so and gives both counts, because a reader who cannot
-reproduce the table on this page has been told something untrue.
+corrected truth. The checkout here is ahead of it by published runs: the current table measures
+MapSmith 0.10.1 and qgis-mcp 0.15.1. Every verdict except those system labels and the qgis-mcp
+completion rate matches the table, so rerunning this checkout reproduces it. Rerunning 0.6.0
+reproduces every row except the three QGIS rows corrected by the
+[trap-028 erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows) and
+qgis-mcp's completion rate. (0.5.0 carries the old truth of trap 024 and reproduces less.)
+Whenever the checkout here runs ahead of the release, this paragraph says so, because a reader
+who cannot reproduce the table on this page has been told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:

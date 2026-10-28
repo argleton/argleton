@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://argleton.org/schema/result-v1.schema.json",
+  "$id": "https://raw.githubusercontent.com/argleton/argleton/main/schema/result.schema.json",
   "title": "Argleton result",
   "description": "One run of the suite against one system. The shape is a claim: a result that reports a silent-error rate without the completion rate beside it is not a valid result, because a system that refuses everything scores perfectly on the first and is useless.",
   "type": "object",

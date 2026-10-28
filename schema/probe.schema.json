@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://argleton.org/schema/probe-v1.schema.json",
+  "$id": "https://raw.githubusercontent.com/argleton/argleton/main/schema/probe.schema.json",
   "title": "Argleton probe contract",
   "description": "One probe: a task whose correct answer is known by construction. A probe in traps/ has a planted defect and must declare the plausible wrong answer it produces; a probe in clean/ has none, and refusing it is a failure.",
   "type": "object",
