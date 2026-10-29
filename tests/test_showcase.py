@@ -33,6 +33,7 @@ NUMBER_WORDS = {
     # this line came to be written: the run of 2026-09-02 took the suite to
     # thirty traps and the word was not here.
     "thirty": 30, "thirty-one": 31, "thirty-two": 32, "thirty-three": 33,
+    "thirty-four": 34,
 }
 
 

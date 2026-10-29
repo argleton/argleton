@@ -12,7 +12,7 @@ family with several probes cannot read as several independent findings.
 ## What these numbers do not say
 
 This section is at the top rather than the bottom on purpose, and it grows with
-the suite. Twenty-nine families of thirty-three are implemented
+the suite. Thirty families of thirty-four are implemented
 ([FAMILIES.md](../docs/FAMILIES.md)), and since 2026-09-02 the published run
 covers all of the implemented ones. The other four are named there and not yet
 built. The older sections below were produced on fewer: read each
@@ -72,6 +72,31 @@ its maintainer had them first: [filed in full on 4 September](https://github.com
 with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
+
+## 2026-10-29 — declared datum shifts, and MapSmith 0.11.0
+
+Published run: [`2026-10-29-declared-datum-shift/`](2026-10-29-declared-datum-shift/).
+`spec_commit` [`8bd3133`](../../../commit/8bd3133), thirty-two traps and
+thirty-two clean cases across thirty families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.11.0 (main @ 38675d9) | 0.00 | 1.00 | 32 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 15 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 50 |
+| gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3125 | 1.00 | 32 | 0 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3125 | 1.00 | 32 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3125 | 0.9688 | 32 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 56 |
+| naive composition | 0.875 | 1.00 | 32 | 0 |
+
+**Why this run exists.** Family 30, `declared-datum-shift`, separates a real
+ballpark from a Helmert declared by the CRS. PROJ reports accuracy -1 for both,
+so accuracy alone cannot decide. Trap 033 uses the full seven-parameter Position
+Vector; its clean twin declares a zero shift. The careful GeoPandas adapter now
+accepts both and still chooses the published alternative on a real ballpark.
+MapSmith 0.11.0 completes all 64 probes with no silent errors.
 
 ## 2026-10-26 — MapSmith 0.10.1, the same 558 verdicts
 

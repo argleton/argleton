@@ -41,14 +41,15 @@ pip install "argleton[fixtures]"
 
 The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
 31 traps and 29 families the published table further down was run over, with trap 024's
-corrected truth. The checkout here is ahead of it by published runs: the current table measures
-MapSmith 0.10.1 and qgis-mcp 0.15.1. Every verdict except those system labels and the qgis-mcp
-completion rate matches the table, so rerunning this checkout reproduces it. Rerunning 0.6.0
-reproduces every row except the three QGIS rows corrected by the
-[trap-028 erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows) and
-qgis-mcp's completion rate. (0.5.0 carries the old truth of trap 024 and reproduces less.)
-Whenever the checkout here runs ahead of the release, this paragraph says so, because a reader
-who cannot reproduce the table on this page has been told something untrue.
+corrected truth. The checkout here is ahead of it by published runs: this checkout has
+32 traps and 30 families, and the current table measures MapSmith 0.11.0 and qgis-mcp 0.15.1.
+Rerunning 0.6.0 reproduces every row except the three QGIS
+rows corrected by the
+[trap-028 erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows),
+qgis-mcp's completion rate and the two new declared-datum-shift probes. (0.5.0 carries the old
+truth of trap 024 and reproduces less.) Whenever the checkout here runs ahead of the release,
+this paragraph says so, because a reader who cannot reproduce the table on this page has been
+told something untrue.
 
 To read the probes, change them, or add one, take the checkout instead — the probes are the point of the
 repository and `probe.toml` is meant to be read:
@@ -108,16 +109,17 @@ at the origin, which turns a 5.7 degree slope into 45. Both engines get the two
 clean twins right.
 
 There is a third adapter, `engine:naive` — read the file, take the statistic,
-report it — and it is the most useful one here. In the published run it scores **0.9032 / 1.0**:
-it answers every clean probe correctly, falls into twenty-eight of the thirty-one traps, and
-**passes the other three**. 001, because rasterio undoes the predictor on its behalf; 026,
+report it — and it is the most useful one here. In the published run it scores **0.875 / 1.0**:
+it answers every clean probe correctly, falls into twenty-eight of the thirty-two traps, and
+**passes the other four**. 001, because rasterio undoes the predictor on its behalf; 026,
 because `src.res` reports the cell size faithfully whichever way the rows run, which on that
 probe makes a plain numpy gradient more faithful to the geotransform than a specialised
-terrain engine; and 024, because GDAL has already folded PixelIsPoint into the
+terrain engine; 024, because GDAL has already folded PixelIsPoint into the
 geotransform — which this suite scored as a failure until 2026-09-25
-([erratum](results/README.md#erratum-2026-09-25-trap-024)). Careless code is not uniformly wrong. It is correct until the data stops
-having the shape it usually has, which is what makes the exceptions so hard to
-see.
+([erratum](results/README.md#erratum-2026-09-25-trap-024)); and 033, because the declared
+seven-parameter Helmert is a real transformation even though it has no stated accuracy.
+Careless code is not uniformly wrong. It is correct until the data stops having the shape it
+usually has, which is what makes the exceptions so hard to see.
 
 ## Two numbers, never one
 
@@ -137,7 +139,7 @@ Side by side, one glance tells you which you are looking at.
 
 ## What is covered
 
-Twenty-nine families of thirty-three, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
+Thirty families of thirty-four, and [FAMILIES.md](docs/FAMILIES.md) says which — so a
 number from here can never be read as broader than it is. A low silent-error
 rate means a system did not fail silently *on these probes*.
 
@@ -145,6 +147,7 @@ rate means a system did not fail silently *on these probes*.
 |---|---|---|
 | `raster-encoding` | mean 36.09 instead of 1093.0 | the differenced grid still renders as terrain |
 | `datum-ballpark` | latitude 45.5 instead of 45.500669074, 74 m out | the longitude is right and the output CRS is right |
+| `declared-datum-shift` | latitude 45.5 instead of 45.500669074, or a false ballpark refusal | PROJ reports accuracy -1 for a ballpark and for a Helmert declared by the CRS, so the number alone cannot say whether a shift ran |
 | `linear-units` | 100 ha instead of 9.29 ha | both are ordinary parcels; they differ by 3.28² |
 | `nodata` | mean 945.005 instead of 1000.0 | 5.5% out — too small to question, too large to ignore |
 | `mismatched-crs` | 0 points in the zone instead of 12 | an empty result is a finding, not an error — nothing questions an empty join |
@@ -175,30 +178,29 @@ rate means a system did not fail silently *on these probes*.
 
 ## Results
 
-All twenty-nine families, `spec_commit` pinned, no agent in the loop — [every run,
+All thirty families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-The run of 2026-10-26, which measures MapSmith 0.10.1 by release and commit; every one of its
-558 verdicts matches the runs of 2026-10-25 and 2026-10-09, the first to name the release it
-measured. Two errata
-stand behind it, both errors of this suite and not of the
-systems measured: from 2026-08-30 to 2026-09-15 trap 024 was scored against a wrong truth —
-against the systems that were right ([erratum](results/README.md#erratum-2026-09-25-trap-024)) —
-and until 2026-09-26 the three QGIS rows counted trap 028 as a silent error that was the
-adapter asking for square degrees where the question asked for a ground area
+The run of 2026-10-29, which adds declared datum shifts and measures MapSmith 0.11.0
+by release and commit. Two errata stand behind the series, both errors of this suite
+and not of the systems measured: from 2026-08-30 to 2026-09-15 trap 024 was scored
+against a wrong truth — against the systems that were right
+([erratum](results/README.md#erratum-2026-09-25-trap-024)) — and until 2026-09-26 the
+three QGIS rows counted trap 028 as a silent error that was the adapter asking for
+square degrees where the question asked for a ground area
 ([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows)).
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith 0.10.1 (main @ 8ef0f40) — **ours** | 0.00 | 1.00 | 31 | 0 |
-| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 14 | 34 |
-| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 48 |
-| gis-mcp 0.15.0 | 0.20 | 1.00 | 20 | 22 |
-| QGIS processing 3.44.12 (via qgis_process) | 0.3226 | 1.00 | 31 | 0 |
-| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3226 | 1.00 | 31 | 0 |
-| QGIS Agent MCP 0.5.0 (local bridge) | 0.3226 | 0.9677 | 31 | 0 |
-| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 54 |
-| naive composition | 0.9032 | 1.00 | 31 | 0 |
+| MapSmith 0.11.0 (main @ 38675d9) — **ours** | 0.00 | 1.00 | 32 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 15 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 50 |
+| gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 22 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3125 | 1.00 | 32 | 0 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3125 | 1.00 | 32 | 0 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3125 | 0.9688 | 32 | 0 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 56 |
+| naive composition | 0.875 | 1.00 | 32 | 0 |
 
 The last two columns are not decoration. A rate over two traps and a rate over
 eight are different claims, and an adapter that could only be asked one question
