@@ -1,0 +1,56 @@
+id         = "033-declared-datum-shift"
+population = "trap"
+family     = "declared-datum-shift"
+title      = "A declared Helmert with no accuracy field is not a ballpark"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "wgs84_latitude(station.gpkg)"
+prompt = """
+station.gpkg holds one station on the Monte Mario datum. Its CRS declares the
+full seven-parameter transformation to WGS 84. What is its latitude in WGS 84
+(EPSG:4326)? Answer with the number in decimal degrees."""
+
+[truth]
+kind      = "scalar"
+value     = 45.500669074
+tolerance = 0.00009
+derivation = """
+The source point is 8.952333333 east, 45.5 north on Monte Mario. Its CRS declares
+translations -104.1, -49.1, -9.9 metres, rotations 0.971, -2.917, 0.714
+arc-seconds and scale -11.68 ppm on the International 1924 ellipsoid. Converting
+geodetic to geocentric coordinates, applying that Position Vector Helmert, and
+converting back to WGS 84 gives latitude 45.500669074. This is the same published
+operation and closed-form arithmetic as trap 021, carried by the CRS itself rather
+than selected from the EPSG database. Tolerance 0.00009 degrees is 10 m."""
+
+[naive_failure]
+description = """
+Treat accuracy -1 as proof of a ballpark and return the source latitude, or
+refuse despite the declared operation. PROJ reports no stated accuracy for a
+Helmert built from +towgs84 even though its pipeline applies the full shift."""
+observed_value = 45.5
+plausible      = true
+why_plausible  = """
+45.5 is an ordinary latitude in Piedmont, only 74 m from the correct answer. The
+output CRS and longitude still look right, and a false ballpark refusal sounds
+like careful error handling rather than a defect."""
+derivation = """
+Discarding the declared datum shift leaves the input latitude at 45.5 exactly;
+the correct Position Vector result is 45.500669074."""
+
+[refusal]
+accept_if_mentions = []
+
+[provenance]
+source = """
+PROJ reports accuracy -1 both for its ballpark fallback and for a Helmert built
+from a CRS's +towgs84 declaration. On 2026-10-29 the declared pipeline contained
++proj=helmert with the parameters above, returned 45.500669073852286, and offered
+no alternative operation with non-negative accuracy. Accuracy alone therefore
+cannot distinguish a missing transformation from a declared one."""
+found_by = "mapsmith"
+date     = "2026-10-29"
+
+[provenance.engine_versions]
+pyproj = "3.7.2/PROJ 9.5.1"

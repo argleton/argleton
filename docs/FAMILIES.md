@@ -1,9 +1,9 @@
 # Families, and what is actually covered
 
-Thirty-three families are on the list — twelve from the original design, the rest
+Thirty-four families are on the list — twelve from the original design, the rest
 added from reproductions and from a survey of what the archives and the libraries
-themselves warn about. **Twenty-nine are implemented.** As of 2026-10-26 the
-published run covers all twenty-nine; the remaining four are named under
+themselves warn about. **Thirty are implemented.** As of 2026-10-29 the
+published run covers all thirty; the remaining four are named under
 [Planned](#planned) and not yet built. This page exists so that
 a number from Argleton can never be read as broader than it is: a low
 silent-error rate means a system did not fail silently *on these probes*, and
@@ -45,6 +45,7 @@ cannot read as ten independent findings.
 | 27 | `grid-registration` | [024](../traps/024-pixel-is-point/) + [c024](../clean/c024-pixel-is-area/) | easting 412120 from an engine that reads the raw tie point, or 412090 from code that corrects a second time, instead of 412105 | The file says `AREA_OR_POINT=Point`, and GDAL has already folded it into the geotransform (RFC 33). Half a cell is 15 m on a 30 m DEM: smaller than the GPS a crew walks in with, larger than every tolerance afterwards, and systematic. **The truth was 412090 until 2026-09-25, and wrong** — [erratum](../results/README.md#erratum-2026-09-25-trap-024) |
 | 28 | `hidden-configuration` | [030](../traps/030-sidecar-georeferencing/) + [c030](../clean/c030-single-georeferencing/) | 160000 m2 instead of 40000, and an origin 100 km away | A `.aux.xml` beside a GeoTIFF georeferences it too, and GDAL prefers the sidecar by documented design because that is how a user overrides georeferencing they know to be wrong. Both readings are the library behaving as written; neither answer says which one it used, and one environment variable switches between them |
 | 29 | `ring-role-by-winding` | [031](../traps/031-hole-wound-as-shell/) + [c031](../clean/c031-hole-wound-as-hole/) | 31000 m2 instead of 29000 — the easement added rather than subtracted | A shapefile carries no nesting: which ring is a hole is decided by the direction it is wound and by nothing else, and GDAL applies that rule as documented (`OGR_ORGANIZE_POLYGONS` defaults to `ONLY_CCW`). An inner ring wound like its parent therefore reads as a second shell, and its area is added. The error flatters the owner by 6.9%, which is smaller than the gap between two surveys of the same field |
+| 30 | `declared-datum-shift` | [033](../traps/033-declared-datum-shift/) + [c033](../clean/c033-zero-datum-shift/) | latitude 45.5 instead of 45.500669074, or a false ballpark refusal | PROJ reports accuracy -1 for a ballpark and for a Helmert declared by the CRS. The number alone cannot say whether a datum shift ran; the declared parameters and pipeline can |
 
 Families 13 to 23 were not in the original design. 13 came from building family
 3 (`linear-units`), on noticing that a unit label can be *true* while the plane
@@ -126,8 +127,8 @@ added up, or what a unit meant, or which of two arguments came first.
 
 ## What this list does not claim
 
-That these twenty-nine are all of them. They are the families we can currently
-argue for, each with a source. A thirtieth that meets the four conditions
+That these thirty are all of them. They are the families we can currently
+argue for, each with a source. A thirty-first that meets the four conditions
 belongs here, and the fastest way to improve this suite is to bring one — the
 same survey that produced the last nine has more candidates in it than this
 list has entries, and being able to say which ones failed the conditions is

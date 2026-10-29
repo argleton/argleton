@@ -20,9 +20,32 @@ it does not.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from argleton.model import Outcome, Probe
+
+_SHIFT_STEP = re.compile(
+    r"\+proj=(helmert|molobadekas|geogoffset|hgridshift|vgridshift|xyzgridshift|"
+    r"molodensky|deformation|defmodel|tinshift|gridshift)\b"
+)
+
+
+def _leaves_datum_alone(operation) -> bool:
+    if operation.accuracy is not None and operation.accuracy >= 0:
+        return False
+    if "ballpark" in str(operation.description).lower():
+        return True
+    pipeline = operation.to_proj4()
+    return not (pipeline and _SHIFT_STEP.search(pipeline))
+
+
+def _declares_zero_shift(crs) -> bool:
+    operation = crs.coordinate_operation
+    return bool(
+        operation and operation.params
+        and all(parameter.value == 0 for parameter in operation.params)
+    )
 
 
 class Adapter:
@@ -205,10 +228,9 @@ class Adapter:
         point = frame.geometry.iloc[0]
         # `to_crs` is one line and it is wrong here, so this does what the other
         # nine operations in this file do: use the library properly rather than
-        # first. Pick the transformation, then look at what was picked. PROJ
-        # reports a ballpark with an accuracy of -1, and a ballpark means the
-        # datums were treated as equivalent -- no shift, no warning, the latitude
-        # returned unchanged.
+        # first. Pick the transformation, then look at what was picked. Accuracy
+        # -1 alone does not identify a ballpark: a Helmert declared by the CRS has
+        # no stated accuracy either, so the pipeline decides whether a shift ran.
         #
         # Fourteen lines, no manifest, no provenance format. That is what makes
         # trap 021 fair: it is beaten by a computation any engine can do, not by
@@ -216,7 +238,7 @@ class Adapter:
         chosen = Transformer.from_crs(frame.crs, CRS("EPSG:4326"), always_xy=True)
         chosen.transform(point.x, point.y)
         used = chosen.get_last_used_operation()
-        if used.accuracy is None or used.accuracy < 0:
+        if not _declares_zero_shift(frame.crs) and _leaves_datum_alone(used):
             group = TransformerGroup(frame.crs, CRS("EPSG:4326"), always_xy=True)
             real = [t for t in group.transformers
                     if t.accuracy is not None and t.accuracy >= 0]

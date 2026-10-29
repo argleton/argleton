@@ -92,7 +92,7 @@
       "properties": {
         "accept_if_mentions": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 0,
           "items": {"type": "string"},
           "description": "Case-insensitive substrings. Any one of them in the refusal reason makes the refusal correct."
         }

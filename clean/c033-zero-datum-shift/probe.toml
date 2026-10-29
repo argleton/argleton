@@ -1,0 +1,36 @@
+id         = "c033-zero-datum-shift"
+population = "clean"
+family     = "declared-datum-shift"
+title      = "A declared zero shift still has no accuracy field"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "wgs84_latitude(station.gpkg)"
+prompt = """
+station.gpkg holds one station on the Monte Mario datum. Its CRS declares a
+zero three-parameter transformation to WGS 84. What is its latitude in WGS 84
+(EPSG:4326)? Answer with the number in decimal degrees."""
+
+[truth]
+kind      = "scalar"
+value     = 45.499178019
+tolerance = 0.00009
+derivation = """
+The source point is 8.952333333 east, 45.5 north on International 1924. All three
+declared translation parameters are zero, so no Helmert translation is needed;
+the remaining work is the ellipsoid conversion. Geodetic to geocentric on
+International 1924 followed by geocentric to geodetic on WGS 84 gives latitude
+45.499178019. The zero shift does not make the two ellipsoids identical.
+Tolerance 0.00009 degrees is 10 m."""
+
+[provenance]
+source = """
+PROJ removes a zero +towgs84 operation from the transformation pipeline and can
+then select its ballpark fallback. The fallback still has to convert between the
+International 1924 and WGS 84 ellipsoids, so it is not an error and the answer is
+not the unchanged input latitude."""
+found_by = "mapsmith"
+date     = "2026-10-29"
+
+[provenance.engine_versions]
+pyproj = "3.7.2/PROJ 9.5.1"
