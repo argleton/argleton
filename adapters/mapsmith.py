@@ -653,6 +653,37 @@ class Adapter:
             answer=int(result["feature_count"]) - 1, warnings=self._warnings(joined)
         )
 
+    def op_well_ids_within_distance(self, probe: Probe, workdir: Path) -> Outcome:
+        import geopandas as gpd
+        from mapsmith.engines import vector
+
+        source = workdir / probe.arguments[0]
+        target_id = probe.arguments[1].split("=", 1)[1]
+        distance = float(probe.arguments[2].split("=", 1)[1])
+        frame = gpd.read_file(source)
+        target_path = workdir / "_argleton_target.gpkg"
+        frame[frame["well_id"] == target_id].to_file(
+            target_path, layer="target", driver="GPKG"
+        )
+        buffered = workdir / "_argleton_buffer.parquet"
+        joined = workdir / "_argleton_within.parquet"
+        try:
+            vector.buffer(str(target_path), distance, str(buffered))
+            vector.spatial_join(
+                str(source), str(buffered), str(joined), predicate="within"
+            )
+        except Exception as exc:  # noqa: BLE001
+            text = str(exc)
+            if "has no CRS" in text or "Refusing" in text or "no layer was chosen" in text:
+                return Outcome(refusal=text)
+            return Outcome(error=f"{type(exc).__name__}: {text}")
+        selected = gpd.read_parquet(joined)
+        id_column = "well_id_left" if "well_id_left" in selected.columns else "well_id"
+        selected = selected[selected[id_column] != target_id]
+        return Outcome(
+            answer=sorted(selected[id_column].tolist()), warnings=self._warnings(joined)
+        )
+
     @staticmethod
     def _warnings(output: Path) -> list[str]:
         """Anything the manifest recorded that a reader should have seen.

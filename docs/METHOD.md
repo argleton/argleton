@@ -147,11 +147,11 @@ earlier experiment in which the interesting-looking effect was inside the noise.
 - **Anything about families not represented here.** The families are listed in
   `docs/FAMILIES.md` with their current coverage. A family with one probe is one
   probe, and the per-family breakdown in every result says so.
-- **Whether the steps were composed in the right order.** Every trap here is a
-  single operation, so a plan made of individually correct steps arranged to
-  answer a different question is a class this suite cannot currently reach. It
-  is named here rather than left implied, because the system at the top of the
-  table was found doing exactly that in September 2026 and no probe saw it.
+- **Whether an agent's plan or a general DAG is correct.** Probes 034 and c034
+  compose target selection, metric buffering and a within-join, and score the
+  ordered IDs produced by that chain. The other probes score single outputs.
+  None executes or scores an arbitrary agent-supplied DAG: plan composition and
+  execution correctness remain complementary measurements.
 - **A product, when the row is a server.** An adapter reaches the layer that
   does the work — a plugin's socket, a bridge — not the prompt-facing surface
   above it. "Measured the plugin" and "measured the MCP server" are two

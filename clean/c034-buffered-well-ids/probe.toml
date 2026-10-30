@@ -1,0 +1,27 @@
+id         = "c034-buffered-well-ids"
+population = "clean"
+family     = "implicit-parameter-units"
+title      = "Multi-step ordered well selection on a layer already in metres"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "well_ids_within_distance(wells.gpkg, target=W-01, distance_meters=500)"
+prompt = """
+Select well W-01 from wells.gpkg, construct its 500 metre buffer, and return
+the well_id values of the other wells within that buffer, sorted by well_id.
+Return only the ordered ID list."""
+
+[truth]
+kind      = "array"
+value     = ["W-02", "W-03", "W-04", "W-05", "W-06"]
+tolerance = 0
+derivation = """
+By construction in EPSG:32633, the five selected wells are 300, 400, 353.553,
+446.407 and 460 metres from W-01. Every other well is at least 2,500 m away.
+There is no boundary case and no reprojection choice: the ordered answer is
+exactly [W-02, W-03, W-04, W-05, W-06]; tolerance 0."""
+
+[provenance]
+source   = "clean control for 034-buffered-well-ids"
+found_by = "mapsmith"
+date     = "2026-10-30"

@@ -1,0 +1,61 @@
+id         = "034-buffered-well-ids"
+population = "trap"
+family     = "implicit-parameter-units"
+title      = "A multi-step spatial selection whose intermediate buffer hides the wrong unit"
+surface    = ["engine", "agent"]
+
+[task]
+call   = "well_ids_within_distance(wells.gpkg, target=W-01, distance_meters=500)"
+prompt = """
+Select well W-01 from wells.gpkg, construct its 500 metre buffer, and return
+the well_id values of the other wells within that buffer, sorted by well_id.
+Return only the ordered ID list."""
+
+[truth]
+kind      = "array"
+value     = ["W-02", "W-03", "W-04"]
+tolerance = 0
+derivation = """
+By construction, in the local metric at 41.9 degrees north: W-02 is about
+300 m north, W-03 about 398 m east and W-04 about 359 m south-west of W-01.
+Every other well is at least 4 km away. The nearest excluded well is 6,932 m
+away, so planar, geodesic and UTM distance readings give the same membership.
+The ordered result is exactly [W-02, W-03, W-04]; tolerance 0."""
+
+[naive_failure]
+description = """
+Select W-01, apply a 500-unit buffer in the geographic layer and return every
+other ID. The intermediate polygon is never part of the answer: only an
+ordinary-looking list of nearby asset identifiers survives the three-step
+composition."""
+observed_value = [
+  "W-02", "W-03", "W-04", "W-05", "W-06", "W-07", "W-08", "W-09",
+  "W-10", "W-11", "W-12", "W-13", "W-14", "W-15", "W-16", "W-17",
+  "W-18", "W-19", "W-20", "W-21", "W-22", "W-23", "W-24", "W-25"
+]
+plausible      = true
+why_plausible  = """
+A list of 24 wells near a pumping station is a plausible dense-well inventory.
+Every identifier exists and the ordering is correct. Selecting the target and
+joining the buffer also succeeded, so checking only the executed steps or the
+output schema accepts the answer; the discarded intermediate geometry carried
+the only evidence that degrees were used as metres."""
+derivation = """
+A 500-degree buffer centred at (12.40, 41.90) covers the entire coordinate
+space of the fixture. All 24 IDs other than W-01 therefore survive the within
+join, in their declared lexicographic order."""
+
+[refusal]
+accept_if_mentions = ["degree", "geographic", "crs", "unit", "reproject", "utm", "4326"]
+
+[provenance]
+source = """
+Multi-step variant of 007-buffer-in-degrees, motivated by the MapSmith
+method-choice residual analysis: individually valid plan steps and a correctly
+shaped final output do not establish that the intermediate spatial result used
+the required units. GeoPandas documents that buffer distances use CRS units."""
+found_by = "mapsmith"
+date     = "2026-10-30"
+
+[provenance.engine_versions]
+geopandas = "1.1.4/shapely 2.1.2 - buffer in the coordinates' own units, by design; no unit awareness"
