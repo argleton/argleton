@@ -73,6 +73,34 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-10-30 — a multi-step selection with ordered IDs
+
+Published run: [`2026-10-30-multi-step-selection/`](2026-10-30-multi-step-selection/).
+`spec_commit` [`24c9fd0`](../../../commit/24c9fd0), thirty-three traps and
+thirty-three clean cases across thirty families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.11.0 (main @ 1f570ce) | 0.00 | 1.00 | 33 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 16 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 52 |
+| gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 24 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3125 | 1.00 | 32 | 2 |
+| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3125 | 1.00 | 32 | 2 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3125 | 0.9688 | 32 | 2 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 58 |
+| naive composition | 0.8788 | 1.00 | 33 | 0 |
+
+**Why this run exists.** Probes 034 and c034 compose target selection, a
+500-metre buffer and a within-join, returning ordered well IDs rather than a
+single count. On the geographic fixture, buffering in degrees returns all 24
+other IDs; the correct answer is three. The projected clean control returns
+five. Naive composition reproduces the predicted silent error exactly;
+MapSmith and careful GeoPandas answer both correctly. The new operation is
+`unsupported` on six adapters, which is recorded as reach, not as a silent
+error or a successful completion. MapSmith completes all 66 probes with no
+silent errors.
+
 ## 2026-10-29 — declared datum shifts, and MapSmith 0.11.0
 
 Published run: [`2026-10-29-declared-datum-shift/`](2026-10-29-declared-datum-shift/).
