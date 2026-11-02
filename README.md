@@ -224,11 +224,11 @@ says which probe it is and why part of that number is our own error handling
 rather than theirs.
 
 **gis-mcp is the first row here that is not ours to fix, and it is written so a
-reader can tell whose limit each number is.** The 0.20 is four wrong answers out
-of twenty traps attempted, every one returned with `status: "success"`: 4 wells
+reader can tell whose limit each number is.** The 0.1905 is four wrong answers out
+of 21 traps attempted, every one returned with `status: "success"`: 4 wells
 where the file holds 31, an NDVI of 0.25 where the declared calibration gives
 0.3333, a latitude 74 m out, and a parcel four times its own area. The
-twenty-two not applicable are eleven traps and their eleven clean twins, on
+24 not applicable are twelve traps and their twelve clean twins, on
 which our adapter found no composition of gis-mcp's tools that answers the
 question — a limit of its tool surface as our adapter reads it, and our bug to
 fix if a composition exists and we missed it. Its maintainer was told first, in
