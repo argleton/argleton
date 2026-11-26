@@ -73,6 +73,40 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-11-26 — MapSmith 0.12.2 and qgis-mcp 0.15.3, the same 594 verdicts
+
+Published run: [`2026-11-26-mapsmith-v0-12-2/`](2026-11-26-mapsmith-v0-12-2/).
+`spec_commit` [`b6051b2`](../../../commit/b6051b2), thirty-three traps and
+thirty-three clean cases across thirty families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.12.2 (main @ 6663c8c) | 0.00 | 1.00 | 33 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 16 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 52 |
+| gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 24 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3125 | 1.00 | 32 | 2 |
+| nkarasiak/qgis-mcp 0.15.3 (plugin socket) | 0.3125 | 1.00 | 32 | 2 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3125 | 0.9688 | 32 | 2 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 58 |
+| naive composition | 0.8788 | 1.00 | 33 | 0 |
+
+**Why this run exists.** The table named MapSmith 0.11.0, and MapSmith has
+released 0.12.0, 0.12.1 and 0.12.2 since: a row that names a version nobody
+installs any more describes a different product from the one a reader has. Two
+labels move and nothing else. The MapSmith row is 0.12.2 at commit `6663c8c`,
+and nkarasiak/qgis-mcp is measured at 0.15.3 where the last run had 0.15.1.
+All 594 verdicts — 66 probes for each of the nine systems — match the run of
+2026-10-30 probe by probe. The suite moved from `24c9fd0` to `b6051b2` without
+touching a trap, a truth or an adapter: the commits between them are that
+run's own results, a date in the family list, contributor instructions and one
+sentence about gis-mcp.
+
+This run comes four weeks and three MapSmith releases after the one before it,
+where until October a run followed each release. Between the two dates the
+table was one version behind on its first row; the verdicts it carried turn out
+to be the ones 0.12.2 gives.
+
 ## 2026-10-30 — a multi-step selection with ordered IDs
 
 Published run: [`2026-10-30-multi-step-selection/`](2026-10-30-multi-step-selection/).

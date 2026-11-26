@@ -42,7 +42,7 @@ pip install "argleton[fixtures]"
 The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
 31 traps and 29 families the published table further down was run over, with trap 024's
 corrected truth. The checkout here is ahead of it by published runs: this checkout has
-33 traps and 30 families, including the multi-step 034/c034 pair, and the current table measures MapSmith 0.11.0 and qgis-mcp 0.15.1.
+33 traps and 30 families, including the multi-step 034/c034 pair, and the current table measures MapSmith 0.12.2 and qgis-mcp 0.15.3.
 Rerunning 0.6.0 reproduces every row except the three QGIS
 rows corrected by the
 [trap-028 erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows),
@@ -181,8 +181,9 @@ rate means a system did not fail silently *on these probes*.
 All thirty families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-The run of 2026-10-30 adds a multi-step selection with ordered IDs and measures
-MapSmith 0.11.0 by release and commit. Two errata stand behind the series, both
+The run of 2026-11-26 measures MapSmith 0.12.2 by release and commit and
+nkarasiak/qgis-mcp 0.15.3; every verdict matches the run of 2026-10-30, which
+added a multi-step selection with ordered IDs. Two errata stand behind the series, both
 errors of this suite and not of the systems measured: from 2026-08-30 to
 2026-09-15 trap 024 was scored against a wrong truth — against the systems that
 were right ([erratum](results/README.md#erratum-2026-09-25-trap-024)) — and
@@ -192,12 +193,12 @@ area ([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith 0.11.0 (main @ 1f570ce) — **ours** | 0.00 | 1.00 | 33 | 0 |
+| MapSmith 0.12.2 (main @ 6663c8c) — **ours** | 0.00 | 1.00 | 33 | 0 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 16 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 52 |
 | gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 24 |
 | QGIS processing 3.44.12 (via qgis_process) | 0.3125 | 1.00 | 32 | 2 |
-| nkarasiak/qgis-mcp 0.15.1 (plugin socket) | 0.3125 | 1.00 | 32 | 2 |
+| nkarasiak/qgis-mcp 0.15.3 (plugin socket) | 0.3125 | 1.00 | 32 | 2 |
 | QGIS Agent MCP 0.5.0 (local bridge) | 0.3125 | 0.9688 | 32 | 2 |
 | whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 58 |
 | naive composition | 0.8788 | 1.00 | 33 | 0 |
