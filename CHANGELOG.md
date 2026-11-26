@@ -12,6 +12,50 @@ the suite itself.
 
 ## [Unreleased]
 
+### Added
+
+- **Family 30, `declared-datum-shift`: trap 033 and its clean twin c033.** A
+  station on Monte Mario whose CRS declares the full seven-parameter
+  transformation to WGS 84. PROJ reports accuracy -1 for a Helmert built from
+  `+towgs84` exactly as it does for a ballpark, so the number alone cannot say
+  whether a datum shift ran: a system that reads -1 as "ballpark" returns the
+  source latitude, 45.5 where the truth is 45.500669074, or refuses an
+  operation the CRS itself declares. The twin carries a zero shift, where
+  leaving the coordinates alone is the right answer. First measured in run
+  `2026-10-29-declared-datum-shift`.
+- **The first probe with more than one step: trap 034 and c034**, in the
+  `implicit-parameter-units` family beside trap 007. Select one well, buffer it
+  by 500 metres, return the IDs of the other wells inside the buffer, in order.
+  The intermediate polygon is never part of the answer, so a buffer of 500
+  degrees leaves no trace but the list: 24 IDs where the truth is 3. The truth
+  is an ordered array with tolerance 0. First measured in run
+  `2026-10-30-multi-step-selection`, which is the run the table now shows.
+- **`METHOD.md` says when an adapter may be extended, and when it may not.**
+  Git history fixes the adapter code a result names, not whether an adapter was
+  widened after its verdicts were read. Adapters are extended in one pass before
+  the verdicts, frozen for that run, and changed afterwards only to fix a defect
+  against the rule they state, with an erratum. The rule binds every adapter,
+  the product's own included.
+- **Contributor instructions for AI agents**, in `AGENTS.md`.
+
+### Changed
+
+- **The MapSmith row names the release and the commit it ran.** It used to say
+  "MapSmith (main)", which went out of date on its own the day a release changed
+  what an operation writes. Runs `2026-10-09`, `2026-10-25`, `2026-10-26` and
+  `2026-10-29` name 0.9.0, 0.10.0, 0.10.1 and 0.11.0; across the first three,
+  every verdict on every probe is unchanged.
+- **nkarasiak/qgis-mcp is measured at 0.15.1**, which passes on QGIS's reason
+  for refusing a Voronoi diagram: c022 is answered and its completion rate is
+  1.00.
+- **The suite is 33 traps over 30 families** (31 over 29 in 0.6.0), and the
+  naive rate pinned in CI follows the larger denominator.
+- **`CITATION.cff` and `.zenodo.json` credit the author beside the project**,
+  with ORCID.
+- **Trap 021's README says what MapSmith has answered since its observed table
+  was written**, as a dated note: the table records what each system answered
+  when the trap was added, and one row has moved twice since.
+
 ### Fixed
 
 - **An `unsupported` verdict keeps the adapter's reason.** "Does not implement"
