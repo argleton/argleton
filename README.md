@@ -43,7 +43,7 @@ The probes ship with the runner, so that is the whole setup — release 0.7.0 ca
 33 traps and 30 families the published table further down was run over, including the
 multi-step 034/c034 pair, and the adapters that table was made with: installing it and
 rerunning reproduces the table rather than a version of it, for the versions of the measured
-systems the rows name (MapSmith 0.12.2, qgis-mcp 0.15.3). (0.6.0 carries 31 traps and 29
+systems the rows name (MapSmith 0.13.0, qgis-mcp 0.15.3). (0.6.0 carries 31 traps and 29
 families, and adapters that count trap 028 against the three QGIS rows; 0.5.0 carries the old
 truth of trap 024. Both reproduce less.) Whenever the checkout here runs ahead of the release,
 this paragraph says so, because a reader who cannot reproduce the table on this page has been
@@ -179,9 +179,13 @@ rate means a system did not fail silently *on these probes*.
 All thirty families, `spec_commit` pinned, no agent in the loop — [every run,
 and what the numbers do not say](results/).
 
-The run of 2026-11-26 measures MapSmith 0.12.2 by release and commit and
+The run of 2026-11-26 measures MapSmith 0.13.0 by release and commit and
 nkarasiak/qgis-mcp 0.15.3; every verdict matches the run of 2026-10-30, which
-added a multi-step selection with ordered IDs. Two errata stand behind the series, both
+added a multi-step selection with ordered IDs. That release corrects a silent
+error in MapSmith's own interpolation that no family here covers, so the first
+row read 0.00 while it was there
+([what the row does not say](results/README.md#2026-11-26--mapsmith-0130-and-what-an-unchanged-row-does-not-say)).
+Two errata stand behind the series, both
 errors of this suite and not of the systems measured: from 2026-08-30 to
 2026-09-15 trap 024 was scored against a wrong truth — against the systems that
 were right ([erratum](results/README.md#erratum-2026-09-25-trap-024)) — and
@@ -191,7 +195,7 @@ area ([erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-
 
 | system | silent error rate | completion rate | traps run | not applicable |
 |---|---|---|---|---|
-| MapSmith 0.12.2 (main @ 6663c8c) — **ours** | 0.00 | 1.00 | 33 | 0 |
+| MapSmith 0.13.0 (main @ d964fb3) — **ours** | 0.00 | 1.00 | 33 | 0 |
 | GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 16 | 34 |
 | rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 52 |
 | gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 24 |
