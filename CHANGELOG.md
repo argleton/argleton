@@ -12,6 +12,18 @@ the suite itself.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.7.0] - 2026-11-26
+
+The release that catches the package up with the page. Since 0.6.0 the suite
+gained two probe pairs and a family, the QGIS adapters were corrected, and six
+runs were published from a checkout the wheel on PyPI did not carry: a reader
+who installed 0.6.0 could not reproduce the table. 0.7.0 carries the 33 traps
+and 30 families of the current run, `2026-11-26-mapsmith-v0-12-2`, and the
+adapters it was made with. A minor version, because two probes and a corrected
+adapter change the rates a rerun gives.
+
 ### Added
 
 - **Family 30, `declared-datum-shift`: trap 033 and its clean twin c033.** A
@@ -45,9 +57,12 @@ the suite itself.
   what an operation writes. Runs `2026-10-09`, `2026-10-25`, `2026-10-26` and
   `2026-10-29` name 0.9.0, 0.10.0, 0.10.1 and 0.11.0; across the first three,
   every verdict on every probe is unchanged.
-- **nkarasiak/qgis-mcp is measured at 0.15.1**, which passes on QGIS's reason
-  for refusing a Voronoi diagram: c022 is answered and its completion rate is
-  1.00.
+- **nkarasiak/qgis-mcp is measured at 0.15.1 and then at 0.15.3.** From 0.15.1
+  it passes on QGIS's reason for refusing a Voronoi diagram: c022 is answered
+  and its completion rate is 1.00.
+- **The current run measures MapSmith 0.12.2**, `2026-11-26-mapsmith-v0-12-2`.
+  The table had named 0.11.0 through three MapSmith releases; all 594 verdicts
+  match the run before it, probe by probe.
 - **The suite is 33 traps over 30 families** (31 over 29 in 0.6.0), and the
   naive rate pinned in CI follows the larger denominator.
 - **`CITATION.cff` and `.zenodo.json` credit the author beside the project**,

@@ -39,15 +39,13 @@ machine, so there is nothing to download and nothing to take on trust:
 pip install "argleton[fixtures]"
 ```
 
-The probes ship with the runner, so that is the whole setup — release 0.6.0 carries the
-31 traps and 29 families the published table further down was run over, with trap 024's
-corrected truth. The checkout here is ahead of it by published runs: this checkout has
-33 traps and 30 families, including the multi-step 034/c034 pair, and the current table measures MapSmith 0.12.2 and qgis-mcp 0.15.3.
-Rerunning 0.6.0 reproduces every row except the three QGIS
-rows corrected by the
-[trap-028 erratum](results/README.md#erratum-2026-09-27-trap-028-on-the-three-qgis-rows),
-qgis-mcp's completion rate and the probes added after that release. (0.5.0 carries the old
-truth of trap 024 and reproduces less.) Whenever the checkout here runs ahead of the release,
+The probes ship with the runner, so that is the whole setup — release 0.7.0 carries the
+33 traps and 30 families the published table further down was run over, including the
+multi-step 034/c034 pair, and the adapters that table was made with: installing it and
+rerunning reproduces the table rather than a version of it, for the versions of the measured
+systems the rows name (MapSmith 0.12.2, qgis-mcp 0.15.3). (0.6.0 carries 31 traps and 29
+families, and adapters that count trap 028 against the three QGIS rows; 0.5.0 carries the old
+truth of trap 024. Both reproduce less.) Whenever the checkout here runs ahead of the release,
 this paragraph says so, because a reader who cannot reproduce the table on this page has been
 told something untrue.
 
