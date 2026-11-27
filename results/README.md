@@ -73,6 +73,40 @@ with the reproduction for each finding, and updated there before anything was
 pushed here. Being told first is the obligation. Being answered is not something
 we can require, and that run's section says plainly what happened instead.
 
+## 2026-11-27 — MapSmith 0.13.1, the same 594 verdicts
+
+Published run: [`2026-11-27-mapsmith-v0-13-1/`](2026-11-27-mapsmith-v0-13-1/).
+`spec_commit` [`9ef44c0`](../../../commit/9ef44c0), thirty-three traps and
+thirty-three clean cases across thirty families, nine systems.
+
+| system | silent error rate | completion rate | traps run | probes n/a |
+|---|---|---|---|---|
+| MapSmith 0.13.1 (main @ 0f990b2) | 0.00 | 1.00 | 33 | 0 |
+| GeoPandas 1.1 + Shapely 2 (careful composition) | 0.00 | 1.00 | 16 | 34 |
+| rasterio 1.5.1 (careful composition) | 0.00 | 1.00 | 7 | 52 |
+| gis-mcp 0.15.0 | 0.1905 | 1.00 | 21 | 24 |
+| QGIS processing 3.44.12 (via qgis_process) | 0.3125 | 1.00 | 32 | 2 |
+| nkarasiak/qgis-mcp 0.15.3 (plugin socket) | 0.3125 | 1.00 | 32 | 2 |
+| QGIS Agent MCP 0.5.0 (local bridge) | 0.3125 | 0.9688 | 32 | 2 |
+| whitebox-workflows 2.0.6 | 0.75 | 1.00 | 4 | 58 |
+| naive composition | 0.8788 | 1.00 | 33 | 0 |
+
+**Why this run exists.** MapSmith released 0.13.1 the morning after the run
+below, and the first row named a version that was no longer the one a reader
+installs. One label moves: the MapSmith row is 0.13.1 at commit `0f990b2`. All
+594 verdicts — 66 probes for each of the nine systems — match the run below
+probe by probe. The suite moved from `9ce13a4` to `9ef44c0`, which is that
+run's own results and nothing else, so 0.7.0 from PyPI reproduces this table.
+
+**What 0.13.1 changes, and why no verdict could show it.** The release adds a
+limit on the memory one Parquet input may take to read: a file is sized from
+its footer before it is opened, and refused above a setting of the server.
+Every fixture here is a few kilobytes, so none meets the limit and the
+operations run as they did. A refusal would have shown as a probe that did not
+complete, and the completion rate of the first row is still 1.00. What the
+section below says the 0.00 does not cover — interpolation — is as true of
+this run.
+
 ## 2026-11-26 — MapSmith 0.13.0, and what an unchanged row does not say
 
 Published run: [`2026-11-26-mapsmith-v0-13-0/`](2026-11-26-mapsmith-v0-13-0/).

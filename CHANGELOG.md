@@ -14,12 +14,12 @@ the suite itself.
 
 ### Changed
 
-- **The current run measures MapSmith 0.13.0**, `2026-11-26-mapsmith-v0-13-0`.
-  One label moves and all 594 verdicts match the run 0.7.0 was released with.
-  No trap, truth or adapter changed, so 0.7.0 from PyPI still reproduces the
-  table. The run's section says what its first row does not cover: 0.13.0
-  corrects a silent error in MapSmith's interpolation, and no family here
-  interpolates.
+- **The current run measures MapSmith 0.13.1**, `2026-11-27-mapsmith-v0-13-1`,
+  after one on 0.13.0 the day before. Each moved one label, and all 594
+  verdicts match the run 0.7.0 was released with. No trap, truth or adapter
+  changed, so 0.7.0 from PyPI still reproduces the table. The section of the
+  run on 0.13.0 says what the first row does not cover: that release corrects
+  a silent error in MapSmith's interpolation, and no family here interpolates.
 
 ## [0.7.0] - 2026-11-26
 
